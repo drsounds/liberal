@@ -7,6 +7,8 @@ body,html {
     width: 100%;
     height: 100%;
     padding: 0pt !important;
+    font-family: "Tahoma";
+    font-size: 11pt;
 }
  sp-chrome {
      left: 0pt;
@@ -30,7 +32,9 @@ sp-divider {
     display: block;
     width: 100%;
 }
-
+td {
+    padding: 3pt;
+}
 sp-header table td, sp-album table td {
     padding: 12pt;
 }

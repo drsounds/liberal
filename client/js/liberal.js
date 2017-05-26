@@ -53,10 +53,15 @@ class Store extends EventEmitter {
     }
     
     async request(method, uri) {
+        if (uri.indexOf('spotify:') == 0) {
+            uri = 'bungalow:' + uri.substr('spotify:'.length);
+        }
+        let url = uri.substr('bungalow:'.length).split(':').join('/');
+        
+        
         if (uri in this.state)
             return this.state[uri];
-            
-        let url = uri.substr('spotify:'.length + 1).split(':').join('/');
+        
         let result = await fetch('/api/music/' + url, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
         this.setState(uri, result);
      
@@ -135,7 +140,7 @@ class SPViewStackElement extends HTMLElement {
         this.views = {};
         let path = window.location.pathname.substr(1);
         let uri = 'bungalow:' + path.split('/').join(':');
-        this.navigate(uri);
+        this.navigate(uri, true);
     
         window.addEventListener('popstate', (event) => {
             let path = window.location.pathname.substr(1);
@@ -153,38 +158,45 @@ class SPViewStackElement extends HTMLElement {
         let evt = new CustomEvent('beforenavigate');
         this.dispatchEvent(evt);
         
-        if (uri in this.views) {
-            let view = this.views;
+        
+        if (uri.indexOf('spotify:') === 0) {
+            uri = 'bungalow:' + uri.substr('spotify:'.length);
+        }
+        let newUri = uri;
+        if (uri === 'bungalow:internal:login') {
+            store.login().then(() => {});
+            return;
+        }
+        
+        if (newUri === 'bungalow:') {
+            newUri == 'bungalow:internal:start';
+        }
+            
+        if (newUri.indexOf('bungalow:') != 0) {
+            newUri = 'bungalow:search:' + uri;
+        }
+        if (newUri in this.views) {
+            let view = this.views[newUri];
             this.setView(view);
         } else {
-            if (uri.indexOf('spotify:') === 0) {
-                uri = 'bungalow:' + uri.substr('spotify:'.length);
-            }
-            let newUri = uri;
-            if (uri === 'bungalow:internal:login') {
-                store.login().then(() => {});
-                return;
-            }
-            
-            if (newUri === 'bungalow:') {
-                newUri == 'bungalow:internal:start';
-            }
-            
-            if (newUri.indexOf('bungalow:') != 0) {
-                newUri = 'bungalow:search:' + uri;
-            }
-            
             if (/^bungalow:artist:(.*)$/g.test(newUri)) {
                 let artistView = document.createElement('sp-artistview');
                 this.addView(newUri, artistView);
                 artistView.setAttribute('uri', newUri);
         
             }
+            if (/^bungalow:album:(.*)$/g.test(newUri)) {
+                let albumView = document.createElement('sp-albumview');
+                this.addView(newUri, albumView);
+                albumView.setAttribute('uri', newUri);
+        
+            }
         }
         let url = uri.substr('bungalow:'.length).split(':').join('/');
-        
-        if (!dontPush)
+      
+        if (!dontPush) {
             history.pushState(uri, uri, '/' + url);
+        }
             
         
     }
@@ -204,7 +216,7 @@ document.registerElement('sp-viewstack', SPViewStackElement);
 
 class SPHeaderElement extends SPResourceElement {
     attachedCallback() {
-        
+        this.classList.add('header');
     }
     setState(object) {
         object.image_url = object.images && object.images[0].url ? object.images[0].url : '';
@@ -289,7 +301,7 @@ class SPAlbumElement extends SPResourceElement {
         }
     }
     setState(obj) {
-        this.innerHTML = '<table width="100%"><tbody><tr><td valign="top" width="128"><img src="' + obj.images[0].url + '" width="128" height="128"></td>' +
+        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="128"><img src="' + obj.images[0].url + '" width="128" height="128"></td>' +
             '<td valign="top"><h3><sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link></h3>' +
             '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
             '</td></tr></tbody></table>';
@@ -303,52 +315,52 @@ class SPTrackContextElement extends SPResourceElement {
     attachedCallback() {
         if (!this.hasAttribute('fields'))
             this.setAttribute('fields', 'name,artists,album');
+        if (this.table == null) {
             this.table = document.createElement('table');
-            
             this.appendChild(this.table);
-            this.table.setAttribute('width', '100%');
-            this.table.tbody = document.createElement('tbody');
-            this.table.appendChild(this.table.tbody);
-            this.table.thead = document.createElement('thead');
-            this.table.appendChild(this.table.thead);
-            this.table.thead.tr = document.createElement('tr');
-            this.table.appendChild(this.table.thead.tr);
+        }
+        this.attributeChangedCallback('uri', null, this.getAttribute('uri'));
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
         
         if (attrName == 'uri') {
-            
           let result = await store.request('GET', newVal);
             this.setState(result);
         }
     }
     setState(obj) {
-        this.table.thead.tr.innerHTML = '';
-        this.table.tbody.innerHTML = '';
+        this.table.innerHTML = '<thead><tr></tr></thead><tbody></tbody>';
+        this.thead = this.table.querySelector('thead');
+        this.tbody = this.table.querySelector('tbody');
+        this.theadtr = this.table.querySelector('thead tr');
         
-        var fields = this.getAttribute('fields').map((f, i) => {
+        var fields = this.getAttribute('fields').split(',');
+        fields.map((f, i) => {
             let field = document.createElement('td');
             field.innerHTML = f;
-            
+            this.querySelector('thead tr').appendChild(field);
         });
-        
-        var rows = obj.tracks.items.map((track, i) => {
+        var rows = obj.objects.map((track, i) => {
            let tr = document.createElement('tr');
            
-           let tds = fields.map((field, i) => {
+           fields.map((field, i) => {
               var td = document.createElement('td');
               
               let val = track[field];
-              if (val instanceof Object) {
-                  td.innerHTML = '<sp-link uri=2' + val.uri + '">' + val.name + '</sp-link>'; 
-              }
               if (val instanceof Array) {
-                 td.innerHTML = val.map((v, i) => '<sp-link uri=2' + val.uri + '">' + val.name + '</sp-link>').join(','); 
+                 td.innerHTML = val.map((v, i) => {
+                  
+                     return '<sp-link uri="' + v.uri + '">' + v.name + '</sp-link>'
+                }).join(','); 
+              } else if (val instanceof Object) {
+                  td.innerHTML = '<sp-link uri=2' + val.uri + '">' + val.name + '</sp-link>'; 
+              } else {
+                  td.innerHTML = val;
               }
+            tr.appendChild(td);
            });
-           tds.forEach((td) => {
-               tr.appendChild(td);
-           });
+           this.tbody.appendChild(tr);
+           
         });
         fields.forEach((f) => {
             this.thead.tr.appendChild(f);
@@ -414,11 +426,15 @@ class SPMenuElement extends HTMLElement {
 
 
 class SPLinkElement extends HTMLAnchorElement {
+    onClick(e) {
+        e.preventDefault();
+        GlobalViewStack.navigate(this.getAttribute('uri'));
+    }
     attachedCallback() {
-        this.addEventListener('click', (e) => {
-            e.preventDefault();
-            ViewStack.navigate(this.getAttribute('href'));
-        })
+        this.addEventListener('click', this.onClick);
+    }
+    disconnectedCallback() {
+        this.removeEventListener('click', this.onClick);
     }
 }
 
@@ -486,8 +502,33 @@ class SPStartViewElement extends SPViewElement {
     }
 }
 
+
+class SPAlbumViewElement extends SPViewElement {
+    attachedCallback() {
+        this.classList.add('sp-view');
+    }
+    acceptsUri(uri) {
+        return /^bungalow:album:(.*)$/.test(uri);
+    }
+    navigate() {
+        
+    }
+    attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName === 'uri') {
+            this.albumView = document.createElement('sp-album');
+            this.appendChild(this.albumView);
+            this.albumView.setAttribute('uri', newVal);
+        }
+    }   
+}
+
+document.registerElement('sp-albumview', SPAlbumViewElement);
+
 window.addEventListener('load', (e) => {
     document.body.appendChild(document.createElement('sp-chrome'));
 })
+
+
+
 
 })(window);
