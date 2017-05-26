@@ -1,7 +1,7 @@
 :root {
     --header-height: 0pt;
     --footer-height: 0pt;
-    --sidebar-width: 200pt;
+    --sidebar-width: 100pt;
 }
 body,html {
     width: 100%;
@@ -11,10 +11,10 @@ body,html {
     font-size: 11pt;
 }
  sp-chrome {
-     left: 0pt;
-     top: 0pt;
-     width: 100%;
-     height: 100%;
+    left: 0pt;
+    top: 0pt;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: row;
     flex-grow: 2;

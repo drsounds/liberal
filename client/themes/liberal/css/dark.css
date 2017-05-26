@@ -36,7 +36,7 @@ sp-trackcontext table {
     border-collapse: collapse;
     width: 100%;
 }
-sp-trackcontext table tbody tr:nth-child(2n) td {
+sp-trackcontext table tbody tr:nth-child(2n-1) td {
     background-color: rgba(0, 0, 0, .1);
 }
 

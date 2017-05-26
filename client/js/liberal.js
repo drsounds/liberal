@@ -259,19 +259,24 @@ class SPArtistViewElement extends SPViewElement {
             artist: null,
             albums: []
         }
+        if (!this.header) {
         this.header = document.createElement('sp-header');
         this.appendChild(this.header);
+        }
         this.classList.add('sp-view');
         this.state = {
             
         };
+        if (!this.albumsDivider) {
         this.albumsDivider = document.createElement('sp-divider');
         this.albumsDivider.innerHTML = 'albums';
         this.appendChild(this.albumsDivider);
+        }
+        if (!this.albumList) {
         
-        this.albumList = document.createElement('sp-albumcontext');
-        this.appendChild(this.albumList);
-        
+            this.albumList = document.createElement('sp-albumcontext');
+            this.appendChild(this.albumList);
+        }
     }
     acceptsUri(uri) {
         return new RegExp(/^bungalow:artist:(.*)$/g).test(uri);
@@ -306,13 +311,15 @@ class SPUserViewElement extends SPViewElement {
         this.state = {
             
         };
+        if (!this.albumsDivider) {
         this.albumsDivider = document.createElement('sp-divider');
         this.albumsDivider.innerHTML = 'Public playlists';
         this.appendChild(this.albumsDivider);
-        
-        this.albumList = document.createElement('sp-playlistcontext');
-        this.appendChild(this.albumList);
-        
+        }
+        if (!this.albumList) {
+            this.albumList = document.createElement('sp-playlistcontext');
+            this.appendChild(this.albumList);
+        }
     }
     acceptsUri(uri) {
         return new RegExp(/^bungalow:artist:(.*)$/g).test(uri);
@@ -405,6 +412,7 @@ class SPTrackContextElement extends SPResourceElement {
         this.thead = this.table.querySelector('thead');
         this.tbody = this.table.querySelector('tbody');
         this.theadtr = this.table.querySelector('thead tr');
+        this.thead.style.display = 'none';
         
         var fields = this.getAttribute('fields').split(',');
         fields.map((f, i) => {
@@ -435,7 +443,7 @@ class SPTrackContextElement extends SPResourceElement {
            
         });
         fields.forEach((f) => {
-            this.thead.tr.appendChild(f);
+    //        this.tbody.tr.appendChild(f);
         });
         
         rows.forEach((tr) => {
@@ -566,10 +574,9 @@ class SPSearchFormElement extends HTMLElement {
         this.form.setAttribute('method', 'GET');
         this.appendChild(this.form);
         this.form.addEventListener('submit', (event) => {
+            let query = this.searchTextBox.value;
+            GlobalViewStack.navigate(query);
             event.preventDefault();
-            let evt = new CustomEvent('enter');
-            evt.query = this.searchTextBox.value;
-            this.dispatchEvent(evt);
         })
         this.searchTextBox = document.createElement('input');
         this.searchTextBox.setAttribute('type', 'search');
