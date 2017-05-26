@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title></title>
+  
+</head>
+<body>
+  <script type='text/javascript'>//<![CDATA[ 
+    var target = window.self === window.top ? window.opener : window.parent;
+
+    
+        var token = window.location.href.split('&')[0].split('=')[1];
+        // target.postMessage(token, 'http://example.com/'); // v0.7.0 and below
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+          if (xmlHttp.readyState == 4) {
+            if (xmlHttp.status == 200) {
+              window.close();
+            } else {
+              alert(xmlHttp.status + ' ' + xmlHttp.responseText);
+            }
+          }
+        } 
+        xmlHttp.open('GET', 'https://liberal-drsounds.c9users.io/api/music/spotify/authenticate?code=' + token, true);
+        xmlHttp.send(null);
+
+    
+
+
+  </script>
+</body> 
+</html>

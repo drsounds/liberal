@@ -1,0 +1,40 @@
+:root {
+    --header-height: 0pt;
+    --footer-height: 0pt;
+    --sidebar-width: 200pt;
+}
+
+input {
+    border: none;
+    background: none;
+    border: 3pt solid black;
+}
+
+sp-header {
+    position: fixed;
+    left: 0pt;
+    width: 100%;
+    height: var(--header-height);
+}
+sp-sidebar {
+    box-sizing: border-box;
+    padding: 15pt;
+    position: fixed;
+    top: calc(var(--header-height));
+    width: var(--sidebar-width);
+    height: calc(100% - (var(--header-height) - var(--footer-height)));
+}
+sp-viewstack {
+    left: var(--sidebar-width);
+    top: var(--header-height);
+    width: calc(100% - var(--sidebar-width));
+    height: calc(100% - (var(--header-height) - var(--footer-height)));
+    position: fixed;
+    overflow: scroll;
+}
+
+sp-view, .sp-view {
+    width: calc(var(--sidebar-width) - var(--sidebar-width));
+    height: calc(100% - (var(--header-height) - var(--footer-height)));
+    
+}

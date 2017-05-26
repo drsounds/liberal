@@ -1,0 +1,29 @@
+:root {
+    --background-color: #363636;
+    --foreground-color: #eee;
+    --sidebar-background-color: #393939;
+    --brand-primary: #FF9800;
+}
+
+
+body {
+    background-color: var(--background-color);
+    color: var(--foreground-color);
+}
+*:focus {
+    outline: none;
+}
+input {
+    color: var(--foreground-color);
+    border: 3pt solid white;
+    padding: 3pt;
+}
+input:focus {
+    border: 3pt solid var(--brand-primary);
+}
+sp-sidebar {
+    background-color: var(--sidebar-background-color);
+    box-shadow:inset 0pt 0pt 123pt rgba(0, 0, 0, 0.2);
+    
+}
+
