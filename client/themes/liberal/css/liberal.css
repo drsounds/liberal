@@ -1,7 +1,7 @@
 :root {
     --header-height: 0pt;
     --footer-height: 0pt;
-    --sidebar-width: 100pt;
+    --sidebar-width: 128pt;
 }
 body,html {
     width: 100%;
@@ -29,24 +29,37 @@ input {
 }
 
 sp-divider {
-    padding: 13pt;
+    padding: 12pt;
+    padding-top: 6pt;
+    padding-bottom: 6pt;
     display: block;
     width: 100%;
 }
 td {
     padding: 3pt;
 }
-sp-link {
-    cursor: hand;
+sp-link, a {
+    cursor: pointer !important;
+}
+sp-menuitem {
+    display: block;
+    width: 100%;
 }
 sp-header table td, sp-album table td {
-    padding: 6pt;
+    padding-left: 6pt;
 }
 sp-sidebar {
+    
     width: var(--sidebar-width);
-    padding: 20pt;
 }
-
+sp-searchform {
+    padding: 8pt;
+}
+sp-menuitem {
+    box-sizing: border-box;
+    padding: 3pt;
+    width: var(--sidebar-width);
+}
 sp-viewstack {
     flex-grow: 2;
     overflow: scroll;
@@ -54,4 +67,16 @@ sp-viewstack {
 
 
 sp-viewstack, sp-view, .sp-view {
+}
+
+sp-album table, sp-playlist table {
+    margin-top: 23pt;
+    margin-bottom: 23pt;
+}
+sp-menuitem.active {
+    background-color: var(--brand-primary);
+    color: rgba(0, 0, 0, .7);
+}
+sp-menuitem:active {
+    background-color: rgba(255, 255, 255, .3);
 }

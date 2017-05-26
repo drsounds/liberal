@@ -31,7 +31,7 @@ class Store extends EventEmitter {
      * Save state
      **/
     saveState() {
-        localStorage.setItem('store', JSON.stringify(this.state));
+     //   localStorage.setItem('store', JSON.stringify(this.state));
     }
     
     /**
@@ -50,19 +50,32 @@ class Store extends EventEmitter {
     setState(uri, state) {
         this.state[uri] = state;
         this.emit('change');
+        this.saveState();   
     }
     
     async request(method, uri) {
-        if (uri.indexOf('spotify:') == 0) {
-            uri = 'bungalow:' + uri.substr('spotify:'.length);
+        if (uri == null) return;
+        var url = uri;
+        if (uri.indexOf('bungalow:') == 0 || uri.indexOf('spotify:') == 0) {
+            if (uri.indexOf('spotify:') == 0) {
+                uri = 'bungalow:' + uri.substr('spotify:'.length);
+            }
+            url = uri.substr('bungalow:'.length).split(':').join('/');
+            
+            url = '/api/music/' + url;
+             if (uri in this.state)
+                return this.state[uri];
+            
+            let result = await fetch(url, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
+            this.setState(uri, result);
+         
+            return result;
+            
         }
-        let url = uri.substr('bungalow:'.length).split(':').join('/');
-        
-        
         if (uri in this.state)
             return this.state[uri];
         
-        let result = await fetch('/api/music/' + url, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
+        let result = await fetch(url, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
         this.setState(uri, result);
      
         return result;
@@ -159,6 +172,18 @@ class SPViewStackElement extends HTMLElement {
         this.dispatchEvent(evt);
         
         
+        let menuItems = document.querySelectorAll('sp-menuitem');
+        for (let item of menuItems) {
+            item.classList.remove('active');
+            
+            //if (uri.indexOf(item.getAttribute('uri')) == 0) {
+            if (uri == item.getAttribute('uri')) {
+                item.classList.add('active');
+            }
+            
+        }
+        
+        
         if (uri.indexOf('spotify:') === 0) {
             uri = 'bungalow:' + uri.substr('spotify:'.length);
         }
@@ -179,19 +204,21 @@ class SPViewStackElement extends HTMLElement {
             let view = this.views[newUri];
             this.setView(view);
         } else {
-            if (/^bungalow:artist:(.*)$/g.test(newUri)) {
+            if (/^bungalow:internal:start$/g.test(newUri)) {
+                let artistView = document.createElement('sp-startview');
+                this.addView(newUri, artistView);
+                artistView.setAttribute('uri', newUri);
+            } else if (/^bungalow:artist:(.*)$/g.test(newUri)) {
                 let artistView = document.createElement('sp-artistview');
                 this.addView(newUri, artistView);
                 artistView.setAttribute('uri', newUri);
         
-            }
-            if (/^bungalow:album:(.*)$/g.test(newUri)) {
+            } else if (/^bungalow:album:(.*)$/g.test(newUri)) {
                 let albumView = document.createElement('sp-albumview');
                 this.addView(newUri, albumView);
                 albumView.setAttribute('uri', newUri);
         
-            }
-            if (/^bungalow:user:([a-zA-Z0-9._]+):playlist:([a-zA-Z0-9]+)$/g.test(newUri)) {
+            } else if (/^bungalow:user:([a-zA-Z0-9._]+):playlist:([a-zA-Z0-9]+)$/g.test(newUri)) {
                 let albumView = document.createElement('sp-playlistview');
                 this.addView(newUri, albumView);
                 albumView.setAttribute('uri', newUri);
@@ -427,13 +454,14 @@ class SPTrackContextElement extends SPResourceElement {
               var td = document.createElement('td');
               
               let val = track[field];
+              if (!val) return;
               if (val instanceof Array) {
                  td.innerHTML = val.map((v, i) => {
                   
                      return '<sp-link uri="' + v.uri + '">' + v.name + '</sp-link>'
-                }).join(','); 
+                }).join(', '); 
               } else if (val instanceof Object) {
-                  td.innerHTML = '<sp-link uri=2' + val.uri + '">' + val.name + '</sp-link>'; 
+                  td.innerHTML = '<sp-link uri="' + val.uri + '">' + val.name + '</sp-link>'; 
               } else {
                   td.innerHTML = val;
               }
@@ -514,21 +542,52 @@ class SPSidebarElement extends HTMLElement {
     attachedCallback() {
         this.searchForm = document.createElement('sp-searchform');
         this.appendChild(this.searchForm);
+        if (!this.menu) {
+            this.menu = document.createElement('sp-menu');
+            this.appendChild(this.menu);
+        }
     }
 }
 
 document.registerElement('sp-sidebar', SPSidebarElement);
 
 class SPMenuElement extends HTMLElement {
-    constructor() {
-        
+    attachedCallback() {
+        [
+            {
+                name: 'Start',
+                uri: 'bungalow:internal:start'
+            },
+            null,
+            {
+                name: 'Featured tracks',
+                uri: 'bungalow:user:drsounds:playlist:763eLyGqbJrXpuwdI5tlPV'
+            },
+            null,
+            {
+                name: 'drsounds',
+                uri: 'bungalow:user:drsounds'
+            },
+            {
+                name: 'Dr. Sounds',
+                uri: 'spotify:artist:2FOROU2Fdxew72QmueWSUy'
+            }
+        ].map((item) => {
+            if (!item) {
+                this.appendChild(document.createElement('br'));
+                return;
+            }
+            let menuItem = document.createElement('sp-menuitem');
+            this.appendChild(menuItem);
+            menuItem.innerHTML = item.name;
+            menuItem.setAttribute('uri', item.uri);
+        })    
     }
-    setItems(items) {
-        
-    }
+    
     
 }
 
+document.registerElement('sp-menu', SPMenuElement);
 
 class SPLinkElement extends HTMLAnchorElement {
     onClick(e) {
@@ -545,21 +604,10 @@ class SPLinkElement extends HTMLAnchorElement {
 
 document.registerElement('sp-link', SPLinkElement);
 
-class SPMenuItemElement extends HTMLElement {
+class SPMenuItemElement extends SPLinkElement {
+
     attributeChangedCallback(attr, oldVal, newVal) {
-        this.shadow = this.attachShadow({mode: 'open'});
-        this.shadow.a = new SPLinkElement();
-        this.attributeChangedCallback('text', null, this.getAttribute('text'));
-        this.attributeChangedCallback('href', null, this.getAttribute('uri'));
-        if (attr == 'text') {
-            this.shadow.a.innerHTML = newVal;
-        }
-        if (attr == 'uri') {
-            this.shadow.a.href = newVal;
-        }
-    }
-    attachedCallback() {
-        
+       
     }
 }
 
@@ -643,6 +691,34 @@ class SPPlaylistViewElement extends SPViewElement {
     }
     acceptsUri(uri) {
         return /^bungalow:user:(.*):playlist:([a-zA-Z0-9]+)$/.test(uri);
+    }
+    navigate() {
+        
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName === 'uri') {
+            this.trackcontext.setAttribute('uri', newVal + ':track');
+            let result = await store.request('GET', newVal);
+            this.header.setState(result);
+        }
+    }   
+}
+
+class SPPlayqueueViewElement extends SPViewElement {
+    attachedCallback() {
+        this.classList.add('sp-view');
+        if (!this.header) {
+            this.header = document.createElement('sp-header');
+            this.appendChild(this.header);
+        }
+        if (!this.trackcontext) {
+            this.trackcontext = document.createElement('sp-trackcontext');
+            this.appendChild(this.trackcontext);
+        }
+        
+    }
+    acceptsUri(uri) {
+        return /^bungalow:internal:playqeueue$/.test(uri);
     }
     navigate() {
         
