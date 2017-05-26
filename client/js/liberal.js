@@ -191,6 +191,12 @@ class SPViewStackElement extends HTMLElement {
                 albumView.setAttribute('uri', newUri);
         
             }
+            if (/^bungalow:user:([a-zA-Z0-9._]+)$/g.test(newUri)) {
+                let albumView = document.createElement('sp-userview');
+                this.addView(newUri, albumView);
+                albumView.setAttribute('uri', newUri);
+        
+            }
         }
         let url = uri.substr('bungalow:'.length).split(':').join('/');
       
@@ -281,8 +287,49 @@ class SPArtistViewElement extends SPViewElement {
         this.header.setState(state);
     }
 }
-
 document.registerElement('sp-artistview', SPArtistViewElement);
+
+class SPUserViewElement extends SPViewElement {
+    async attachedCallback() {
+        this.state = {
+            artist: null,
+            albums: []
+        }
+        this.header = document.createElement('sp-header');
+        this.appendChild(this.header);
+        this.classList.add('sp-view');
+        this.state = {
+            
+        };
+        this.albumsDivider = document.createElement('sp-divider');
+        this.albumsDivider.innerHTML = 'Albums';
+        this.appendChild(this.albumsDivider);
+        
+        this.albumList = document.createElement('sp-playlistcontext');
+        this.appendChild(this.albumList);
+        
+    }
+    acceptsUri(uri) {
+        return new RegExp(/^bungalow:artist:(.*)$/g).test(uri);
+    }
+    navigate(uri) {
+            
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'uri') {
+            
+          let result = await store.request('GET', newVal);
+            
+          this.setState(result);    
+          this.albumList.setAttribute('uri', newVal + ':playlist');
+        }
+    }
+    setState(state) {
+        this.header.setState(state);
+    }
+}
+
+document.registerElement('sp-userview', SPUserViewElement);
 
 
 
@@ -310,6 +357,26 @@ class SPAlbumElement extends SPResourceElement {
 
 document.registerElement('sp-album', SPAlbumElement);
 
+class SPPlaylistElement extends SPResourceElement {
+    attachedCallback() {
+        
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'uri') {
+            
+          let result = await store.request('GET', newVal);
+            this.setState(result);
+        }
+    }
+    setState(obj) {
+        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="128"><img src="' + obj.images[0].url + '" width="128" height="128"></td>' +
+            '<td valign="top"><h3><sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link></h3>' +
+            '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
+            '</td></tr></tbody></table>';
+    }
+}
+
+document.registerElement('sp-playlist', SPPlaylistElement);
 
 class SPTrackContextElement extends SPResourceElement {
     attachedCallback() {
@@ -397,6 +464,31 @@ class SPAlbumContextElement extends SPResourceElement {
 }
 
 document.registerElement('sp-albumcontext', SPAlbumContextElement);
+
+class SPPlaylistContextElement extends SPResourceElement {
+    attachedCallback() {
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'uri') {
+            
+          let result = await store.request('GET', newVal);
+            this.setState(result);
+        }
+    }
+    setState(obj) {
+        this.innerHTML = '';
+        let albums = obj.objects.map((item) => {
+           var a = document.createElement('sp-playlist');
+           a.setState(item);
+           return a;
+        });
+        albums.forEach((album) => {
+            this.appendChild(album);
+        })
+    }
+}
+
+document.registerElement('sp-playlistcontext', SPPlaylistContextElement);
 
 class SPDividerElement extends HTMLElement {
     attachedCallback() {

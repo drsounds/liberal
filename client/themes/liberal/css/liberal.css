@@ -18,6 +18,7 @@ body,html {
     display: flex;
     flex-direction: row;
     flex-grow: 2;
+    position: fixed;
 }
 
 img {
@@ -35,8 +36,11 @@ sp-divider {
 td {
     padding: 3pt;
 }
+sp-link {
+    cursor: hand;
+}
 sp-header table td, sp-album table td {
-    padding: 12pt;
+    padding: 6pt;
 }
 sp-sidebar {
     width: var(--sidebar-width);
@@ -44,6 +48,7 @@ sp-sidebar {
 
 sp-viewstack {
     flex-grow: 2;
+    overflow: scroll;
 }
 
 

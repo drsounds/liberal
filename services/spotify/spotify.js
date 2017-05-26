@@ -382,10 +382,10 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             }, function (error, response, body) {
                                 var result = JSON.parse(body);
                                 resolve({
-                                    'objects': result.items,
-                                    'source': 'SpotifyBrowse'
+                                    'objects': result.items
                                 });
                             });
+                            return;
                         } else {
                             if (parts[4] == 'follower') {
                                 var users = [];
