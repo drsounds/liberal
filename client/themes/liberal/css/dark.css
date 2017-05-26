@@ -29,6 +29,9 @@ sp-sidebar {
     box-shadow:inset 0pt 0pt 123pt rgba(0, 0, 0, 0.2);
     
 }
+table thead tr td {
+    background-color: #888;
+}
 sp-trackcontext table {
     border-collapse: collapse;
     width: 100%;

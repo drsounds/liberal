@@ -44,6 +44,7 @@ sp-header table td, sp-album table td {
 }
 sp-sidebar {
     width: var(--sidebar-width);
+    padding: 20pt;
 }
 
 sp-viewstack {

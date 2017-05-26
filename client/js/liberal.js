@@ -191,7 +191,12 @@ class SPViewStackElement extends HTMLElement {
                 albumView.setAttribute('uri', newUri);
         
             }
-            if (/^bungalow:user:([a-zA-Z0-9._]+)$/g.test(newUri)) {
+            if (/^bungalow:user:([a-zA-Z0-9._]+):playlist:([a-zA-Z0-9]+)$/g.test(newUri)) {
+                let albumView = document.createElement('sp-playlistview');
+                this.addView(newUri, albumView);
+                albumView.setAttribute('uri', newUri);
+        
+            } else if (/^bungalow:user:([a-zA-Z0-9._]+)$/g.test(newUri)) {
                 let albumView = document.createElement('sp-userview');
                 this.addView(newUri, albumView);
                 albumView.setAttribute('uri', newUri);
@@ -302,7 +307,7 @@ class SPUserViewElement extends SPViewElement {
             
         };
         this.albumsDivider = document.createElement('sp-divider');
-        this.albumsDivider.innerHTML = 'Albums';
+        this.albumsDivider.innerHTML = 'Public playlists';
         this.appendChild(this.albumsDivider);
         
         this.albumList = document.createElement('sp-playlistcontext');
@@ -615,6 +620,36 @@ class SPAlbumViewElement extends SPViewElement {
 }
 
 document.registerElement('sp-albumview', SPAlbumViewElement);
+
+class SPPlaylistViewElement extends SPViewElement {
+    attachedCallback() {
+        this.classList.add('sp-view');
+        if (!this.header) {
+            this.header = document.createElement('sp-header');
+            this.appendChild(this.header);
+        }
+        if (!this.trackcontext) {
+            this.trackcontext = document.createElement('sp-trackcontext');
+            this.appendChild(this.trackcontext);
+        }
+        
+    }
+    acceptsUri(uri) {
+        return /^bungalow:user:(.*):playlist:([a-zA-Z0-9]+)$/.test(uri);
+    }
+    navigate() {
+        
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName === 'uri') {
+            this.trackcontext.setAttribute('uri', newVal + ':track');
+            let result = await store.request('GET', newVal);
+            this.header.setState(result);
+        }
+    }   
+}
+
+document.registerElement('sp-playlistview', SPPlaylistViewElement);
 
 window.addEventListener('load', (e) => {
     document.body.appendChild(document.createElement('sp-chrome'));
