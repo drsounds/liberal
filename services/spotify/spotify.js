@@ -113,184 +113,201 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
     var self = this;
     this.req = req;
     console.log("A");
-    var activity = function () {
-
-        var token = self.getAccessToken();
-        var headers = {};
-        headers["Authorization"] = "Bearer " + token.access_token;
-        if (payload instanceof Object) {
-            headers["Content-type"] = "application/json";
-
-        } else {
-            headers["Content-type"] = ("application/x-www-form-urlencoded");
-
-
-        }
-
-        var parts = url.split(/\//g);
-        if (parts[0] == 'search') {
-            request({
-                    url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + payload.type + '&limit=' + payload.limit + '&offset=' + payload.offset
-                },
-                function (error, response, body) {
-                
-                    var data = JSON.parse(body);
-                    try {
-                        resolve({'objects': data[payload.type + 's'].items});
-                    } catch (e) {
-                        fail(e);
+    return new Promise(function (resolve, reject) {
+        var activity = function () {
+    
+            var token = self.getAccessToken();
+            var headers = {};
+            headers["Authorization"] = "Bearer " + token.access_token;
+            if (payload instanceof Object) {
+                headers["Content-type"] = "application/json";
+    
+            } else {
+                headers["Content-type"] = ("application/x-www-form-urlencoded");
+    
+    
+            }
+    
+            var parts = url.split(/\//g);
+            if (parts[0] == 'search') {
+                request({
+                        url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + payload.type + '&limit=' + payload.limit + '&offset=' + payload.offset
+                    },
+                    function (error, response, body) {
+                    
+                        var data = JSON.parse(body);
+                        try {
+                            resolve({'objects': data[payload.type + 's'].items});
+                        } catch (e) {
+                            fail(e);
+                        }
+                    }
+                );
+            }
+            if (parts[0] == 'me') {
+                if (parts[1] == 'player') {
+                    if (parts[2] == 'play') {
+                       
+                        var uri = 'https://api.spotify.com/v1/me/player/play';
+                        var d = {
+                            url: uri,
+                            headers: headers,
+                            method: method,
+                            contentType: 'application/json',
+                            body: JSON.stringify(postData)
+                        };
+                        request(d,
+                            function (error, response, body) {
+                                if (error) {
+                                    fail();
+                                    return;
+                                }
+                                request(
+                                    'https://api.spotify.com/v1/me/player',
+                                    {
+                                        headers: headers    
+                                    },
+                                    function (error2, response2, body2) {
+                                         try {
+                                            resolve(JSON.parse(body2));
+                                        } catch (e) {
+                                            fail();
+                                        }
+                                    return;
+                                });
+                            }
+                        );
+                    } else if(parts[2] === 'pause') {
+                        var uri = 'https://api.spotify.com/v1/me/player/pause';
+                        var d = {
+                            url: uri,
+                            headers: headers,
+                            method: method,
+                            contentType: 'application/json',
+                            body: JSON.stringify(postData)
+                        };
+                        request(d,
+                            function (error, response, body) {
+                                 try {
+                                    resolve(JSON.parse(body));
+                                } catch (e) {
+                                    fail();
+                                }
+                            return;
+                            }
+                        )
+                    } else {
+                        var uri = 'https://api.spotify.com/v1/me/player';
+                        var d = {
+                            url: uri,
+                            headers: headers,
+                            method: method,
+                            contentType: 'application/json',
+                            body: JSON.stringify(postData)
+                        };
+                        request(d,
+                            function (error, response, body) {
+                                 try {
+                                    resolve(JSON.parse(body));
+                                } catch (e) {
+                                    fail();
+                                }
+                            return;
+                            }
+                        )
                     }
                 }
-            );
-        }
-        if (parts[0] == 'me') {
-            if (parts[1] == 'player') {
-                if (parts[2] == 'play') {
-                   
-                    var uri = 'https://api.spotify.com/v1/me/player/play';
-                    var d = {
-                        url: uri,
-                        headers: headers,
-                        method: method,
-                        contentType: 'application/json',
-                        body: JSON.stringify(postData)
-                    };
-                    request(d,
-                        function (error, response, body) {
-                            if (error) {
-                                fail();
-                                return;
-                            }
-                            request(
-                                'https://api.spotify.com/v1/me/player',
-                                {
-                                    headers: headers    
-                                },
-                                function (error2, response2, body2) {
-                                     try {
-                                        resolve(JSON.parse(body2));
-                                    } catch (e) {
-                                        fail();
-                                    }
-                                return;
-                            });
-                        }
-                    );
-                } else if(parts[2] === 'pause') {
-                    var uri = 'https://api.spotify.com/v1/me/player/pause';
-                    var d = {
-                        url: uri,
-                        headers: headers,
-                        method: method,
-                        contentType: 'application/json',
-                        body: JSON.stringify(postData)
-                    };
-                    request(d,
-                        function (error, response, body) {
-                             try {
-                                resolve(JSON.parse(body));
-                            } catch (e) {
-                                fail();
-                            }
-                        return;
-                        }
-                    )
-                } else {
-                    var uri = 'https://api.spotify.com/v1/me/player';
-                    var d = {
-                        url: uri,
-                        headers: headers,
-                        method: method,
-                        contentType: 'application/json',
-                        body: JSON.stringify(postData)
-                    };
-                    request(d,
-                        function (error, response, body) {
-                             try {
-                                resolve(JSON.parse(body));
-                            } catch (e) {
-                                fail();
-                            }
-                        return;
-                        }
-                    )
-                }
             }
-        }
-        if (parts[0] == 'artist') {
-            if (parts.length > 2) {
-                if (parts[2] == 'top-track') {
+            if (parts[0] == 'artist') {
+                if (parts.length > 2) {
+                    if (parts[2] == 'top-track') {
+                        request({
+                                url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/top-tracks?limit=5&offset=' + payload.offset + '&country=se'
+                            },
+                            function (error, response, body) {
+                                var data = JSON.parse(body);
+                                try {
+                                    resolve({
+                                        type: 'toplist',
+                                        name: 'Top Tracks',
+                                        'objects': data.tracks.slice(0,5)
+                                    });
+                                } catch (e) {
+                                    fail();
+                                }
+                            }
+                        );
+                    }
+                    if (parts[2] == 'release') {
+                        var limit = (payload.limit || 10);
+                        request({
+                                url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/albums?limit=' + limit + '&offset=' + (limit * (payload.p || 0))
+                            },
+                            function (error, response, body) {
+                                var data = JSON.parse(body);
+                                try {
+                                    resolve({'objects': data.items});
+                                } catch (e) {
+                                    fail();
+                                }
+                            }
+                        );
+                        return;
+                    }
+                } else {
                     request({
-                            url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/top-tracks?limit=5&offset=' + payload.offset + '&country=se'
+                            url: 'https://api.spotify.com/v1/artists/' + parts[1]
                         },
                         function (error, response, body) {
+                            body = body.replace('SpotifyBrowse:', 'bungalow:');
+                            var data = JSON.parse(body);
+                            resolve(data);
+                        }
+                    );
+                    return;
+                }
+            }
+    
+            if (parts[0] == 'album') {
+                if (parts.length > 2) {
+                    request({
+                            url: 'https://api.spotify.com/v1/albums/' + parts[1] + '/tracks'
+                        },
+                        function (error, response, body) {
+                            body = body.replace('spotify:', 'bungalow:');
                             var data = JSON.parse(body);
                             try {
                                 resolve({
-                                    type: 'toplist',
-                                    name: 'Top Tracks',
-                                    'objects': data.tracks.slice(0,5)
+                                    'objects': data.items
                                 });
                             } catch (e) {
-                                fail();
+                                resolve({
+                                    'objects': []
+                                })
                             }
                         }
                     );
-                }
-                if (parts[2] == 'release') {
-                    var limit = (payload.limit || 10);
+                } else {
                     request({
-                            url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/albums?limit=' + limit + '&offset=' + (limit * payload.p)
+                            url: 'https://api.spotify.com/v1/albums/' + parts[1] + ''
                         },
                         function (error, response, body) {
+                            body = body.replace(/spotify\:/, 'bungalow:');
                             var data = JSON.parse(body);
                             try {
-                                resolve({'objects': data.items});
+                                resolve(data);
                             } catch (e) {
                                 fail();
                             }
                         }
                     );
                 }
-            } else {
-                request({
-                        url: 'https://api.spotify.com/v1/artists/' + parts[1]
-                    },
-                    function (error, response, body) {
-                        body = body.replace('SpotifyBrowse:', 'bungalow:');
-                        var data = JSON.parse(body);
-                        resolve(data);
-                    }
-                );
-                return;
             }
-        }
-
-        if (parts[0] == 'album') {
-            if (parts.length > 2) {
+            if (parts[0] == 'track') {
                 request({
-                        url: 'https://api.spotify.com/v1/albums/' + parts[1] + '/tracks'
+                        url: 'https://api.spotify.com/v1/tracks/' + parts[1] + ''
                     },
                     function (error, response, body) {
-                        body = body.replace('spotify:', 'bungalow:');
-                        var data = JSON.parse(body);
-                        try {
-                            resolve({
-                                'objects': data.items
-                            });
-                        } catch (e) {
-                            resolve({
-                                'objects': []
-                            })
-                        }
-                    }
-                );
-            } else {
-                request({
-                        url: 'https://api.spotify.com/v1/albums/' + parts[1] + ''
-                    },
-                    function (error, response, body) {
-                        body = body.replace(/spotify\:/, 'bungalow:');
                         var data = JSON.parse(body);
                         try {
                             resolve(data);
@@ -300,154 +317,140 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     }
                 );
             }
-        }
-        if (parts[0] == 'track') {
-            request({
-                    url: 'https://api.spotify.com/v1/tracks/' + parts[1] + ''
-                },
-                function (error, response, body) {
-                    var data = JSON.parse(body);
-                    try {
-                        resolve(data);
-                    } catch (e) {
-                        fail();
-                    }
-                }
-            );
-        }
-        if (parts[0] == 'label') {
-            if (parts.length > 2) {
-                if (parts[2] == 'artists') {
-                    request({
-                        url: 'https://api.spotify.com/v1/search/?q=label:"' + encodeURI(parts[1]) + '"&type=artist&limit=' + payload.limit + '&offset=' + payload.offset,
-                        headers: headers
-                    },  function (error, response, body) {
-                        resolve(body);
-                    });
-                    resolve({objects: labels});
-                }
-            }
-        }
-        if (parts[0] == 'country') {
-            if (parts.length > 1) {
-                var code = parts[1];
+            if (parts[0] == 'label') {
                 if (parts.length > 2) {
-
-                    if (parts[2] == 'chart') {
-                        var chart = parts[3];
-                        var type = parts[4];
-                        if (type === 'tracks') {
-                            resolve({'objects': []});
-                        }
-                    }
-                    if (parts[2] == 'label') {
-                        var labels = [
-                            {
-                                'id': 'substream',
-                                'name': 'Substream Music Group',
-                                'href': '/label/substream',
-                                'uri': 'spotify:label:substream'
-                            }
-                        ];
+                    if (parts[2] == 'artists') {
+                        request({
+                            url: 'https://api.spotify.com/v1/search/?q=label:"' + encodeURI(parts[1]) + '"&type=artist&limit=' + payload.limit + '&offset=' + payload.offset,
+                            headers: headers
+                        },  function (error, response, body) {
+                            resolve(body);
+                        });
                         resolve({objects: labels});
                     }
-                    
-                } else {
-
-                    resolve({
-                        'id': code,
-                        'name': code,
-                        'followers': {
-                            'count': 5000000,
-                            'href': '/country/' + code + '/follower'
-                        }
-                    })
                 }
             }
-        }
-        if (parts[0] == 'user') {
-            var userid = parts[1];
-            if (parts.length > 2) {
-                if (parts[2] == 'playlist') {
-                    if (parts.length < 4) {
-                        payload = {
-                            limit: 10,
-                            offset: 0
-                        };
-                        request({
-                            url: 'https://api.spotify.com/v1/users/' + userid + '/playlists?limit=' + payload.limit + '&offset=' + payload.offset,
-                            headers: headers
-                        }, function (error, response, body) {
-                            var result = JSON.parse(body);
-                            resolve({
-                                'objects': result.items,
-                                'source': 'SpotifyBrowse'
-                            });
-                        });
-                    } else {
-                        if (parts[4] == 'follower') {
-                            var users = [];
-                            for (var i = 0; i < 10; i++) {
-                                uesrs.push({
-                                    'id': 'follower' + i,
-                                    'name': 'Track ' + i,
-                                    'uri': 'SpotifyBrowse:user:follower' + i
-                                });
+            if (parts[0] == 'country') {
+                if (parts.length > 1) {
+                    var code = parts[1];
+                    if (parts.length > 2) {
+    
+                        if (parts[2] == 'chart') {
+                            var chart = parts[3];
+                            var type = parts[4];
+                            if (type === 'tracks') {
+                                resolve({'objects': []});
                             }
-                            resolve({
-                                'objects': users
-                            });
-                        } else if (parts[4] == 'track') {
+                        }
+                        if (parts[2] == 'label') {
+                            var labels = [
+                                {
+                                    'id': 'substream',
+                                    'name': 'Substream Music Group',
+                                    'href': '/label/substream',
+                                    'uri': 'spotify:label:substream'
+                                }
+                            ];
+                            resolve({objects: labels});
+                        }
+                        
+                    } else {
+    
+                        resolve({
+                            'id': code,
+                            'name': code,
+                            'followers': {
+                                'count': 5000000,
+                                'href': '/country/' + code + '/follower'
+                            }
+                        })
+                    }
+                }
+            }
+            if (parts[0] == 'user') {
+                var userid = parts[1];
+                if (parts.length > 2) {
+                    if (parts[2] == 'playlist') {
+                        if (parts.length < 4) {
+                            payload = {
+                                limit: 10,
+                                offset: 0
+                            };
                             request({
-                                url: 'https://api.spotify.com/v1/users/' + parts[1] + '/playlists/' + parts[3] + '/tracks',
+                                url: 'https://api.spotify.com/v1/users/' + userid + '/playlists?limit=' + payload.limit + '&offset=' + payload.offset,
                                 headers: headers
                             }, function (error, response, body) {
                                 var result = JSON.parse(body);
                                 resolve({
-                                    'objects': result.items.map(function (track) {
-                                        var track = assign(track, track.track);
-                                        track.user = track.added_by;
-                                        return track;
-                                    })
-                                })
+                                    'objects': result.items,
+                                    'source': 'SpotifyBrowse'
+                                });
                             });
                         } else {
-                            request({
-                                url: 'https://api.spotify.com/v1/users/' + parts[1] + '/playlists/' + parts[3] + '',
-                                headers: headers
-                            }, function (error, response, body) {
-                                var result = JSON.parse(body);
-                                resolve(result);
-                            });
-                        }
-                    }
-                }
-
-            } else {
-                console.log("Getting users");
-                request({
-                    url: 'https://api.spotify.com/v1/users/' + parts[1] + '',
-                    headers: headers
-                },
-                    function (error, response, body) {
-                        if (error) {
-                            fail({'error': ''});
-                        }
-                        var user = JSON.parse(body);
-                        user.images = [
-                            {
-                                'url': user.image
+                            if (parts[4] == 'follower') {
+                                var users = [];
+                                for (var i = 0; i < 10; i++) {
+                                    uesrs.push({
+                                        'id': 'follower' + i,
+                                        'name': 'Track ' + i,
+                                        'uri': 'SpotifyBrowse:user:follower' + i
+                                    });
+                                }
+                                resolve({
+                                    'objects': users
+                                });
+                            } else if (parts[4] == 'track') {
+                                request({
+                                    url: 'https://api.spotify.com/v1/users/' + parts[1] + '/playlists/' + parts[3] + '/tracks',
+                                    headers: headers
+                                }, function (error, response, body) {
+                                    var result = JSON.parse(body);
+                                    resolve({
+                                        'objects': result.items.map(function (track) {
+                                            var track = assign(track, track.track);
+                                            track.user = track.added_by;
+                                            return track;
+                                        })
+                                    })
+                                });
+                            } else {
+                                request({
+                                    url: 'https://api.spotify.com/v1/users/' + parts[1] + '/playlists/' + parts[3] + '',
+                                    headers: headers
+                                }, function (error, response, body) {
+                                    var result = JSON.parse(body);
+                                    resolve(result);
+                                });
                             }
-                        ];
-
-                        resolve(user);
+                        }
                     }
-                );
-
+    
+                } else {
+                    console.log("Getting users");
+                    request({
+                        url: 'https://api.spotify.com/v1/users/' + parts[1] + '',
+                        headers: headers
+                    },
+                        function (error, response, body) {
+                            if (error) {
+                                fail({'error': ''});
+                            }
+                            var user = JSON.parse(body);
+                            user.images = [
+                                {
+                                    'url': user.image
+                                }
+                            ];
+    
+                            resolve(user);
+                        }
+                    );
+    
+                }
             }
-        }
-    };
-    activity();
+        };
+     activity();
+    });
 }
 
 

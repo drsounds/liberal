@@ -13,6 +13,9 @@ body {
 *:focus {
     outline: none;
 }
+sp-divider {
+    background-color: rgba(255, 255, 255, .1);
+}
 input {
     color: var(--foreground-color);
     border: 3pt solid white;

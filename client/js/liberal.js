@@ -52,18 +52,31 @@ class Store extends EventEmitter {
         this.emit('change');
     }
     
+    async request(method, uri) {
+        if (uri in this.state)
+            return this.state[uri];
+            
+        let url = uri.substr('spotify:'.length + 1).split(':').join('/');
+        let result = await fetch('/api/music/' + url, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
+        this.setState(uri, result);
+     
+        return result;
+    }
+    
     /**
      * Get album by ID
      **/
     async getAlbumById(id) {
         let uri = 'spotify:album:' + id;
-        let result = await fetch('/api/music/album/' + id).then((e) => e.json())
+        let result = await fetch('/api/music/album/' + id, {credentials: 'include', mode: 'cors'}).then((e) => e.json())
         this.setState(uri, result);
+        return result;
     }
     async getArtistById(id) {
         let uri = 'spotify:artist:' + id;
-        let result = await fetch('/api/music/artist/' + id).then((e) => e.json());
+        let result = await fetch('/api/music/artist/' + id, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
         this.setState(uri, result);
+        return result;
     }
     login() {
         return new Promise((resolve, reject) => {
@@ -86,12 +99,11 @@ var store = new Store();
 
 class SPChromeElement extends HTMLElement { 
     attachedCallback() {
+        this.sidebar = document.createElement('sp-sidebar');
+        this.appendChild(this.sidebar); 
         this.viewStack = document.createElement('sp-viewstack');
         GlobalViewStack = this.viewStack;
         this.appendChild(this.viewStack);
-        this.sidebar = document.createElement('sp-sidebar');
-        this.appendChild(this.sidebar); 
-        this.viewStack.navigate('bungalow:internal:start');
     }
 }
 
@@ -99,6 +111,17 @@ GlobalViewStack = null;
 
 document.registerElement('sp-chrome', SPChromeElement);
 
+class SPResourceElement extends HTMLElement {
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName === 'uri') {
+            let data = await store.request('GET', newVal);
+            this.setState(data);
+        }
+    }
+    setState(obj) {
+        this.innerHTML = '<sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link>';
+    }
+}
 
 /**
  * Viewstack element
@@ -109,7 +132,7 @@ class SPViewStackElement extends HTMLElement {
     }
     
     attachedCallback() {
-        debugger;
+        this.views = {};
         let path = window.location.pathname.substr(1);
         let uri = 'bungalow:' + path.split('/').join(':');
         this.navigate(uri);
@@ -129,23 +152,35 @@ class SPViewStackElement extends HTMLElement {
     navigate(uri, dontPush) {
         let evt = new CustomEvent('beforenavigate');
         this.dispatchEvent(evt);
-        if (uri.indexOf('spotify:') === 0) {
-            uri = 'bungalow:' + uri.substr('spotify:'.length);
-        }
-        let newUri = uri;
-        if (uri === 'bungalow:internal:login') {
-            store.login().then(() => {});
-            return;
-        }
         
-        if (newUri === 'bungalow:') {
-            newUri == 'bungalow:internal:start';
-        }
+        if (uri in this.views) {
+            let view = this.views;
+            this.setView(view);
+        } else {
+            if (uri.indexOf('spotify:') === 0) {
+                uri = 'bungalow:' + uri.substr('spotify:'.length);
+            }
+            let newUri = uri;
+            if (uri === 'bungalow:internal:login') {
+                store.login().then(() => {});
+                return;
+            }
+            
+            if (newUri === 'bungalow:') {
+                newUri == 'bungalow:internal:start';
+            }
+            
+            if (newUri.indexOf('bungalow:') != 0) {
+                newUri = 'bungalow:search:' + uri;
+            }
+            
+            if (/^bungalow:artist:(.*)$/g.test(newUri)) {
+                let artistView = document.createElement('sp-artistview');
+                this.addView(newUri, artistView);
+                artistView.setAttribute('uri', newUri);
         
-        if (newUri.indexOf('bungalow:') != 0) {
-            newUri = 'bungalow:search:' + uri;
+            }
         }
-        
         let url = uri.substr('bungalow:'.length).split(':').join('/');
         
         if (!dontPush)
@@ -153,15 +188,34 @@ class SPViewStackElement extends HTMLElement {
             
         
     }
+    addView(uri, view) {
+        this.views[uri] = view;
+        this.setView(view);
+    }
+    setView(view) {
+        if (this.firstChild != null)
+        this.removeChild(this.firstChild);
+        this.appendChild(view);
+    }
 }
 
 document.registerElement('sp-viewstack', SPViewStackElement);
 
 
-class SPViewElement extends HTMLElement {
-    constructor() {
-        this.attributeChangedCallback('uri', null, this.getAttribute('uri'));
+class SPHeaderElement extends SPResourceElement {
+    attachedCallback() {
+        
     }
+    setState(object) {
+        object.image_url = object.images && object.images[0].url ? object.images[0].url : '';
+        this.innerHTML = '<table width="100%"><tbody><tr><td valign="top" width="128"><img width="128" height="128" src="' + object.image_url + '"></td><td valign="top"><h3><sp-link uri="' + object.uri + '">' + object.name + '</sp-link></h3><p>' + object.description + '</p></td></tr></tbody></table>';
+    }
+}
+
+document.registerElement('sp-header', SPHeaderElement);
+
+
+class SPViewElement extends HTMLElement {
     acceptsUri(uri) {
         return false;
     }
@@ -175,6 +229,169 @@ class SPViewElement extends HTMLElement {
 
 document.registerElement('sp-view', SPViewElement);
 
+
+class SPArtistViewElement extends SPViewElement {
+    async attachedCallback() {
+        this.state = {
+            artist: null,
+            albums: []
+        }
+        this.header = document.createElement('sp-header');
+        this.appendChild(this.header);
+        this.classList.add('sp-view');
+        this.state = {
+            
+        };
+        this.albumsDivider = document.createElement('sp-divider');
+        this.albumsDivider.innerHTML = 'albums';
+        this.appendChild(this.albumsDivider);
+        
+        this.albumList = document.createElement('sp-albumcontext');
+        this.appendChild(this.albumList);
+        
+    }
+    acceptsUri(uri) {
+        return new RegExp(/^bungalow:artist:(.*)$/g).test(uri);
+    }
+    navigate(uri) {
+            
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'uri') {
+            
+          let result = await store.request('GET', newVal);
+            
+          this.setState(result);    
+          this.albumList.setAttribute('uri', newVal + ':release');
+        }
+    }
+    setState(state) {
+        this.header.setState(state);
+    }
+}
+
+document.registerElement('sp-artistview', SPArtistViewElement);
+
+
+
+
+document.registerElement('sp-resource', SPResourceElement);
+
+class SPAlbumElement extends SPResourceElement {
+    attachedCallback() {
+        
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'uri') {
+            
+          let result = await store.request('GET', newVal);
+            this.setState(result);
+        }
+    }
+    setState(obj) {
+        this.innerHTML = '<table width="100%"><tbody><tr><td valign="top" width="128"><img src="' + obj.images[0].url + '" width="128" height="128"></td>' +
+            '<td valign="top"><h3><sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link></h3>' +
+            '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
+            '</td></tr></tbody></table>';
+    }
+}
+
+document.registerElement('sp-album', SPAlbumElement);
+
+
+class SPTrackContextElement extends SPResourceElement {
+    attachedCallback() {
+        if (!this.hasAttribute('fields'))
+            this.setAttribute('fields', 'name,artists,album');
+            this.table = document.createElement('table');
+            
+            this.appendChild(this.table);
+            this.table.setAttribute('width', '100%');
+            this.table.tbody = document.createElement('tbody');
+            this.table.appendChild(this.table.tbody);
+            this.table.thead = document.createElement('thead');
+            this.table.appendChild(this.table.thead);
+            this.table.thead.tr = document.createElement('tr');
+            this.table.appendChild(this.table.thead.tr);
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        
+        if (attrName == 'uri') {
+            
+          let result = await store.request('GET', newVal);
+            this.setState(result);
+        }
+    }
+    setState(obj) {
+        this.table.thead.tr.innerHTML = '';
+        this.table.tbody.innerHTML = '';
+        
+        var fields = this.getAttribute('fields').map((f, i) => {
+            let field = document.createElement('td');
+            field.innerHTML = f;
+            
+        });
+        
+        var rows = obj.tracks.items.map((track, i) => {
+           let tr = document.createElement('tr');
+           
+           let tds = fields.map((field, i) => {
+              var td = document.createElement('td');
+              
+              let val = track[field];
+              if (val instanceof Object) {
+                  td.innerHTML = '<sp-link uri=2' + val.uri + '">' + val.name + '</sp-link>'; 
+              }
+              if (val instanceof Array) {
+                 td.innerHTML = val.map((v, i) => '<sp-link uri=2' + val.uri + '">' + val.name + '</sp-link>').join(','); 
+              }
+           });
+           tds.forEach((td) => {
+               tr.appendChild(td);
+           });
+        });
+        fields.forEach((f) => {
+            this.thead.tr.appendChild(f);
+        });
+        
+        rows.forEach((tr) => {
+            this.tbody.appendChild(tr);
+        });
+    }
+}
+document.registerElement('sp-trackcontext', SPTrackContextElement);
+
+class SPAlbumContextElement extends SPResourceElement {
+    attachedCallback() {
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'uri') {
+            
+          let result = await store.request('GET', newVal);
+            this.setState(result);
+        }
+    }
+    setState(obj) {
+        this.innerHTML = '';
+        let albums = obj.objects.map((item) => {
+           var a = document.createElement('sp-album');
+           a.setState(item);
+           return a;
+        });
+        albums.forEach((album) => {
+            this.appendChild(album);
+        })
+    }
+}
+
+document.registerElement('sp-albumcontext', SPAlbumContextElement);
+
+class SPDividerElement extends HTMLElement {
+    attachedCallback() {
+        
+    }
+}
+document.registerElement('sp-divider', SPDividerElement);
 
 class SPSidebarElement extends HTMLElement {
     attachedCallback() {

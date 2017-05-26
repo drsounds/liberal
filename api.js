@@ -232,7 +232,7 @@ app.get('/social/*', function (req, res) {
     music.session = req.session;
     console.log("A");
     console.log(social);
-    social.request("GET", req.params[0], req.query, function (result) {
+    social.request("GET", req.params[0], req.query).then( function (result) {
 
         res.json(result);
     }, function (reject) {
@@ -247,7 +247,7 @@ app.get('/music/*', function (req, res) {
     if (request.body) {
         body = (request.body);
     }
-    music.request("GET", req.params[0], req.query, body, req, function (result) {
+    music.request("GET", req.params[0], req.query, body, req).then(function (result) {
 
         res.json(result);
     }, function (reject) {
@@ -261,7 +261,7 @@ app.put('/music/*', function (req, res) {
     if (req.body) {
         body = (req.body);
     }
-    music.request("PUT", req.params[0], req.query, body, req, function (result) {
+    music.request("PUT", req.params[0], req.query, body, req).then( function (result) {
 
         res.json(result);
     }, function (reject) {
@@ -272,7 +272,7 @@ app.put('/music/*', function (req, res) {
 app.post('/music/*', function (req, res) {
     music.session = req.session;
 
-    music.request("POST", req.params[0], req.query, req.body, req, function (result) {
+    music.request("POST", req.params[0], req.query, req.body, req).then( function (result) {
 
         res.json(result);
     }, function (reject) {

@@ -8,6 +8,12 @@ var bodyParser = require('body-parser');
   app.use(bodyParser());
 
 
+
+app.use(cookieSession({
+    name: 'session',
+    keys: ['key1', 'key2']
+}));
+
 app.use(express.static(__dirname + '/client/'));
 app.use('/api', api.server);
 app.get('/callback.html', function (req, res) {

@@ -3,38 +3,45 @@
     --footer-height: 0pt;
     --sidebar-width: 200pt;
 }
+body,html {
+    width: 100%;
+    height: 100%;
+    padding: 0pt !important;
+}
+ sp-chrome {
+     left: 0pt;
+     top: 0pt;
+     width: 100%;
+     height: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 2;
+}
+
+img {
+    box-shadow: 1pt 1pt 1pt rgba(0, 0, 0, .2);
+}
 
 input {
-    border: none;
-    background: none;
-    border: 3pt solid black;
 }
 
-sp-header {
-    position: fixed;
-    left: 0pt;
+sp-divider {
+    padding: 13pt;
+    display: block;
     width: 100%;
-    height: var(--header-height);
+}
+
+sp-header table td, sp-album table td {
+    padding: 12pt;
 }
 sp-sidebar {
-    box-sizing: border-box;
-    padding: 15pt;
-    position: fixed;
-    top: calc(var(--header-height));
     width: var(--sidebar-width);
-    height: calc(100% - (var(--header-height) - var(--footer-height)));
-}
-sp-viewstack {
-    left: var(--sidebar-width);
-    top: var(--header-height);
-    width: calc(100% - var(--sidebar-width));
-    height: calc(100% - (var(--header-height) - var(--footer-height)));
-    position: fixed;
-    overflow: scroll;
 }
 
-sp-view, .sp-view {
-    width: calc(var(--sidebar-width) - var(--sidebar-width));
-    height: calc(100% - (var(--header-height) - var(--footer-height)));
-    
+sp-viewstack {
+    flex-grow: 2;
+}
+
+
+sp-viewstack, sp-view, .sp-view {
 }
