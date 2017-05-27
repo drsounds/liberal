@@ -577,9 +577,10 @@ class SPTrackContextElement extends SPResourceElement {
             tr.setAttribute('data-index', i);
             tr.addEventListener('dblclick', (e) => {
                 let tr = e.target;
-                if (this.getAttribute('uri').indexOf('spotify:album') == 0 || this.getAttribute('uri').indexOf('spotify:user') == 0 ) {
+                if (this.getAttribute('uri').indexOf('bungalow:album') == 0 || this.getAttribute('uri').indexOf('bungalow:user') == 0 ) {
+                    debugger;
                     store.play({
-                        context_uri: this.getAttribute('uri'),
+                        context_uri: 'spotify:' + this.getAttribute('uri').substr('bungalow:'.length),
                         offset: {
                             position: i
                         }
