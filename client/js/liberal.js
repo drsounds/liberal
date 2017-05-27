@@ -17,6 +17,20 @@ class EventEmitter {
     }
 }
 
+function applyTheme(theme, flavor='light') {
+    let link = document.querySelector('link[id="theme"]');
+    if (!link) {
+        link = document.createElement('link');
+        link.setAttribute('id', 'theme');
+        document.head.appendChild(link);
+        link.setAttribute('rel', 'stylesheet');
+    }
+    link.setAttribute('href', '/themes/' + theme + '/css/' + flavor + '.css');
+}
+
+
+applyTheme('obama', 'dark');
+
 
 /**
  * Data store for application
@@ -70,6 +84,8 @@ class Store extends EventEmitter {
     async play(context) {
         
         let result = await this.request('PUT', 'spotify:me:player:play', context, false);
+        this.state.player = await this.getCurrentTrack();
+        this.emit('change');
    
     }
     async playTrack(track, context) {
@@ -329,7 +345,7 @@ class SPHeaderElement extends SPResourceElement {
     }
     setState(object) {
         object.image_url = object.images && object.images[0].url ? object.images[0].url : '';
-        this.innerHTML = '<table width="100%"><tbody><tr><td valign="top" width="128"><img width="128" height="128" src="' + object.image_url + '"></td><td valign="top"><h3><sp-link uri="' + object.uri + '">' + object.name + '</sp-link></h3><p>' + object.description + '</p></td></tr></tbody></table>';
+        this.innerHTML = '<table width="100%"><tbody><tr><td valign="top" width="171"><img width="171" height="171" src="' + object.image_url + '"></td><td valign="top"><h3><sp-link uri="' + object.uri + '">' + object.name + '</sp-link></h3><p>' + object.description + '</p></td></tr></tbody></table>';
     }
 }
 
@@ -365,6 +381,15 @@ class SPArtistViewElement extends SPViewElement {
         this.state = {
             
         };
+         if (!this.topTracksDivider) {
+        this.topTracksDivider = document.createElement('sp-divider');
+        this.topTracksDivider.innerHTML = 'Top tracks';
+        this.appendChild(this.topTracksDivider);
+        }
+        if (!this.topTracks) {
+            this.topTracks = document.createElement('sp-toptracks');
+            this.appendChild(this.topTracks);
+        }
         if (!this.albumsDivider) {
         this.albumsDivider = document.createElement('sp-divider');
         this.albumsDivider.innerHTML = 'albums';
@@ -389,6 +414,7 @@ class SPArtistViewElement extends SPViewElement {
             
           this.setState(result);    
           this.albumList.setAttribute('uri', newVal + ':release');
+          this.topTracks.setAttribute('uri', newVal);
         }
     }
     setState(state) {
@@ -497,7 +523,7 @@ class SPAlbumElement extends SPResourceElement {
         }
     }
     setState(obj) {
-        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="128"><img src="' + obj.images[0].url + '" width="128" height="128"></td>' +
+        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="171"><img src="' + obj.images[0].url + '" width="171" height="171"></td>' +
             '<td valign="top"><h3><sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link></h3>' +
             '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
             '</td></tr></tbody></table>';
@@ -505,6 +531,27 @@ class SPAlbumElement extends SPResourceElement {
 }
 
 document.registerElement('sp-album', SPAlbumElement);
+
+class SPTopTracksElement extends SPResourceElement {
+    attachedCallback() {
+        
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'uri') {
+            
+          let result = await store.request('GET', newVal);
+            this.setState(result);
+        }
+    }
+    setState(obj) {
+        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="171"><img src="/images/toplist.svg" width="171" height="171"></td>' +
+            '<td valign="top"><h3>Top Tracks</h3>' +
+            '<sp-trackcontext uri="' + obj.uri + ':top:5:track' + '"></sp-trackcontext>' +
+            '</td></tr></tbody></table>';
+    }
+}
+
+document.registerElement('sp-toptracks', SPTopTracksElement);
 
 class SPPlaylistElement extends SPResourceElement {
     attachedCallback() {
@@ -518,7 +565,7 @@ class SPPlaylistElement extends SPResourceElement {
         }
     }
     setState(obj) {
-        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="128"><img src="' + obj.images[0].url + '" width="128" height="128"></td>' +
+        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="171"><img src="' + obj.images[0].url + '" width="171" height="171"></td>' +
             '<td valign="top"><h3><sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link></h3><p>' + obj.description + '</p>' +
             '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
             '</td></tr></tbody></table>';

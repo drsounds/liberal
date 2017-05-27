@@ -21,10 +21,6 @@ body,html {
     position: fixed;
 }
 
-img {
-    box-shadow: 1pt 1pt 1pt rgba(0, 0, 0, .2);
-}
-
 input {
 }
 
@@ -50,7 +46,7 @@ sp-header {
     padding-top: 35pt;
     padding-bottom: 35pt;
 }
-sp-header table td, sp-album table td, sp-playlist table td {
+sp-header table td, sp-album table td, sp-playlist table td, sp-toptracks td {
     padding-left: 16pt;
 }
 .sp-track-unavailable, .sp-track-unavailable sp-link {
@@ -77,7 +73,7 @@ sp-viewstack {
 sp-viewstack, sp-view, .sp-view {
 }
 
-sp-album table, sp-playlist table {
+sp-album table, sp-playlist table, sp-toptracks table {
     margin-top: 23pt;
     margin-bottom: 23pt;
 }

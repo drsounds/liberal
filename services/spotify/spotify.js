@@ -220,23 +220,33 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
             }
             if (parts[0] == 'artist') {
                 if (parts.length > 2) {
-                    if (parts[2] == 'top-track') {
-                        request({
-                                url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/top-tracks?limit=5&offset=' + payload.offset + '&country=se'
-                            },
-                            function (error, response, body) {
-                                var data = JSON.parse(body);
-                                try {
-                                    resolve({
-                                        type: 'toplist',
-                                        name: 'Top Tracks',
-                                        'objects': data.tracks.slice(0,5)
-                                    });
-                                } catch (e) {
-                                    fail();
-                                }
+                    if (parts[2] == 'top') {
+                        if (parts.length > 4) {
+                            if (parts[4] == 'track') {
+                                request({
+                                    url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/top-tracks?limit=5&offset=' + payload.offset + '&country=se'
+                                },
+                                    function (error, response, body) {
+                                        var data = JSON.parse(body);
+                                        try {
+                                            resolve({
+                                                type: 'toplist',
+                                                name: 'Top Tracks',
+                                                'objects': data.tracks.slice(0,parseInt(parts[3]))
+                                            });
+                                        } catch (e) {
+                                            fail();
+                                        }
+                                    }
+                                );
                             }
-                        );
+                        } else {
+                            resolve({
+                                type: 'toplist',
+                                name: 'Top Tracks',
+                                description: 'Top Tracks'
+                            });
+                        }
                     }
                     if (parts[2] == 'release') {
                         var limit = (payload.limit || 10);

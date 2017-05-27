@@ -1,0 +1,20 @@
+:root {
+    --background-color: #fff;
+    --foreground-color: #444;
+}
+body {
+    color: var(--foreground-color);
+    background-color: var(--background-color);
+}
+
+sp-trackcontext table {
+    border-collapse: collapse;
+}
+sp-trackcontext td {
+    padding: 3pt;
+    border-bottom: 1px solid rgba(0, 0, 0, .05);
+    
+}
+sp-divider {
+    border-bottom: 1pt solid rgba(0, 0, 0, .05);
+}

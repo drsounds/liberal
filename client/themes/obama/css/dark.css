@@ -1,5 +1,5 @@
 :root {
-    --background-color: #363636;
+    --background-color: #373737;
     --foreground-color: rgba(255, 255, 255, .8);
     --sidebar-background-color: #393939;
     --brand-primary: #BBDEFB;
@@ -14,14 +14,9 @@ body {
     outline: none;
 }
 sp-divider {
-/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#686868+0,444444+100 */
-background: rgb(104,104,104); /* Old browsers */
-background: -moz-linear-gradient(top,  rgba(104,104,104,1) 0%, rgba(68,68,68,1) 100%); /* FF3.6-15 */
-background: -webkit-linear-gradient(top,  rgba(104,104,104,1) 0%,rgba(68,68,68,1) 100%); /* Chrome10-25,Safari5.1-6 */
-background: linear-gradient(to bottom,  rgba(104,104,104,1) 0%,rgba(68,68,68,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#686868', endColorstr='#444444',GradientType=0 ); /* IE6-9 */
-border-bottom: 1pt solid black;
-border-top: 1pt solid #aaa;
+background: #616161;
+padding-top: 2pt;
+padding-bottom: 2pt;
 }
 input {
     border: 3pt solid white;
@@ -92,4 +87,12 @@ border-bottom: 1px solid #111;
 border-top: 1px solid #eee;
 color: #333;
 text-shadow: 0pt 1pt 0pt rgba(255, 255, 255, 1);
+}
+
+
+.sp-image {
+    box-shadow: 1pt 1pt 1pt rgba(0, 0, 0, .2);
+}
+img {
+    
 }
