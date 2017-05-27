@@ -67,8 +67,13 @@ class Store extends EventEmitter {
         this.emit('change');
         this.saveState();   
     }
+    async play(context) {
+        
+        let result = await this.request('PUT', 'spotify:me:player:play', context, false);
+   
+    }
     async playTrack(track, context) {
-        await this.request('PUt', 'spotify:me:player:play', {
+        await this.request('PUT', 'spotify:me:player:play', {
             context_uri: context.uri,
             position: {
                 uri: track.uri
@@ -84,10 +89,10 @@ class Store extends EventEmitter {
         });
     }
     async getCurrentTrack() {
-        let result = await this.request('GET', 'spotify:me:player:currently-playing');
+        let result = await this.request('GET', 'spotify:me:player:currently-playing', null, false);
         return result;
     }
-    async request(method, uri, payload) {
+    async request(method, uri, payload, cache=true) {
         if (uri == null) return;
         var url = uri;
         if (uri.indexOf('bungalow:') == 0 || uri.indexOf('spotify:') == 0) {
@@ -97,18 +102,29 @@ class Store extends EventEmitter {
             url = uri.substr('bungalow:'.length).split(':').join('/');
             
             url = '/api/music/' + url;
-             if (uri in this.state)
+             if (uri in this.state && method == "GET" && cache)
                 return this.state[uri];
-            
-            let result = await fetch(url, {
-                credentials: 'include',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                method: method,
-                body: JSON.stringify(payload)
-            }).then((e) => e.json());
+            let result
+            if (method === 'GET') {
+                result = await fetch(url, {
+                    credentials: 'include',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    method: method,
+                }).then((e) => e.json());
+            } else {
+                result = await fetch(url, {
+                    credentials: 'include',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    method: method,
+                    body: JSON.stringify(payload)
+                }).then((e) => e.json());
+            }
             this.setState(uri, result);
          
             return result;
@@ -528,6 +544,7 @@ class SPTrackContextElement extends SPResourceElement {
         }
     }
     setState(obj) {
+        this.obj = obj;
         this.table.innerHTML = '<thead><tr></tr></thead><tbody></tbody>';
         this.thead = this.table.querySelector('thead');
         this.tbody = this.table.querySelector('tbody');
@@ -556,6 +573,25 @@ class SPTrackContextElement extends SPResourceElement {
             }*/
             tr.classList.add('sp-track');
             tr.setAttribute('data-uri', track.uri);
+            tr.setAttribute('data-index', i);
+            tr.addEventListener('dblclick', (e) => {
+                let tr = e.target;
+                if (this.getAttribute('uri').indexOf('spotify:album') == 0 || this.getAttribute('uri').indexOf('spotify:user') == 0 ) {
+                    store.play({
+                        context_uri: this.getAttribute('uri'),
+                        offset: {
+                            position: i
+                        }
+                    });
+                } else {
+                    store.play({
+                        uris: this.obj.objects.map((o) => o.uri),
+                        offset: {
+                            position: i
+                        }
+                    });
+                }
+            });
             if (store.state.player && store.state.player.item && store.state.player.item.uri == track.uri) {
                 tr.classList.add('sp-current-track');
             }
@@ -627,6 +663,7 @@ class SPPlaylistContextElement extends SPResourceElement {
         let albums = obj.objects.map((item) => {
            var a = document.createElement('sp-playlist');
            a.setState(item);
+           store.state[item.uri] = item;
            return a;
         });
         albums.forEach((album) => {
