@@ -113,7 +113,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
     var self = this;
     this.req = req;
     console.log("A");
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve, fail) {
         var activity = function () {
     
             var token = self.getAccessToken();
@@ -131,7 +131,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
             var parts = url.split(/\//g);
             if (parts[0] == 'search') {
                 request({
-                        url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + payload.type + '&limit=' + payload.limit + '&offset=' + payload.offset
+                        url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 20) + '&offset=' + (payload.offset || 1)
                     },
                     function (error, response, body) {
                     
@@ -409,6 +409,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                         'objects': result.items.map(function (track) {
                                             var track = assign(track, track.track);
                                             track.user = track.added_by;
+                                            if (track.user)
+                                            track.user.name = track.user.id;
                                             return track;
                                         })
                                     })
@@ -436,13 +438,60 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 fail({'error': ''});
                             }
                             var user = JSON.parse(body);
+                            if (user) {
+                            user.name = user.id;
                             user.images = [
                                 {
                                     'url': user.image
                                 }
                             ];
-    
+                            }
                             resolve(user);
+                        }
+                    );
+    
+                }
+            }
+            if (parts[0] == 'genre') {
+                var userid = parts[1];
+                if (parts.length > 2) {
+                    if (parts[2] == 'playlist') {
+                        if (parts.length < 4) {
+                            payload = {
+                                limit: 10,
+                                offset: 0
+                            };
+                            request({
+                                url: 'https://api.spotify.com/v1/browse/categories/' + userid + '/playlists?limit=' + payload.limit + '&offset=' + payload.offset,
+                                headers: headers
+                            }, function (error, response, body) {
+                                var result = JSON.parse(body);
+                                
+                                
+                                resolve({
+                                    'objects': result.playlists.items
+                                });
+                            });
+                            return;
+                        }
+                    }
+                } else {
+                    console.log("Getting users");
+                    request({
+                        url: 'https://api.spotify.com/v1/browse/categories/' + parts[1] + '',
+                        headers: headers
+                    },
+                        function (error, response, body) {
+                            if (error) {
+                                fail({'error': ''});
+                            }
+                            try {
+                                var user = JSON.parse(body);
+                                user.images = user.icons;
+                                resolve(user);
+                            } catch (e) {
+                                fail();
+                            }
                         }
                     );
     

@@ -1,0 +1,95 @@
+:root {
+    --background-color: #363636;
+    --foreground-color: rgba(255, 255, 255, .8);
+    --sidebar-background-color: #393939;
+    --brand-primary: #BBDEFB;
+}
+
+
+body {
+    background-color: var(--background-color);
+    color: var(--foreground-color);
+}
+*:focus {
+    outline: none;
+}
+sp-divider {
+/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#686868+0,444444+100 */
+background: rgb(104,104,104); /* Old browsers */
+background: -moz-linear-gradient(top,  rgba(104,104,104,1) 0%, rgba(68,68,68,1) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top,  rgba(104,104,104,1) 0%,rgba(68,68,68,1) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom,  rgba(104,104,104,1) 0%,rgba(68,68,68,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#686868', endColorstr='#444444',GradientType=0 ); /* IE6-9 */
+border-bottom: 1pt solid black;
+border-top: 1pt solid #aaa;
+}
+input {
+    border: 3pt solid white;
+    padding: 3pt;
+    color: var(--foreground-color);
+    background-color: var(--background-color);
+}
+input:focus {
+    border: 3pt solid var(--brand-primary);
+}
+sp-sidebar {
+    background-color: var(--sidebar-background-color);
+    border-right: 1px solid black;
+    
+}
+table thead tr td {
+    background-color: #888;
+}
+sp-trackcontext table {
+    border-collapse: collapse;
+    width: 100%;
+}
+sp-trackcontext table tbody tr:nth-child(2n-1) td {
+    background-color: rgba(0, 0, 0, .1);
+}
+sp-link, a {
+    color: rgba(255, 255, 255, .9);
+    text-decoration: none;
+}
+sp-link:hover, a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+h1, h2, h3, h4 {
+    margin: 0pt;
+    margin-bottom: 6pt;
+}
+.sp-current-track {
+    background-color: black;
+    color: #eeffee;
+}
+
+.sp-current-track sp-link {
+    color: #eeffee;
+    
+}
+sp-menuitem.active, .sp-track-selected {
+    background-color: var(--brand-primary);
+    color: rgba(0, 0, 0, .7);
+}
+sp-menuitem.active a, .sp-track-selected sp-link, .sp-track-selected sp-link:hover {
+    color: rgba(0, 0, 0, .7);
+    
+}
+sp-menuitem:active {
+    background-color: rgba(255, 255, 255, .3);
+}
+
+th {
+/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#bcbcbc+1,919191+100 */
+background: rgb(188,188,188); /* Old browsers */
+background: -moz-linear-gradient(top,  rgba(188,188,188,1) 1%, rgba(145,145,145,1) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top,  rgba(188,188,188,1) 1%,rgba(145,145,145,1) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom,  rgba(188,188,188,1) 1%,rgba(145,145,145,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bcbcbc', endColorstr='#919191',GradientType=0 ); /* IE6-9 */
+border-bottom: 1px solid #111;
+border-top: 1px solid #eee;
+color: #333;
+text-shadow: 0pt 1pt 0pt rgba(255, 255, 255, 1);
+}

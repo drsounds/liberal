@@ -1,0 +1,94 @@
+:root {
+    --header-height: 0pt;
+    --footer-height: 0pt;
+    --sidebar-width: 128pt;
+}
+body,html {
+    width: 100%;
+    height: 100%;
+    padding: 0pt !important;
+    font-family: "Tahoma";
+    font-size: 11pt;
+}
+ sp-chrome {
+    left: 0pt;
+    top: 0pt;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 2;
+    position: fixed;
+}
+
+img {
+    box-shadow: 1pt 1pt 1pt rgba(0, 0, 0, .2);
+}
+
+input {
+}
+
+sp-divider {
+    padding: 16pt;
+    padding-top: 6pt;
+    padding-bottom: 6pt;
+    display: block;
+    width: 100%;
+}
+td {
+    padding-left: 3pt;
+}
+sp-link, a {
+    cursor: pointer !important;
+}
+sp-menuitem {
+    display: block;
+    width: 100%;
+}
+sp-header {
+    
+    padding-top: 35pt;
+    padding-bottom: 35pt;
+}
+sp-header table td, sp-album table td, sp-playlist table td {
+    padding-left: 16pt;
+}
+.sp-track-unavailable, .sp-track-unavailable sp-link {
+    color: #aa7777;
+}
+sp-sidebar {
+    
+    width: var(--sidebar-width);
+}
+sp-searchform {
+    padding: 8pt;
+}
+sp-menuitem {
+    box-sizing: border-box;
+    padding: 3pt;
+    width: var(--sidebar-width);
+}
+sp-viewstack {
+    flex-grow: 2;
+    overflow: scroll;
+}
+
+
+sp-viewstack, sp-view, .sp-view {
+}
+
+sp-album table, sp-playlist table {
+    margin-top: 23pt;
+    margin-bottom: 23pt;
+}
+
+tr.sp-track:active {
+    opacity: 0.8;
+}
+
+
+
+sp-header table td {
+    padding-top: 16pt;
+    padding-bottom: 16pt;
+}

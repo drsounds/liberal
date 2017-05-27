@@ -1,4 +1,4 @@
-(function () {
+
 class EventEmitter {
     constructor() {
         this.listeners = [];
@@ -24,7 +24,22 @@ class EventEmitter {
 class Store extends EventEmitter {
     constructor() {
         super();
-        this.state = this.loadState();
+        this.state = {};
+        
+        this.heart = setInterval(async () => {
+            this.state.player = await this.getCurrentTrack();
+            this.emit('change');
+            let trackItems = document.querySelectorAll('.sp-track');
+            if (this.state.player && this.state.player.item) {
+                for(var tr of trackItems) {
+                    if (tr.getAttribute('data-uri') === this.state.player.item.uri) {
+                        tr.classList.add('sp-current-track');
+                    } else {
+                        tr.classList.remove('sp-current-track');
+                    }
+                }
+            }
+        }, 1000);
     }
     
     /**
@@ -52,8 +67,27 @@ class Store extends EventEmitter {
         this.emit('change');
         this.saveState();   
     }
-    
-    async request(method, uri) {
+    async playTrack(track, context) {
+        await this.request('PUt', 'spotify:me:player:play', {
+            context_uri: context.uri,
+            position: {
+                uri: track.uri
+            }
+        });
+    }
+    async playTrackAtPosition(position, context) {
+        await this.request('PUT', 'spotify:me:player:play', {
+            context_uri: context.uri,
+            position: {
+                offset: position
+            }
+        });
+    }
+    async getCurrentTrack() {
+        let result = await this.request('GET', 'spotify:me:player:currently-playing');
+        return result;
+    }
+    async request(method, uri, payload) {
         if (uri == null) return;
         var url = uri;
         if (uri.indexOf('bungalow:') == 0 || uri.indexOf('spotify:') == 0) {
@@ -66,7 +100,15 @@ class Store extends EventEmitter {
              if (uri in this.state)
                 return this.state[uri];
             
-            let result = await fetch(url, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
+            let result = await fetch(url, {
+                credentials: 'include',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: method,
+                body: JSON.stringify(payload)
+            }).then((e) => e.json());
             this.setState(uri, result);
          
             return result;
@@ -168,6 +210,7 @@ class SPViewStackElement extends HTMLElement {
      * @returns void
      **/
     navigate(uri, dontPush) {
+        if (this.uri === uri) return;
         let evt = new CustomEvent('beforenavigate');
         this.dispatchEvent(evt);
         
@@ -208,6 +251,14 @@ class SPViewStackElement extends HTMLElement {
                 let artistView = document.createElement('sp-startview');
                 this.addView(newUri, artistView);
                 artistView.setAttribute('uri', newUri);
+            } else if (/^bungalow:genre:(.*)$/g.test(newUri)) {
+                let searchView = document.createElement('sp-genreview');
+                this.addView(newUri, searchView);
+                searchView.setAttribute('uri', newUri);
+            } else if (/^bungalow:search:(.*)$/g.test(newUri)) {
+                let searchView = document.createElement('sp-searchview');
+                this.addView(newUri, searchView);
+                searchView.setAttribute('uri', newUri);
             } else if (/^bungalow:artist:(.*)$/g.test(newUri)) {
                 let artistView = document.createElement('sp-artistview');
                 this.addView(newUri, artistView);
@@ -231,9 +282,12 @@ class SPViewStackElement extends HTMLElement {
             }
         }
         let url = uri.substr('bungalow:'.length).split(':').join('/');
-      
+        
+        this.uri = uri;
+        
         if (!dontPush) {
             history.pushState(uri, uri, '/' + url);
+            
         }
             
         
@@ -371,7 +425,46 @@ class SPUserViewElement extends SPViewElement {
 document.registerElement('sp-userview', SPUserViewElement);
 
 
+class SPGenreViewElement extends SPViewElement {
+    async attachedCallback() {
+      
+        this.header = document.createElement('sp-header');
+        this.appendChild(this.header);
+        this.classList.add('sp-view');
+        this.state = {
+            
+        };
+        if (!this.albumsDivider) {
+        this.albumsDivider = document.createElement('sp-divider');
+        this.albumsDivider.innerHTML = 'Public playlists';
+        this.appendChild(this.albumsDivider);
+        }
+        if (!this.albumList) {
+            this.albumList = document.createElement('sp-playlistcontext');
+            this.appendChild(this.albumList);
+        }
+    }
+    acceptsUri(uri) {
+        return new RegExp(/^bungalow:genre:(.*)$/g).test(uri);
+    }
+    navigate(uri) {
+            
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'uri') {
+            
+          let result = await store.request('GET', newVal);
+            
+          this.setState(result);    
+          this.albumList.setAttribute('uri', newVal + ':playlist');
+        }
+    }
+    setState(state) {
+        this.header.setState(state);
+    }
+}
 
+document.registerElement('sp-genreview', SPGenreViewElement);
 
 document.registerElement('sp-resource', SPResourceElement);
 
@@ -409,7 +502,7 @@ class SPPlaylistElement extends SPResourceElement {
     }
     setState(obj) {
         this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="128"><img src="' + obj.images[0].url + '" width="128" height="128"></td>' +
-            '<td valign="top"><h3><sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link></h3>' +
+            '<td valign="top"><h3><sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link></h3><p>' + obj.description + '</p>' +
             '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
             '</td></tr></tbody></table>';
     }
@@ -420,7 +513,7 @@ document.registerElement('sp-playlist', SPPlaylistElement);
 class SPTrackContextElement extends SPResourceElement {
     attachedCallback() {
         if (!this.hasAttribute('fields'))
-            this.setAttribute('fields', 'name,artists,album');
+            this.setAttribute('fields', 'name,artists,album,user');
         if (this.table == null) {
             this.table = document.createElement('table');
             this.appendChild(this.table);
@@ -439,20 +532,35 @@ class SPTrackContextElement extends SPResourceElement {
         this.thead = this.table.querySelector('thead');
         this.tbody = this.table.querySelector('tbody');
         this.theadtr = this.table.querySelector('thead tr');
-        this.thead.style.display = 'none';
+        if (!this.getAttribute('headers')) {
+            this.thead.style.display = 'none';
+        }
         
         var fields = this.getAttribute('fields').split(',');
         fields.map((f, i) => {
-            let field = document.createElement('td');
+            let field = document.createElement('th');
             field.innerHTML = f;
             this.querySelector('thead tr').appendChild(field);
         });
         var rows = obj.objects.map((track, i) => {
-           let tr = document.createElement('tr');
-           
-           fields.map((field, i) => {
+            let tr = document.createElement('tr');
+            tr.addEventListener('mousedown', (e) => {
+               let selectedTracks = document.querySelectorAll('.sp-track-selected');
+               for (let t of selectedTracks) {
+                   t.classList.remove('sp-track-selected');
+               }
+               tr.classList.add('sp-track-selected');
+            });
+            /*if (!(track.is_playable || (track.track && track.track.is_playable) || 'is_playable')) {
+                tr.classList.add('sp-track-unavailable');
+            }*/
+            tr.classList.add('sp-track');
+            tr.setAttribute('data-uri', track.uri);
+            if (store.state.player && store.state.player.item && store.state.player.item.uri == track.uri) {
+                tr.classList.add('sp-current-track');
+            }
+            fields.map((field, i) => {
               var td = document.createElement('td');
-              
               let val = track[field];
               if (!val) return;
               if (val instanceof Array) {
@@ -461,7 +569,11 @@ class SPTrackContextElement extends SPResourceElement {
                      return '<sp-link uri="' + v.uri + '">' + v.name + '</sp-link>'
                 }).join(', '); 
               } else if (val instanceof Object) {
+                  if (val) {
                   td.innerHTML = '<sp-link uri="' + val.uri + '">' + val.name + '</sp-link>'; 
+                  } else {
+                      td.innerHTML = '';
+                  }
               } else {
                   td.innerHTML = val;
               }
@@ -469,13 +581,6 @@ class SPTrackContextElement extends SPResourceElement {
            });
            this.tbody.appendChild(tr);
            
-        });
-        fields.forEach((f) => {
-    //        this.tbody.tr.appendChild(f);
-        });
-        
-        rows.forEach((tr) => {
-            this.tbody.appendChild(tr);
         });
     }
 }
@@ -496,6 +601,7 @@ class SPAlbumContextElement extends SPResourceElement {
         let albums = obj.objects.map((item) => {
            var a = document.createElement('sp-album');
            a.setState(item);
+           store.state[item.uri] = item;
            return a;
         });
         albums.forEach((album) => {
@@ -640,9 +746,6 @@ class SPSearchFormElement extends HTMLElement {
 document.registerElement('sp-searchform', SPSearchFormElement);
 
 class SPStartViewElement extends SPViewElement {
-    constructor() {
-        super();
-    }
     acceptsUri(uri) {
         return uri === 'bungalow:internal:start';
     }
@@ -653,6 +756,7 @@ class SPStartViewElement extends SPViewElement {
         this.innerHTML = '<h3>Start</h3>';
     }
 }
+document.registerElement('sp-startview', SPStartViewElement);
 
 
 class SPAlbumViewElement extends SPViewElement {
@@ -686,6 +790,7 @@ class SPPlaylistViewElement extends SPViewElement {
         if (!this.trackcontext) {
             this.trackcontext = document.createElement('sp-trackcontext');
             this.appendChild(this.trackcontext);
+            this.trackcontext.setAttribute('headers', 'true');
         }
         
     }
@@ -703,6 +808,8 @@ class SPPlaylistViewElement extends SPViewElement {
         }
     }   
 }
+
+document.registerElement('sp-playlistview', SPPlaylistViewElement);
 
 class SPPlayqueueViewElement extends SPViewElement {
     attachedCallback() {
@@ -732,13 +839,38 @@ class SPPlayqueueViewElement extends SPViewElement {
     }   
 }
 
-document.registerElement('sp-playlistview', SPPlaylistViewElement);
+document.registerElement('sp-playqueueview', SPPlayqueueViewElement);
+
+class SPSearchViewElement extends SPViewElement {
+    attachedCallback() {
+        this.classList.add('sp-view');
+        this.innerHTML = "<div style='padding: 13pt'><h3>Search results for '<span id='q'></span>";
+        if (!this.trackcontext) {
+            this.trackcontext = document.createElement('sp-trackcontext');
+            this.appendChild(this.trackcontext);
+            this.trackcontext.setAttribute('headers', 'true');
+        }
+        
+    }
+    acceptsUri(uri) {
+        return /^bungalow:search:(.*)$/.test(uri);
+    }
+    navigate() {
+        
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName === 'uri') {
+            let query = newVal.substr('bungalow:search:'.length);
+            this.querySelector('#q').innerHTML = query;
+            this.trackcontext.setAttribute('uri', 'bungalow:search?q=' + query + '&type=track');
+            let result = await store.request('GET', newVal);
+            this.header.setState(result);
+        }
+    }   
+}
+
+document.registerElement('sp-searchview', SPSearchViewElement);
 
 window.addEventListener('load', (e) => {
     document.body.appendChild(document.createElement('sp-chrome'));
-})
-
-
-
-
-})(window);
+});
