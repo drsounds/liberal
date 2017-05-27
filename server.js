@@ -27,5 +27,9 @@ app.get('/*', function (req, res) {
     res.write(index);
     res.end();
 });
-app.listen(process.env.PORT || 9261);
+module.exports = app;
+if (typeof require != 'undefined' && require.main==module) {
+    app.listen(process.env.PORT || 9261);
+}
+
 
