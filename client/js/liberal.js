@@ -225,7 +225,7 @@ class SPViewStackElement extends HTMLElement {
      * @param {String} uri The URI to navigate to
      * @returns void
      **/
-    navigate(uri, dontPush) {
+    navigate(uri, dontPush=false) {
         if (this.uri === uri) return;
         let evt = new CustomEvent('beforenavigate');
         this.dispatchEvent(evt);
@@ -258,6 +258,7 @@ class SPViewStackElement extends HTMLElement {
             
         if (newUri.indexOf('bungalow:') != 0) {
             newUri = 'bungalow:search:' + uri;
+            uri = newUri;
         }
         if (newUri in this.views) {
             let view = this.views[newUri];
