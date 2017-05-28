@@ -8,29 +8,37 @@ Spotify is a copyrighted trademark by Spotify AB. Code licensed under MIT.
 
 1. Clone the repository
 
+```sh
     git clone git@github.com:drsounds/liberal
     cd liberal
+```sh
 
-2. Assign an Spotify app key, client secret and redirect uri:
+2. Assign an Spotify app key, client secret and redirect uri into the file ~/.bungalow/spotify.key.json
 
+```json
     {
         "client_id": "<your app client id>",
         "client_secret": "<your app client secret>",
         "redirect_uri": "http://localhost:9261"
     }
-
-Save this into a a file spotify.key.json in the folder ~/.bungalow/
+```
 
 3. cd into the app folder, and do the following
 
+```bash
     npm install
     electron .
 
+```
+
 Or you can run it from a browser (Chrome is the only working only currently since it make use of Web Components)
 
+```bash
     http://localhost:9261
+```
 
 Log in with Spotify here
 
+```
     http://localhost:9261/internal/login
-
+```
