@@ -17,13 +17,13 @@
         xmlHttp.onreadystatechange = function () {
           if (xmlHttp.readyState == 4) {
             if (xmlHttp.status == 200) {
-              window.close();
+       //       window.close();
             } else {
               alert(xmlHttp.status + ' ' + xmlHttp.responseText);
             }
           }
         } 
-        xmlHttp.open('GET', 'https://liberal-drsounds.c9users.io/api/music/authenticate?code=' + token, true);
+        xmlHttp.open('GET', window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/api/music/authenticate?code=' + token, true);
         xmlHttp.send(null);
 
     

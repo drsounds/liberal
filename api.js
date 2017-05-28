@@ -17,20 +17,6 @@ app.get('/music/login', function (req, res) {
     res.redirect(music.getLoginUrl());
 });
 
-app.get('/music/authenticate', function (req, res) {
-    console.log('music');
-    music.session = req.session;
-    var body = {};
-    if (request.body) {
-        body = (request.body);
-    }
-    music.authenticate(req).then(function (result) {
-
-        res.json(result);
-    }, function (reject) {
-        res.json(reject);
-    });
-});
 app.get('/settings.json', function (req, res) {
 
     if (fs.existsSync(path)) {

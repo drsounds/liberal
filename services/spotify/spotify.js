@@ -25,16 +25,17 @@ SpotifyBrowseAPI.prototype.getLoginUrl = function () {
 
 SpotifyBrowseAPI.prototype.authenticate = function (req) {
     var self = this;
-    console.log(this.apikeys);
     this.req = req;
+
     return new Promise(function (resolve, fail) {
+        console.log("Ta");
         request({
             url: 'https://accounts.spotify.com/api/token',
             method: 'POST',
             form: {
                 grant_type: 'authorization_code',
                 code: req.query.code,
-                redirect_uri: 'https://liberal-drsounds.c9users.io/callback.html'
+                redirect_uri: self.apikeys.redirect_uri 
             },
             headers: {
                 'Authorization': 'Basic ' + new Buffer(self.apikeys.client_id + ':' + self.apikeys.client_secret).toString('base64') 
@@ -42,11 +43,12 @@ SpotifyBrowseAPI.prototype.authenticate = function (req) {
         }, function (error, response, body) {
             console.log(error);
             var body = JSON.parse(body);
+        console.log(body);
             if (error || !body.access_token) {
                 fail(error);
                 return;
             }
-            self.setAccessToken(body);
+            self.setAccessToken(req, body);
             resolve(body);
         });
     });
@@ -61,12 +63,12 @@ SpotifyBrowseAPI.prototype.getAccessToken = function () {
     }
 }
 
-SpotifyBrowseAPI.prototype.setAccessToken = function (accessToken) {
+SpotifyBrowseAPI.prototype.setAccessToken = function (req, accessToken) {
 
     accessToken.time = new Date().getTime();
     console.log(accessToken);
     //fs.writeFileSync(os.homedir() + '/.bungalow/spotify_access_token.json', JSON.stringify(accessToken));
-    this.req.session.spotifyAccessToken = accessToken;
+    req.session.spotifyAccessToken = accessToken;
 }
 
 SpotifyBrowseAPI.prototype.isAccessTokenValid = function () {
@@ -86,16 +88,16 @@ SpotifyBrowseAPI.prototype.refreshAccessToken = function () {
             form: {
                 grant_type: 'refresh_token',
                 refresh_token: refresh_token,
-                redirect_uri: 'https://sporal-drsounds.c9users.io/callback.html'
+                redirect_uri: self.apikeys.redirect_uri
             },
             headers: {
                 'Authorization': 'Basic ' + new Buffer(self.apikeys.client_id + ':' + self.apikeys.client_secret).toString('base64')
             }
         }, function (error, response, body) {
-            /*if (error || 'error' in body) {
+            if (error || 'error' in body) {
                 fail();
                 return;
-            }*/
+            }
             console.log(self.apikeys);
             var accessToken = JSON.parse(body);
             accessToken.refresh_token = refresh_token 
@@ -126,9 +128,11 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                 headers["Content-type"] = ("application/x-www-form-urlencoded");
     
     
-            }
+            }   
+
     
             var parts = url.split(/\//g);
+            console.log(parts);
             if (parts[0] == 'search') {
                 request({
                         url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 20) + '&offset=' + (payload.offset || 1)
@@ -269,8 +273,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             url: 'https://api.spotify.com/v1/artists/' + parts[1]
                         },
                         function (error, response, body) {
-                            body = body.replace('SpotifyBrowse:', 'bungalow:');
                             var data = JSON.parse(body);
+                            console.log(data);
                             resolve(data);
                         }
                     );

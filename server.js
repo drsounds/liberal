@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
   app.use(bodyParser());
 
 
+app.use('/api', api.server);
 
 app.use(express.static(__dirname + '/client/'));
 app.get('/*', function (req, res) {
@@ -27,7 +28,6 @@ app.use(cookieSession({
     keys: ['key1', 'key2']
 }));
 
-app.use('/api', api.server);
 app.get('/callback.html', function (req, res) {
     var index = fs.readFileSync(__dirname + '/client/callback.html');
     res.write(index);
