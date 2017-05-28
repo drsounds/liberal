@@ -189,13 +189,35 @@ class Store extends EventEmitter {
 var store = new Store();
 
 
+class SPAppHeaderElement extends HTMLElement {
+    attachedCallback() {
+        if (!this.searchForm) {
+            this.searchForm = document.createElement('sp-searchform');
+            this.appendChild(this.searchForm);
+        }
+    }
+}
+document.registerElement('sp-appheader', SPAppHeaderElement);
+
+class SPAppFooterElement extends HTMLElement {
+    attachedCallback() {
+        
+    }
+}
+document.registerElement('sp-appfooter', SPAppFooterElement);
+
 class SPChromeElement extends HTMLElement { 
     attachedCallback() {
+        this.appHeader = document.createElement('sp-appheader');
+        this.appendChild(this.appHeader);
+        this.main = document.createElement('main');
+        this.appendChild(this.main);
         this.sidebar = document.createElement('sp-sidebar');
-        this.appendChild(this.sidebar); 
-        this.viewStack = document.createElement('sp-viewstack');
-        GlobalViewStack = this.viewStack;
-        this.appendChild(this.viewStack);
+        this.main.appendChild(this.sidebar); 
+        this.mainView = document.createElement('sp-main');
+        this.main.appendChild(this.mainView);
+        this.appFooter = document.createElement('sp-appfooter');
+        this.appendChild(this.appFooter);
     }
 }
 
@@ -214,6 +236,24 @@ class SPResourceElement extends HTMLElement {
         this.innerHTML = '<sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link>';
     }
 }
+
+var GlobalTabBar = null;
+
+class SPMainElement extends HTMLElement {
+    attachedCallback() {
+        if (!this.viewStack) {
+            this.tabBar = document.createElement('sp-tabbar');
+            this.appendChild(this.tabBar);
+            GlobalTabBar = this.tabBar;
+            this.viewStack = document.createElement('sp-viewstack');
+            GlobalViewStack = this.viewStack;
+            this.appendChild(this.viewStack);
+            
+        }
+    }
+}
+document.registerElement('sp-main', SPMainElement);
+
 
 /**
  * Viewstack element
@@ -280,39 +320,35 @@ class SPViewStackElement extends HTMLElement {
             let view = this.views[newUri];
             this.setView(view);
         } else {
+            let view = null;
             if (/^bungalow:internal:start$/g.test(newUri)) {
-                let artistView = document.createElement('sp-startview');
-                this.addView(newUri, artistView);
-                artistView.setAttribute('uri', newUri);
+                view = document.createElement('sp-startview');
             } else if (/^bungalow:genre:(.*)$/g.test(newUri)) {
-                let searchView = document.createElement('sp-genreview');
-                this.addView(newUri, searchView);
-                searchView.setAttribute('uri', newUri);
+                view = document.createElement('sp-genreview');
+                
             } else if (/^bungalow:search:(.*)$/g.test(newUri)) {
-                let searchView = document.createElement('sp-searchview');
-                this.addView(newUri, searchView);
-                searchView.setAttribute('uri', newUri);
+                view = document.createElement('sp-searchview');
+               
             } else if (/^bungalow:artist:(.*)$/g.test(newUri)) {
-                let artistView = document.createElement('sp-artistview');
-                this.addView(newUri, artistView);
-                artistView.setAttribute('uri', newUri);
+                view = document.createElement('sp-artistview');
+                
         
             } else if (/^bungalow:album:(.*)$/g.test(newUri)) {
-                let albumView = document.createElement('sp-albumview');
-                this.addView(newUri, albumView);
-                albumView.setAttribute('uri', newUri);
+                view = document.createElement('sp-albumview');
+              
         
             } else if (/^bungalow:user:([a-zA-Z0-9._]+):playlist:([a-zA-Z0-9]+)$/g.test(newUri)) {
-                let albumView = document.createElement('sp-playlistview');
-                this.addView(newUri, albumView);
-                albumView.setAttribute('uri', newUri);
+                view = document.createElement('sp-playlistview');
+              
         
             } else if (/^bungalow:user:([a-zA-Z0-9._]+)$/g.test(newUri)) {
-                let albumView = document.createElement('sp-userview');
-                this.addView(newUri, albumView);
-                albumView.setAttribute('uri', newUri);
+                view = document.createElement('sp-userview');
+                
         
             }
+            this.addView(newUri, view);
+            view.setAttribute('uri', newUri);
+            
         }
         let url = uri.substr('bungalow:'.length).split(':').join('/');
         
@@ -333,6 +369,7 @@ class SPViewStackElement extends HTMLElement {
         if (this.firstChild != null)
         this.removeChild(this.firstChild);
         this.appendChild(view);
+        GlobalViewStack.currentView = view;
     }
 }
 
@@ -358,6 +395,10 @@ class SPViewElement extends HTMLElement {
     }
     navigate(uri) {
         
+        
+    }
+    attachedCallback() {
+        GlobalTabBar.setState({objects: []});
     }
     attributeChangedCallback(attr, oldValue, newVal) {
         
@@ -400,6 +441,14 @@ class SPArtistViewElement extends SPViewElement {
             this.albumList = document.createElement('sp-albumcontext');
             this.appendChild(this.albumList);
         }
+        GlobalTabBar.setState({
+            objects: [
+                {
+                    name: 'Overview',
+                    id: 'overview'
+                }    
+            ]
+        })
     }
     acceptsUri(uri) {
         return new RegExp(/^bungalow:artist:(.*)$/g).test(uri);
@@ -732,8 +781,7 @@ document.registerElement('sp-divider', SPDividerElement);
 
 class SPSidebarElement extends HTMLElement {
     attachedCallback() {
-        this.searchForm = document.createElement('sp-searchform');
-        this.appendChild(this.searchForm);
+       
         if (!this.menu) {
             this.menu = document.createElement('sp-menu');
             this.appendChild(this.menu);
@@ -742,6 +790,57 @@ class SPSidebarElement extends HTMLElement {
 }
 
 document.registerElement('sp-sidebar', SPSidebarElement);
+
+
+class SPTabElement extends HTMLElement {
+    attachedCallback() {
+        this.addEventListener('mousedown', this.onClick);
+    }
+    
+    onClick(event) {
+        let tabId = event.target.getAttribute('data-tab-id');
+        let evt = new CustomEvent('tabselected');
+        evt.data = tabId;
+        this.dispatchEvent(evt);
+    }
+    
+    disconnectedCallback() {
+        this.removeEventListener('click', this.onClick);
+    }
+}
+
+
+document.registerElement('sp-tab', SPTabElement);
+
+
+
+class SPTabBarElement extends HTMLElement {
+    attachedCallback() {
+        
+    }
+    setState(state) {
+        this.innerHTML = '';
+        for (let i = 0; i < state.objects.length; i++) {
+            let obj = state.objects[i];
+            let tab = document.createElement('sp-tab');
+            tab.setAttribute('data-tab-id', obj.id);
+            tab.innerHTML = obj.name;
+            tab.addEventListener('tabselected', (e) => {
+                window.location.hash = '#' + e.data;
+            });
+            this.appendChild(tab);
+        }
+    }
+}
+document.registerElement('sp-tabbar', SPTabBarElement);
+
+
+class SPTabContentElement extends HTMLElement {
+    attachedCallback() {
+        
+    }
+}
+document.registerElement('sp-tabcontent', SPTabContentElement);
 
 class SPMenuElement extends HTMLElement {
     attachedCallback() {
@@ -956,7 +1055,26 @@ class SPSearchViewElement extends SPViewElement {
 }
 
 document.registerElement('sp-searchview', SPSearchViewElement);
-
+window.addEventListener('hashchanged', (e) => {
+   let tabId = window.location.hash.substr(1);
+   let view = GlobalViewStack.currentView;
+   for (let tab in document.querySelector('sp-tab')) {
+       if (tab.getAttribute('data-tab-id') == tabId) {
+           tab.classList.add('sp-tab-active');
+       } else {
+           tab.classList.remove('sp-tab-active');
+           
+       }
+   }
+   for (let tabView of view.querySelector('sp-tabcontent')) {
+       if (tabView.getAttribute('data-tab-id') == tabId) {
+           tabView.style.display = 'block';
+       } else {
+           tabView.style.display = 'none';
+       }
+   }
+});
 window.addEventListener('load', (e) => {
     document.body.appendChild(document.createElement('sp-chrome'));
 });
+
