@@ -1,3 +1,4 @@
+NOTE This is currently work in progress, and I haven't managed to got it to work locally yet. I am trying to work it out soon.
 # Codename: Liberal
 Open source desktop client for Spotify based on Spotify Web API writte in Node.JS.
 
