@@ -137,12 +137,15 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 120) + '&offset=' + (payload.offset || 1)
                     },
                     function (error, response, body) {
-                    
+                        if (error) {
+                            fail(500);
+                            return;
+                        }
                         var data = JSON.parse(body);
                         try {
                             resolve({'objects': data[payload.type + 's'].items});
                         } catch (e) {
-                            fail(e);
+                            fail(500);
                         }
                     }
                 );
@@ -174,10 +177,11 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                          try {
                                             resolve(JSON.parse(body2));
                                         } catch (e) {
-                                            fail();
+                                            fail(403);
                                         }
-                                    return;
-                                });
+                                        return;
+                                    }
+                                );
                             }
                         );
                     } else if(parts[2] === 'pause') {
@@ -194,7 +198,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                  try {
                                     resolve(JSON.parse(body));
                                 } catch (e) {
-                                    fail();
+                                    fail(403);
                                 }
                             return;
                             }
@@ -213,7 +217,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                  try {
                                     resolve(JSON.parse(body));
                                 } catch (e) {
-                                    fail();
+                                    fail(403);
                                 }
                             return;
                             }
@@ -339,8 +343,12 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         },  function (error, response, body) {
                             resolve(body);
                         });
-                        resolve({objects: labels});
+                        
                     }
+                    else {
+                    }
+                } else {
+                    resolve({objects: []})
                 }
             }
             if (parts[0] == 'country') {
@@ -448,18 +456,22 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     },
                         function (error, response, body) {
                             if (error) {
-                                fail({'error': ''});
+                                fail(403);
                             }
-                            var user = JSON.parse(body);
-                            if (user) {
-                            user.name = user.id;
-                            user.images = [
-                                {
-                                    'url': user.image
+                            try {
+                                var user = JSON.parse(body);
+                                if (user) {
+                                user.name = user.id;
+                                user.images = [
+                                    {
+                                        'url': user.image
+                                    }
+                                ];
                                 }
-                            ];
+                                resolve(user);
+                            } catch (e) {
+                                fail(500);
                             }
-                            resolve(user);
                         }
                     );
     
@@ -478,12 +490,19 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 url: 'https://api.spotify.com/v1/browse/categories/' + userid + '/playlists?limit=' + payload.limit + '&offset=' + payload.offset,
                                 headers: headers
                             }, function (error, response, body) {
-                                var result = JSON.parse(body);
-                                
-                                
-                                resolve({
-                                    'objects': result.playlists.items
-                                });
+                                if (error) {
+                                    fail(401);
+                                }
+                                try {
+                                    var result = JSON.parse(body);
+                                    
+                                    
+                                    resolve({
+                                        'objects': result.playlists.items
+                                    });
+                                } catch (e) {
+                                    fail(500);
+                                }
                             });
                             return;
                         }
@@ -496,14 +515,14 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     },
                         function (error, response, body) {
                             if (error) {
-                                fail({'error': ''});
+                                fail(500);
                             }
                             try {
                                 var user = JSON.parse(body);
                                 user.images = user.icons;
                                 resolve(user);
                             } catch (e) {
-                                fail();
+                                fail(500);
                             }
                         }
                     );

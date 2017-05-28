@@ -1,0 +1,15 @@
+<table width="100%" class="header">
+	<tbody>
+		<tr>
+			<td valign="top" width="171">
+				<img src="<%-obj.images[0].url%>" width="<%- width %>" height="<%- height %>">
+			</td>
+			<td valign="top">
+				<h3>
+					<sp-link uri="<%- obj.uri %>"><%-obj.name%></sp-link>
+				</h3>
+				<sp-trackcontext uri="<%-obj.uri + ':track' %>"></sp-trackcontext>
+			</td>
+		</tr>
+	</tbody>
+</table>

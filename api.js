@@ -231,7 +231,7 @@ app.get('/social/*', function (req, res) {
 
         res.json(result);
     }, function (reject) {
-        res.json(reject);
+        res.status(reject).reject(reject);
     });
 });
 
@@ -246,7 +246,7 @@ app.get('/music/*', function (req, res) {
 
         res.json(result);
     }, function (reject) {
-        res.json(reject);
+        res.status(reject).error(reject);
     });
 });
 
@@ -260,7 +260,7 @@ app.put('/music/*', function (req, res) {
 
         res.json(result);
     }, function (reject) {
-        res.json(reject);
+        res.status(reject).send(reject);
     });
 });
 
@@ -271,7 +271,7 @@ app.post('/music/*', function (req, res) {
 
         res.json(result);
     }, function (reject) {
-        res.json(reject);
+        res.status(reject).send(500);
     });
 });
 
@@ -280,6 +280,8 @@ app.get('/player/play', function (req, res) {
     music.getAlbumTracks(id).then(function (artist) {
         var data = JSON.stringify(artist);
         res.json(artist);
+    }, function (error) {
+        res.status(500).send(500);
     });
 });
 

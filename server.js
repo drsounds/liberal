@@ -19,25 +19,29 @@ app.use(cookieSession({
 
 app.use('/api', api.server);
 
-app.use(express.static(__dirname + '/client/'));
-app.get('/*', function (req, res) {
-    var protocol = req.connection.encrypted ? 'https' : 'http';
-    if (req.host.indexOf('liberal-drsounds.c9users.io') != -1) {
-        protocol = 'https';
-    }
-    var index = fs.readFileSync(__dirname + '/client/index.html', 'utf8');
+app.use('/js', express.static(__dirname + '/client/js', {
 
-    index = index.replace('https://liberal-drsounds.c9users.io',  protocol + '://' + req.host + ':' + (process.env.PORT || 9261) + '');
-    console.log(index);
-    res.write(index);
-    res.end();
-});
+}));
+
+
+app.use('/themes', express.static(__dirname + '/client/themes', {
+
+}));
+app.use('/css', express.static(__dirname + '/client/css', {
+
+}));
+app.use('/images', express.static(__dirname + '/client/images', {
+
+}));
+app.use('/templates', express.static(__dirname + '/client/templates', {
+
+}));
 app.get('/callback.html', function (req, res) {
     var index = fs.readFileSync(__dirname + '/client/callback.html');
     res.write(index);
     res.end();
 });
-app.get('/', function (req, res) {
+app.get('*', function (req, res) {
     var protocol = req.connection.encrypted ? 'https' : 'http';
     if (req.host.indexOf('liberal-drsounds.c9users.io') != -1) {
         protocol = 'https';
@@ -49,7 +53,6 @@ app.get('/', function (req, res) {
     res.write(index);
     res.end();
 });
-app.use(express.static(__dirname + '/client/'));
 module.exports = app;
 if (typeof require != 'undefined' && require.main==module) {
     app.listen(process.env.PORT || 9261);

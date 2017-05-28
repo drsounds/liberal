@@ -15,6 +15,7 @@
     "express": "~3.2.4",
     "express-router": "0.0.1",
     "express-session": "^1.15.3",
+    "express-spa-router": "0.0.8",
     "less": "^2.7.2",
     "object-assign": "^4.1.1",
     "request": "^2.81.0",
