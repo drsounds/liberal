@@ -39,7 +39,6 @@ class Store extends EventEmitter {
     constructor() {
         super();
         this.state = {};
-        
         this.heart = setInterval(async () => {
             this.state.player = await this.getCurrentTrack();
             this.emit('change');
@@ -376,13 +375,40 @@ class SPViewStackElement extends HTMLElement {
 document.registerElement('sp-viewstack', SPViewStackElement);
 
 
+class SPImageElement extends HTMLElement {
+
+    attachedCallback() {
+        this.attributeChangedCallback('src', null, this.getAttribute('src'));
+    }
+    attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName === 'src') {
+            this.setState(newVal);
+        }
+    }
+    setState(state) {
+        if (state instanceof Object) {
+            this.setState(state.uri);
+            return;
+        }
+        this.style.backgroundImage = 'url(' + state + ')';
+        this.style.width = this.getAttribute('width')  + 'px';
+        this.style.height = this.getAttribute('height') + 'px';
+    }
+}
+document.registerElement('sp-image', SPImageElement);
+
+
 class SPHeaderElement extends SPResourceElement {
     attachedCallback() {
         this.classList.add('header');
+
     }
     setState(object) {
+        let size = this.getAttribute('size') || 171;
+        let width = size;
+        let height = size;  
         object.image_url = object.images && object.images[0].url ? object.images[0].url : '';
-        this.innerHTML = '<table width="100%"><tbody><tr><td valign="top" width="171"><img width="171" height="171" src="' + object.image_url + '"></td><td valign="top"><h3><sp-link uri="' + object.uri + '">' + object.name + '</sp-link></h3><p>' + object.description + '</p></td></tr></tbody></table>';
+        this.innerHTML = '<table width="100%"><tbody><tr><td valign="top" width="' + width + '"><sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></td><td valign="top"><h3><sp-link uri="' + object.uri + '">' + object.name + '</sp-link></h3><p>' + object.description + '</p></td></tr></tbody></table>';
     }
 }
 
@@ -625,6 +651,7 @@ document.registerElement('sp-playlist', SPPlaylistElement);
 
 class SPTrackContextElement extends SPResourceElement {
     attachedCallback() {
+        console.log("T");
         if (!this.hasAttribute('fields'))
             this.setAttribute('fields', 'name,artists,album,user');
         if (this.table == null) {
@@ -632,7 +659,37 @@ class SPTrackContextElement extends SPResourceElement {
             this.appendChild(this.table);
         }
         this.attributeChangedCallback('uri', null, this.getAttribute('uri'));
+        this.style.display = 'block';
+        this.thead = this.querySelector('thead');
+    }   
+    setHeader(header) {
+        this.header = header;
     }
+
+    setView(view) {
+        this.view = view;
+        view.parentNode.addEventListener('scroll', () => {
+            console.log(this);
+            
+            let viewBounds = view.parentNode.getBoundingClientRect();
+            let bounds = this.getBoundingClientRect();
+            let tabBar = GlobalTabBar.getBoundingClientRect();
+            let headerHeight = 0;
+            if (this.header) {
+                headerHeight = this.header.getBoundingClientRect().height;;
+            } 
+            console.log(bounds.top, viewBounds.top);
+            if (bounds.top < viewBounds.top ) {
+                this.style.display = 'block';
+                let transform = 'translateY(' + ( this.view.parentNode.scrollTop - headerHeight) + 'px)';
+                console.log(transform);
+                this.thead.style.transform = transform; 
+            } else {
+                this.thead.style.transform = 'translateY(0px)';
+            }
+        });
+    }
+    
     async attributeChangedCallback(attrName, oldVal, newVal) {
         
         if (attrName == 'uri') {
@@ -970,12 +1027,15 @@ class SPPlaylistViewElement extends SPViewElement {
         this.classList.add('sp-view');
         if (!this.header) {
             this.header = document.createElement('sp-header');
+            this.header.setAttribute('size', 64);
             this.appendChild(this.header);
         }
         if (!this.trackcontext) {
             this.trackcontext = document.createElement('sp-trackcontext');
             this.appendChild(this.trackcontext);
             this.trackcontext.setAttribute('headers', 'true');
+            this.trackcontext.setHeader(this.header);
+            this.trackcontext.setView(this);
         }
         
     }
@@ -1030,10 +1090,14 @@ class SPSearchViewElement extends SPViewElement {
     attachedCallback() {
         this.classList.add('sp-view');
         this.innerHTML = "<div style='padding: 13pt'><h3>Search results for '<span id='q'></span>";
+        this.header = this.querySelector('div');    
         if (!this.trackcontext) {
             this.trackcontext = document.createElement('sp-trackcontext');
             this.appendChild(this.trackcontext);
             this.trackcontext.setAttribute('headers', 'true');
+            this.trackcontext.setHeader(this.header);
+            this.trackcontext.setView(this);
+
         }
         
     }
@@ -1047,7 +1111,7 @@ class SPSearchViewElement extends SPViewElement {
         if (attrName === 'uri') {
             let query = newVal.substr('bungalow:search:'.length);
             this.querySelector('#q').innerHTML = query;
-            this.trackcontext.setAttribute('uri', 'bungalow:search?q=' + query + '&type=track');
+            this.trackcontext.setAttribute('uri', 'bungalow:search?q=' + query + '&type=track&limit=50');
             let result = await store.request('GET', newVal);
             this.header.setState(result);
         }

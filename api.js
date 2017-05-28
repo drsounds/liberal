@@ -8,6 +8,7 @@ var less = require('less');
 var request = require('request');
 var url = require('url');
 var cookieSession = require('cookie-session');
+var cookieParser = require('cookie-parser');
 var utils = require('./utils.js');
 var express =require('express');
 var app = express();
@@ -16,6 +17,13 @@ var music = new MusicService();
 app.get('/music/login', function (req, res) {
     res.redirect(music.getLoginUrl());
 });
+app.use(cookieParser());
+app.use(cookieSession({
+    secret:'32425235235235',
+    name: 'session',
+    keys: ['key1', 'key2'],
+    cookie: {secure: false}
+}));
 
 app.get('/settings.json', function (req, res) {
 
@@ -58,6 +66,7 @@ app.get('/apps', function (req, res) {
 
 app.get('/music/authenticate', function (req, res) {
     console.log("Got authenticate request");
+    console.log(req);
     music.authenticate(req).then(function (success) {
         console.log("success");
         res.statusCode = 200;

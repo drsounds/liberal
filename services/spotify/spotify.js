@@ -26,7 +26,7 @@ SpotifyBrowseAPI.prototype.getLoginUrl = function () {
 SpotifyBrowseAPI.prototype.authenticate = function (req) {
     var self = this;
     this.req = req;
-
+    console.log(req);
     return new Promise(function (resolve, fail) {
         console.log("Ta");
         request({
@@ -43,7 +43,6 @@ SpotifyBrowseAPI.prototype.authenticate = function (req) {
         }, function (error, response, body) {
             console.log(error);
             var body = JSON.parse(body);
-        console.log(body);
             if (error || !body.access_token) {
                 fail(error);
                 return;
@@ -135,7 +134,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
             console.log(parts);
             if (parts[0] == 'search') {
                 request({
-                        url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 20) + '&offset=' + (payload.offset || 1)
+                        url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 120) + '&offset=' + (payload.offset || 1)
                     },
                     function (error, response, body) {
                     

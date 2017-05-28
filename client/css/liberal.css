@@ -18,6 +18,10 @@ body,html {
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome and Opera */
 }
+sp-image {
+    background-size: cover;
+    display: block;
+}
 sp-chrome {
     left: 0pt;
     top: 0pt;

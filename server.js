@@ -1,11 +1,20 @@
 var express = require('express');
 var execPath = process.env.PWD;
 var fs = require('fs');
+var cookieParser = require('cookie-parser');
 var cookieSession = require('cookie-session');
 var api = require('./api.js');
 var app = express();
 var bodyParser = require('body-parser');
   app.use(bodyParser());
+
+app.use(cookieParser());
+app.use(cookieSession({
+    secret:'32425235235235',
+    name: 'session',
+    keys: ['key1', 'key2'],
+    cookie: {secure: false}
+}));
 
 
 app.use('/api', api.server);
@@ -23,11 +32,6 @@ app.get('/*', function (req, res) {
     res.write(index);
     res.end();
 });
-app.use(cookieSession({
-    name: 'session',
-    keys: ['key1', 'key2']
-}));
-
 app.get('/callback.html', function (req, res) {
     var index = fs.readFileSync(__dirname + '/client/callback.html');
     res.write(index);
