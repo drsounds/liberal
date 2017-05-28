@@ -1,22 +1,36 @@
+# Codename: Liberal
+Open source desktop client for Spotify based on Spotify Web API writte in Node.JS.
 
-     ,-----.,--.                  ,--. ,---.   ,--.,------.  ,------.
-    '  .--./|  | ,---. ,--.,--. ,-|  || o   \  |  ||  .-.  \ |  .---'
-    |  |    |  || .-. ||  ||  |' .-. |`..'  |  |  ||  |  \  :|  `--, 
-    '  '--'\|  |' '-' ''  ''  '\ `-' | .'  /   |  ||  '--'  /|  `---.
-     `-----'`--' `---'  `----'  `---'  `--'    `--'`-------' `------'
-    ----------------------------------------------------------------- 
+Spotify is a copyrighted trademark by Spotify AB. Code licensed under MIT.
+
+# Installation
 
 
-Welcome to your Node.js project on Cloud9 IDE!
+1. Clone the repository
 
-This chat example showcases how to use `socket.io` with a static `express` server.
+    git clone git@github.com:drsounds/liberal
+    cd liberal
 
-## Running the server
+2. Assign an Spotify app key, client secret and redirect uri:
 
-1) Open `server.js` and start the app by clicking on the "Run" button in the top menu.
+    {
+        "client_id": "<your app client id>",
+        "client_secret": "<your app client secret>",
+        "redirect_uri": "http://localhost:9261"
+    }
 
-2) Alternatively you can launch the app from the Terminal:
+Save this into a a file spotify.key.json in the folder ~/.bungalow/
 
-    $ node server.js
+3. cd into the app folder, and do the following
 
-Once the server is running, open the project in the shape of 'https://projectname-username.c9users.io/'. As you enter your name, watch the Users list (on the left) update. Once you press Enter or Send, the message is shared with all connected clients.
+    npm install
+    electron .
+
+Or you can run it from a browser (Chrome is the only working only currently since it make use of Web Components)
+
+    http://localhost:9261
+
+Log in with Spotify here
+
+    http://localhost:9261/internal/login
+
