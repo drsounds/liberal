@@ -11,7 +11,7 @@ Spotify is a copyrighted trademark by Spotify AB. Code licensed under MIT.
 ```sh
     git clone git@github.com:drsounds/liberal
     cd liberal
-```sh
+```
 
 2. Assign an Spotify app key, client secret and redirect uri into the file ~/.bungalow/spotify.key.json
 
