@@ -134,7 +134,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
             console.log(parts);
             if (parts[0] == 'search') {
                 request({
-                        url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 120) + '&offset=' + (payload.offset || 1)
+                        url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 120) + '&offset=' + (payload.offset || 1),
+                        headers: headers
                     },
                     function (error, response, body) {
                     
