@@ -260,7 +260,7 @@ class SPThemeEditorElement extends HTMLElement {
         this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
         this.saturationChooser.value = store.saturation;
         this.styleselect = document.createElement('select');
-        this.styleselect.innerHTML += '<option value="chromify">Chromify</option><option value="obama">Obama</option>';
+        this.styleselect.innerHTML += '<option value="chromify">Chromify</option><option value="chromify-flat">Chromify (flat version)</option><option value="obama">Obama</option>';
         this.appendChild(this.styleselect);
         this.flavorselect = document.createElement('select');
         this.flavorselect.innerHTML += '<option value="dark">Dark</option><option value="light">Light</option>';
