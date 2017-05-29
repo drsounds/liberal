@@ -29,7 +29,7 @@ function applyTheme(theme, flavor='light') {
 }
 
 
-applyTheme('obama', 'dark');
+applyTheme('chromify', 'light');
 
 
 /**
@@ -56,6 +56,58 @@ class Store extends EventEmitter {
                 }
             }
         }, 1000);
+        this.hue = this.hue;
+    }
+    get stylesheet() {
+        let stylesheet = localStorage.getItem('stylesheet');
+        if (!stylesheet) {
+            stylesheet = 'chromify';
+        }
+        return stylesheet;
+    }
+    set stylesheet(value) {
+        applyTheme(value, this.flavor);
+        localStorage.setItem('stylesheet', value);
+    }
+    get flavor() {
+        let flavor = localStorage.getItem('flavor');
+        if (!flavor) {
+            flavor = 'light';
+        }
+        return flavor;
+    }
+    set flavor(value) {
+        applyTheme(this.stylesheet, value);
+        localStorage.setItem('flavor', value);
+    }
+    get hue() {
+        let hue = localStorage.getItem('hue');
+        if (!hue) return 0;
+        return hue;
+    }
+    
+    
+    /**
+     * Sets app global hue
+     **/
+    set saturation(value) {
+        document.documentElement.style.setProperty('--primary-saturation', value + '%');
+        localStorage.setItem('saturation', value);
+    }
+    
+    get saturation() {
+        let saturation = localStorage.getItem('saturation');
+        if (!saturation) return 0;
+        return saturation;
+    }
+    
+    
+    /**
+     * Sets app global hue
+     **/
+    set hue(value) {
+        document.documentElement.style.setProperty('--primary-hue', value + 'deg');
+        localStorage.setItem('hue', value);
     }
     
     /**
@@ -192,13 +244,58 @@ class Store extends EventEmitter {
 var store = new Store();
 
 
+class SPThemeEditorElement extends HTMLElement {
+    attachedCallback() {
+        this.colorChooser = document.createElement('input');
+        this.colorChooser.setAttribute('type', 'range');
+        this.appendChild(this.colorChooser);
+        this.colorChooser.setAttribute('max', 360);
+        this.colorChooser.addEventListener('change', this.colorSlider);
+        this.colorChooser.addEventListener('mousemove', this.colorSlider);
+        this.saturationChooser = document.createElement('input');
+        this.saturationChooser.setAttribute('type', 'range');
+        this.appendChild(this.saturationChooser);
+        this.saturationChooser.setAttribute('max', 360);
+        this.saturationChooser.addEventListener('change', this.saturationSlider);
+        this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
+        this.saturationChooser.value = store.saturation;
+        this.styleselect = document.createElement('select');
+        this.styleselect.innerHTML += '<option value="chromify">Chromify</option><option value="obama">Obama</option>';
+        this.appendChild(this.styleselect);
+        this.flavorselect = document.createElement('select');
+        this.flavorselect.innerHTML += '<option value="dark">Dark</option><option value="light">Light</option>';
+        this.appendChild(this.flavorselect);
+        this.flavorselect.addEventListener('change', (e) => {
+            store.flavor = e.target.options[e.target.selectedIndex].value;
+        });
+         this.styleselect.addEventListener('change', (e) => {
+            store.stylesheet = e.target.options[e.target.selectedIndex].value;
+        });
+    }
+    colorSlider(e) {
+        let value = e.target.value;
+        store.hue = value;
+    
+    }
+    saturationSlider(e) {
+        let value = e.target.value;
+        store.saturation = value;
+    
+    }
+}
+
+document.registerElement('sp-themeeditor', SPThemeEditorElement);
+
 class SPAppHeaderElement extends HTMLElement {
     attachedCallback() {
         if (!this.searchForm) {
             this.searchForm = document.createElement('sp-searchform');
             this.appendChild(this.searchForm);
+            this.themeEditor = document.createElement('sp-themeeditor');
+            this.appendChild(this.themeEditor);
         }
     }
+    
 }
 document.registerElement('sp-appheader', SPAppHeaderElement);
 

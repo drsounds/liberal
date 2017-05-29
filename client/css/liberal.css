@@ -181,3 +181,14 @@ sp-nowplaying {
     height: var(--sidebar-width);
     background-size: cover;
 }
+sp-themeeditor {
+    display: block;
+    position: relative;
+}
+sp-themeeditor * {
+    display: inline-block;
+}
+sp-themeeditor select {
+
+   transform: translate(0pt, -50%);
+}
