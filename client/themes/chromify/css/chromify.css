@@ -1,14 +1,19 @@
-sp-appfooter button, input[type=range]::-webkit-slider-runnable-track {
+sp-appfooter button, sp-appheader button, input[type=range]::-webkit-slider-runnable-track {
   box-shadow: 0pt 0pt 3pt rgba(0, 0, 0, .5);
   border-radius: 28pt;
   background-image: url('/themes/chromify/img/btn_gloss.png') !important;
   background-size: cover;
   margin-right: 6pt;
+  color: rgba(0, 0, 0, .5);
+  -webkit-transition: box-shadow 0.5s, opacity 0.5s;
 }
-button.fa-play {
+button:hover {
+    box-shadow:0pt 0pt 3pt rgba(0, 0, 0, .5), 0pt 0pt 25pt rgba(255, 255, 255, .8);
+}
+button.fa-play, button.fa-pause {
     -webkit-transform: scale(1.08);
 }
-sp-appfooter button:active {
+button:active {
     opacity: 0.5;
 }
 input[type=range]{
