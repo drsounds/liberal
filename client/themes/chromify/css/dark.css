@@ -1,0 +1,262 @@
+:root {
+--primary-color: #223388;
+--secondary-color: #94b9cf;
+--app-bg-color: rgba(255, 255, 255, .3);
+--foreground-color: rgba(255, 255, 255, .8);
+--app-fg-color: rgba(0, 0, 0, .5);
+--primary-saturation: 100%;
+--primary-hue: -250deg;
+--splatter-bg: url('/themes/chromify/img/bg_neo_dark.png');
+--font-family: "Open Sans", "Arial";
+--font-size: 10pt;
+} 
+
+sp-throbber {
+  background-color: var(--app-bg-color);
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+}
+
+sp-throbber  * {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+}
+sp-viewstack {
+  background-color: rgba(0, 0, 0, .3);
+}
+
+
+sp-aspect {
+  display: none;
+}
+iframe {
+    border: 0px;
+}
+input {
+    border-radius: 15pt;
+    border: 0px;
+    padding: 3pt;
+    padding-left: 20pt;
+    padding-right: 20pt;
+}
+body {
+    color: var(--foreground-color);
+    font-family: var(--font-family);
+    font-size: var(--font-size); 
+    margin: 0px;
+}
+sp-header table {
+  background-color: rgba(0, 0, 0, .2);
+  border-bottom: 1px solid rgba(0, 0, 0, .2);
+}
+sp-divider {
+  background-color: rgba(255, 255, 255, .1);
+  border-bottom: 1px solid rgba(0, 0, 0, .2);
+  border-top: 1px solid rgba(0, 0, 0, .2);
+  box-shadow:inset 0pt -2pt 3pt rgba(255, 255, 255, .1), inset 0pt 2pt 3pt rgba(255, 255, 255, .1), 0pt 3pt 3pt rgba(0, 0, 0, .05);
+
+}
+sp-appheader {
+  border-bottom: 1px solid rgba(255, 255 , 255, .1);
+  background-color: var(--app-bg-color);
+  border-bottom: 1px solid rgba(0, 0, 0, .5);
+  box-sizing: border-box;
+  padding:12pt;
+  z-index: 1000;
+}
+
+.menu-body {
+    background-color: rgba(255, 255, 255, .3);
+}
+.card {
+  background-color: rgba(255, 255, 255, .1);
+  background-size: 100% 100%;
+  border-radius: 3pt;
+  background-size: 180% 100%;
+  box-shadow: 0px 2px 5pt rgba(0, 0, 0, .05);
+  min-height: 200pt;
+  
+}
+.card-block {
+  padding: 25pt;
+}
+.sp-table {
+  border-collapse: collapse;
+}
+.sp-track {
+  background-color: rgba(0, 0, 0, .01);
+  
+}
+sp-button {
+  opacity: 0.8;
+  background-image:url('/themes/chromifyimg/header_neo_dark.png');
+  text-shadow: 0px -1px 0px rgba(0, 0, 0, .5);
+  box-shadow: inset 0px 0px 2px rgba(255, 255, 255, .4);
+  background-color: rgba(255, 255, 255, 1);
+  color: black;
+  border: 1px solid #ddd;
+  -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
+  background-size: 100% 100%;
+  padding:5pt;
+  padding-left: 25pt;
+  padding-right: 25pt;
+  border-radius: 50pt;
+  box-shadow: 0px 2px 3px rgba(0, 0, 0, .05);
+}
+sp-button.primary {
+    color: white;
+
+  background-image:  url('/themes/chromify/img/header.png'), url('/themes/chromify/img/bg_dark.png');
+}
+sp-button:hover {
+  opacity: 1;
+  box-shadow: 0px 0px 5pt rgba(255, 227, 20, 1);
+}
+sp-button:active {
+  -webkit-filter: brightness(95%);
+}
+.sp-track:nth-child(2n) td {
+  background-color: rgba(0, 0, 0, .03);
+}
+a {
+    color: var(--foreground-color);
+    text-decoration: none;
+}
+.body-root {
+    position: relative; 
+    width:100%; 
+    height: 100%; 
+    left: 0px; 
+    top: 0px;
+    background-size: 100% ;
+}
+td, th {
+  padding: 3pt;
+}
+th {
+  padding: 4pt;
+}
+sp-playlist table td {
+}
+table {
+  width: 100%;
+}
+.splatter {
+    background-size: 100% ;
+  
+    -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
+    background-image: var(--splatter-bg);
+}
+sp-sidebar {
+  background-color: rgba(0, 0, 0, .2);
+}
+th {
+  color: #333;
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ecebdb+74,dcd2bc+100 */
+background: rgb(236,235,219); /* Old browsers */
+background: -moz-linear-gradient(top,  rgba(236,235,219,1) 74%, rgba(220,210,188,1) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top,  rgba(236,235,219,1) 74%,rgba(220,210,188,1) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom,  rgba(236,235,219,1) 74%,rgba(220,210,188,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ecebdb', endColorstr='#dcd2bc',GradientType=0 ); /* IE6-9 */
+box-shadow:inset 0pt 1pt 0pt rgba(127, 127, 127, 0.2), inset 0pt 2pt 0pt rgba(255, 255, 255, 1);
+
+}
+th:hover {
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#f9faf8+0,f3f2eb+83,fbaa04+86,f6c44d+94,fbaa04+100 */
+background: rgb(249,250,248); /* Old browsers */
+background: -moz-linear-gradient(top,  rgba(249,250,248,1) 0%, rgba(243,242,235,1) 83%, rgba(251,170,4,1) 86%, rgba(246,196,77,1) 94%, rgba(251,170,4,1) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top,  rgba(249,250,248,1) 0%,rgba(243,242,235,1) 83%,rgba(251,170,4,1) 86%,rgba(246,196,77,1) 94%,rgba(251,170,4,1) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom,  rgba(249,250,248,1) 0%,rgba(243,242,235,1) 83%,rgba(251,170,4,1) 86%,rgba(246,196,77,1) 94%,rgba(251,170,4,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9faf8', endColorstr='#fbaa04',GradientType=0 ); /* IE6-9 */
+
+}
+sp-appheader, sp-appfooter {
+    padding: 5pt;
+    background-size: 100% 100%;
+    -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
+  background-image:  url('/themes/chromify/img/header_neo_dark.png'), url('/themes/chromify/img/bg_dark.png');
+    
+}
+sp-tabbar {
+  padding-top: 6pt;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(0, 0, 0, .2);
+  box-shadow:inset 0pt -2pt 3pt rgba(255, 255, 255, .5), 0pt 3pt 3pt rgba(0, 0, 0, .1);
+  background-image:  url('/themes/chromify/img/header_neo_dark.png');
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#c9ffffff',GradientType=0 ); /* IE6-9 */
+
+}
+.sp-app {
+    background-color: var(--app-bg-color);
+    color: var(--app-fg-color);
+}
+.sp-current-track {
+  color: #aaeeaa  ;
+  background-color: black;
+}
+sp-sidebar {
+  border-right: 1pt solid #aaa;
+}
+table {
+  border-collapse: collapse;
+}
+    
+sp-menuitem {
+
+  list-style-type: none;
+  text-indent: 0px;
+  font-size: 9pt;
+}
+sp-menuitem a {
+  margin-top: 15pt;
+  margin-bottom: 15pt;
+    text-decoration: none;
+    opacity: 0.9;
+    padding-left: 13px;
+    display: list-item;
+  opacity: 0.6;
+}
+
+
+sp-tab {
+  float: left;
+  height: 15pt;
+  margin-bottom: 15pt;
+  margin-right: 10pt;
+}
+sp-tab.sp-tab-active a {
+  opacity: 1;
+  color: var(--primary-color);
+  border-bottom: 2pt solid var(--primary-color);
+}
+sp-tab a {
+  padding-bottom: 10pt;
+  opacity: 0.5;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+ul.sp-menu {
+
+}
+.nav-btn {
+  margin-left: 13pt;
+  color: white;
+  text-shadow: -0px -1px 0px rgba(0, 0, 0, .5);
+  margin-right: 13pt;
+  padding-left: 5pt;
+  padding-right: 5pt;
+}
+.nav-btn:hover {
+  border: 1px solid rgba(255, 255, 255, .2);
+  background-image: url('/themes/chromify/img/header.png');
+}
+.sp-track-selected {
+  background-color: var(--foreground-color);
+  color: black;
+}
