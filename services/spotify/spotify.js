@@ -469,6 +469,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                         'objects': result.items.map(function (track) {
                                             var track = assign(track, track.track);
                                             track.user = track.added_by;
+                                            track.time = track.added_at;
                                             if (track.user)
                                             track.user.name = track.user.id;
                                             return track;

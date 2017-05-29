@@ -884,7 +884,17 @@ class SPTrackContextElement extends SPResourceElement {
             fields.map((field, i) => {
               var td = document.createElement('td');
               let val = track[field];
-              if (typeof(val) === 'string') {
+              if ((field === 'time' || field == 'added_at') && !!val) {
+                  let date = moment(val);
+                  let now = moment();
+                let dr = Math.abs(date.diff(now, 'days'));
+                let tooOld = dr > 1;
+                  let strTime = dr ? date.format('YYYY-MM-DD') : date.fromNow();
+                  td.innerHTML = strTime;
+                  if (tooOld) {
+                      td.style.opacity = 0.5;
+                  }
+              } else if (typeof(val) === 'string') {
                 td.innerHTML = val;
               } else if (val instanceof Array) {
                  td.innerHTML = val.map((v, i) => {
@@ -1216,6 +1226,7 @@ class SPPlaylistViewElement extends SPViewElement {
         }
         if (!this.trackcontext) {
             this.trackcontext = document.createElement('sp-trackcontext');
+            this.trackcontext.setAttribute('fields', 'name,artists,album,added_at');
             this.appendChild(this.trackcontext);
             this.trackcontext.setAttribute('headers', 'true');
             this.trackcontext.setHeader(this.header);    
