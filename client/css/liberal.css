@@ -200,3 +200,16 @@ sp-sidebarmenu label {
 sp-sidebarmenu {
     padding-top: 13pt;
 }
+
+sp-appheader button, sp-appfooter button {
+  
+    min-width: 28pt;
+}
+button:focus {
+    outline: none;
+}
+sp-appheader button, sp-appfooter button {
+    border: none;
+     background: none;
+     color: white;
+}

@@ -25,7 +25,15 @@ function applyTheme(theme, flavor='light') {
         document.head.appendChild(link);
         link.setAttribute('rel', 'stylesheet');
     }
-    link.setAttribute('href', '/themes/' + theme + '/css/' + flavor + '.css');
+    let link2 = document.querySelector('link[id="theme_variant"]');
+    if (!link2) {
+        link2 = document.createElement('link');
+        link2.setAttribute('id', 'theme_variant');
+        document.head.appendChild(link2);
+        link2.setAttribute('rel', 'stylesheet');
+    }
+    link.setAttribute('href', '/themes/' + theme + '/css/' + theme + '.css');
+    link2.setAttribute('href', '/themes/' + theme + '/css/' + flavor + '.css');
 }
 
 
@@ -43,7 +51,17 @@ class Store extends EventEmitter {
             this.state.player = await this.getCurrentTrack();
             this.emit('change');
             let trackItems = document.querySelectorAll('.sp-track');
+            let playButton = document.querySelector('#playButton');
             if (this.state.player && this.state.player.item) {
+                let playThumb = document.querySelector('#playthumb');
+                if (playThumb) {
+                    playThumb.setAttribute('min', 0);
+                    playThumb.setAttribute('max', this.state.player.item.duration_ms);
+                    playThumb.value = (this.state.player.progress_ms);
+                }
+                    
+                playButton.classList.remove('fa-play');
+                playButton.classList.add('fa-pause');
                 document.querySelector('sp-nowplaying').style.backgroundImage = 'url("' + this.state.player.item.album.images[0].url + '")';
              
                 for(var tr of trackItems) {
@@ -54,6 +72,10 @@ class Store extends EventEmitter {
                         tr.classList.remove('sp-current-track');
                     }
                 }
+            } else {
+                
+                playButton.classList.remove('fa-pause');
+                playButton.classList.add('fa-play');
             }
         }, 1000);
         this.hue = this.hue;
@@ -128,6 +150,12 @@ class Store extends EventEmitter {
             return {};
             
         return JSON.parse(localStorage.getItem('store'));
+    }
+    
+    async playPause() {
+        let result = await this.request('PUT', 'spotify:me:player:pause', context, false);
+        this.state.player = await this.getCurrentTrack();
+        this.emit('change');
     }
     
     /**
@@ -291,11 +319,12 @@ document.registerElement('sp-themeeditor', SPThemeEditorElement);
 
 class SPAppHeaderElement extends HTMLElement {
     attachedCallback() {
+        if (!this.created) {
         if (!this.searchForm) {
             this.searchForm = document.createElement('sp-searchform');
             this.appendChild(this.searchForm);
-            this.themeEditor = document.createElement('sp-themeeditor');
-            this.appendChild(this.themeEditor);
+        }
+        this.created = true;
         }
     }
     
@@ -304,7 +333,49 @@ document.registerElement('sp-appheader', SPAppHeaderElement);
 
 class SPAppFooterElement extends HTMLElement {
     attachedCallback() {
-        
+        if (!this.created) {
+            this.previousButton = document.createElement('button');
+            this.previousButton.classList.add('fa');
+            this.previousButton.classList.add('fa-step-backward');
+            this.appendChild(this.previousButton);
+            this.previousButton.addEventListener('click', (e) => {
+                store.skipBack();
+            })
+            this.playButton = document.createElement('button');
+            this.playButton.classList.add('fa');
+            this.playButton.setAttribute('id', 'playButton');
+            this.playButton.classList.add('fa-play');
+            this.appendChild(this.playButton);
+            this.playButton.addEventListener('click', (e) => {
+                store.playPause();
+            })
+            this.nextButton = document.createElement('button');
+            this.nextButton.classList.add('fa');
+            this.nextButton.classList.add('fa-step-forward');
+            this.appendChild(this.nextButton);
+            this.nextButton.addEventListener('click', (e) => {
+                store.skipNext();
+            });
+            this.playthumb = document.createElement('input');
+            this.playthumb.setAttribute('type', 'range');
+            this.playthumb.setAttribute('id', 'playthumb');
+            this.playthumb.style.flex = '5';
+            this.appendChild(this.playthumb);
+            let btn = document.createElement('button');
+            btn.classList.add('fa');
+            btn.classList.add('fa-paint-brush');
+            this.appendChild(btn);
+            btn.style.cssFloat = 'right';
+            btn.addEventListener('click', (e) => {
+               let hue = store.hue;
+               if (hue > 360) {
+                   hue = 0;
+               }
+               hue += 2;
+               store.hue = hue;
+            });
+            this.created = true;
+        }
     }
 }
 document.registerElement('sp-appfooter', SPAppFooterElement);
@@ -432,7 +503,9 @@ class SPViewStackElement extends HTMLElement {
             this.setView(view);
         } else {
             let view = null;
-            if (/^bungalow:internal:start$/g.test(newUri)) {
+            if (newUri === 'bungalow:internal:settings') {
+                view = document.createElement('sp-settingsview');  
+            } else if (/^bungalow:internal:start$/g.test(newUri)) {
                 view = document.createElement('sp-startview');
             } else if (/^bungalow:genre:(.*)$/g.test(newUri)) {
                 view = document.createElement('sp-genreview');
@@ -1002,6 +1075,10 @@ class SPSidebarMenuElement extends HTMLElement {
                     {
                         name: 'Start',
                         uri: 'bungalow:internal:start'
+                    },
+                    {
+                        name: 'Settings',
+                        uri: 'bungalow:internal:settings'
                     }
                 ]
             });
@@ -1020,9 +1097,17 @@ document.registerElement('sp-sidebarmenu', SPSidebarMenuElement);
 
 class SPNowPlayingElement extends HTMLElement {
     attachedCallback() {
-        
+        this.addEventListener('click', this.onClick);
+    }
+    onClick(e) {
+        if (store.player) {
+            if (store.player.context_uri instanceof String) {
+                GlobalViewStack.navigate(store.player.context_uri);
+            }
+        }
     }
     disconnectedCallback() {
+        this.removeEventListener('click', this.onClick);
         
     }
 }
@@ -1049,6 +1134,27 @@ class SPTabElement extends HTMLElement {
 
 document.registerElement('sp-tab', SPTabElement);
 
+
+class SPSettingsViewElement extends HTMLElement {
+    attachedCallback() {
+        if (!this.created) {
+            this.create();
+            this.created = true;
+        }
+    }
+    create() {
+        this.classList.add('sp-view');
+        this.innerHTML = '<form>' +
+                        '<h1>Settings</h1>' +
+                        '<fieldset><legend>Appearance</legend><sp-themeeditor></sp-themeeditor></fieldset>' +
+                        '</form>';
+    }
+    activate() {
+       
+    }
+}
+
+document.registerElement('sp-settingsview', SPSettingsViewElement);
 
 
 class SPTabBarElement extends HTMLElement {

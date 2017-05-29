@@ -235,3 +235,20 @@ sp-nowplaying {
   border-top: 1pt solid var(--foreground-color);
   
 }
+
+
+sp-appheader button, sp-appfooter button {
+     background: none;
+    border-radius: 28pt;
+    color:  1pt solid rgba(255, 255, 255, .5);
+    text-shadow: 0pt 1pt 0pt rgba(255, 255, 255, .5);    
+    box-shadow:inset 0pt 1pt 1pt rgba(255, 255, 255, .5), 0pt 1pt 1pt rgba(255, 255, 255, .5);
+     border: 1pt solid rgba(0, 0, 0, .2);
+}
+sp-appheader button:hover, sp-appfooter button:hover {
+    border: 1pt solid rgba(255, 255, 255, .2);
+}
+sp-appheader button:active, sp-appfooter button:active {
+    background: rgba(0, 0, 0, .2);
+    color: white;
+}
