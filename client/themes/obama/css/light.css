@@ -1,7 +1,7 @@
 :root {
-    --background-color: #373737;
-    --foreground-color: rgba(255, 255, 255, .8);
-    --sidebar-background-color: #393939;
+    --background-color: rgba(238, 238, 238, 1);
+    --foreground-color: #373737;
+    --sidebar-background-color: rgba(248, 248, 248, 1);
     --brand-primary: #BBDEFB;
 }
 
@@ -11,13 +11,12 @@ body {
     color: var(--foreground-color);
     font-family: "Tahoma";
     font-size: 11px;
-    text-shadow: 0pt -1pt 0pt rgba(0, 0, 0, 1);
 }
 *:focus {
     outline: none;
 }
 sp-divider {
-background: #616161;
+background: rgba(0, 0, 0, .1);
 padding-top: 2pt;
 padding-bottom: 2pt;
 }
@@ -43,14 +42,14 @@ sp-trackcontext table {
     width: 100%;
 }
 sp-trackcontext table tbody tr:nth-child(2n-1) td {
-    background-color: rgba(0, 0, 0, .1);
+    background-color: rgba(0, 0, 0, .04);
 }
 sp-link, a {
-    color: rgba(255, 255, 255, .9);
+    color: rgba(25, 25, 25, .9);
     text-decoration: none;
 }
 sp-link:hover, a:hover {
-    color: white;
+    color: black;
     text-decoration: underline;
 }
 
@@ -106,6 +105,8 @@ img {
 }
 
 sp-tabbar {
+    color: white;
+    text-shadow: 0pt -1pt 0pt rgba(0, 0, 0, 1);
     /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#7a7a7a+0,1c1c1c+100 */
     background: rgb(122,122,122); /* Old browsers */
     background: -moz-linear-gradient(top,  rgba(122,122,122,1) 0%, rgba(28,28,28,1) 100%); /* FF3.6-15 */

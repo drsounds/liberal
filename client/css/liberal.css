@@ -1,7 +1,7 @@
 :root {
     --header-height: 30pt;
     --footer-height: 30pt;
-    --sidebar-width: 228pt;
+    --sidebar-width: 268pt;
 }
 body,html {
     overflow: hidden;
@@ -191,4 +191,12 @@ sp-themeeditor * {
 sp-themeeditor select {
 
    transform: translate(0pt, -50%);
+}
+sp-sidebarmenu label {
+    padding-top: 30pt;
+    padding-bottom: 3pt;
+
+}
+sp-sidebarmenu {
+    padding-top: 13pt;
 }
