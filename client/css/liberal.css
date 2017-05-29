@@ -159,7 +159,7 @@ sp-tabbar {
 td, sp-menu * {
        white-space: -moz-pre-wrap; /* Firefox */
 white-space: -o-pre-wrap; /* Opera */
-white-space: nowrap; /* Chrome */
+white-space: pre-wrap; /* Chrome */
 word-wrap: break-word; /* IE */
 overflow-x: none;
 overflow: hidden;
