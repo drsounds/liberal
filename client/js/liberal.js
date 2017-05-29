@@ -169,6 +169,9 @@ class Store extends EventEmitter {
     async request(method, uri, payload, cache=true) {
         if (uri == null) return;
         var url = uri;
+        if (url.indexOf('radioflow') == 0) {
+            // TODO Add radioflow handlers here
+        }
         if (uri.indexOf('bungalow:') == 0 || uri.indexOf('spotify:') == 0) {
             if (uri.indexOf('spotify:') == 0) {
                 uri = 'bungalow:' + uri.substr('spotify:'.length);
