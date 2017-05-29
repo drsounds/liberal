@@ -57,6 +57,9 @@ class Store extends EventEmitter {
             }
         }, 1000);
         this.hue = this.hue;
+        this.saturation = this.saturation;
+        this.flavor = this.flavor;
+        this.stylesheet = this.stylesheet;
     }
     get stylesheet() {
         let stylesheet = localStorage.getItem('stylesheet');
@@ -980,13 +983,6 @@ document.registerElement('sp-sidebar', SPSidebarElement);
 
 class SPSidebarMenuElement extends HTMLElement {
     async attachedCallback() {
-        if (!this.tabBar) {
-            this.tabBar = document.createElement('sp-tabbar');
-            this.appendChild(this.tabBar);
-            this.tabBar.innerHTML = 'Menu';
-            this.tabBar.style.height = '24pt';
-
-       }
         if (!this.menu) {
             this.innerHTML += '<label>Main</label>';
             this.menu = document.createElement('sp-menu');

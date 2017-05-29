@@ -268,7 +268,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         if (parts.length > 4) {
                             if (parts[4] == 'track') {
                                 request({
-                                    url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/top-tracks?limit=5&offset=' + payload.offset + '&country=se'
+                                    url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/top-tracks?limit=5&offset=' + payload.offset + '&country=se',
+                                    headers: headers
                                 },
                                     function (error, response, body) {
                                         var data = JSON.parse(body);
@@ -295,7 +296,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     if (parts[2] == 'release') {
                         var limit = (payload.limit || 10);
                         request({
-                                url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/albums?limit=' + limit + '&offset=' + (limit * (payload.p || 0))
+                                url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/albums?limit=' + limit + '&offset=' + (limit * (payload.p || 0)),
+                                headers: headers
                             },
                             function (error, response, body) {
                                 var data = JSON.parse(body);
@@ -310,7 +312,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     }
                 } else {
                     request({
-                            url: 'https://api.spotify.com/v1/artists/' + parts[1]
+                            url: 'https://api.spotify.com/v1/artists/' + parts[1],
+                                headers: headers
                         },
                         function (error, response, body) {
                             var data = JSON.parse(body);
@@ -325,7 +328,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
             if (parts[0] == 'album') {
                 if (parts.length > 2) {
                     request({
-                            url: 'https://api.spotify.com/v1/albums/' + parts[1] + '/tracks'
+                            url: 'https://api.spotify.com/v1/albums/' + parts[1] + '/tracks',
+                                headers: headers
                         },
                         function (error, response, body) {
                             body = body.replace('spotify:', 'bungalow:');
@@ -343,7 +347,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     );
                 } else {
                     request({
-                            url: 'https://api.spotify.com/v1/albums/' + parts[1] + ''
+                            url: 'https://api.spotify.com/v1/albums/' + parts[1] + '',
+                                headers: headers
                         },
                         function (error, response, body) {
                             body = body.replace(/spotify\:/, 'bungalow:');
