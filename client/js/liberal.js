@@ -33,11 +33,127 @@ applyTheme('chromify', 'light');
 
 
 /**
+ * A music service
+ **/
+class SPService {
+    constructor() {
+        
+    }
+    request(method, uri, params) {
+        
+    }
+}
+
+/**
+ * Spotify service
+ **/
+class SpotifyService extends SPService {
+    constructor() {
+        this.id = 'spotify';
+        this.state = {};
+    }
+    async play(context) {
+        
+        let result = await this.request('PUT', 'spotify:me:player:play', context, false);
+        this.state.player = await this.getCurrentTrack();
+        this.emit('change');
+   
+    }
+    async playTrack(track, context) {
+        await this.request('PUT', 'spotify:me:player:play', {
+            context_uri: context.uri,
+            position: {
+                uri: track.uri
+            }
+        });
+    }
+    async playTrackAtPosition(position, context) {
+        await this.request('PUT', 'spotify:me:player:play', {
+            context_uri: context.uri,
+            position: {
+                offset: position
+            }
+        });
+    }
+    async getCurrentTrack() {
+        let result = await this.request('GET', 'spotify:me:player:currently-playing', null, false);
+        
+        return result;
+    }
+    async request(method, uri, payload, cache=true) {
+        if (uri == null) return;
+        var url = uri;
+        if (uri.indexOf('bungalow:') == 0 || uri.indexOf('spotify:') == 0) {
+            if (uri.indexOf('spotify:') == 0) {
+                uri = 'bungalow:' + uri.substr('spotify:'.length);
+            }
+            url = uri.substr('bungalow:'.length).split(':').join('/');
+            
+            url = '/api/music/' + url;
+             if (uri in this.state && method == "GET" && cache)
+                return this.state[uri];
+            let result
+            if (method === 'GET') {
+                result = await fetch(url, {
+                    credentials: 'include',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    method: 'GET',
+                }).then((e) => e.json());
+            } else {
+                result = await fetch(url, {
+                    credentials: 'include',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    method: method,
+                    body: JSON.stringify(payload)
+                }).then((e) => e.json());
+            }
+            this.setState(uri, result);
+         
+            return result;
+            
+        }
+        if (uri in this.state)
+            return this.state[uri];
+        
+        let result = await fetch(url, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
+        this.setState(uri, result);
+     
+        return result;
+    }
+    
+    /**
+     * Get album by ID
+     **/
+    async getAlbumById(id) {
+        let uri = 'spotify:album:' + id;
+        let result = await fetch('/api/music/album/' + id, {credentials: 'include', mode: 'cors'}).then((e) => e.json())
+        this.setState(uri, result);
+        return result;
+    }
+    async getArtistById(id) {
+        let uri = 'spotify:artist:' + id;
+        let result = await fetch('/api/music/artist/' + id, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
+        this.setState(uri, result);
+        return result;
+    }
+}
+
+
+/**
  * Data store for application
  **/
 class Store extends EventEmitter {
     constructor() {
         super();
+        this.services = {
+            'spotify': new SpotifyService()
+        };
         this.state = {};
         this.heart = setInterval(async () => {
             this.state.player = await this.getCurrentTrack();
@@ -166,7 +282,7 @@ class Store extends EventEmitter {
     async request(method, uri, payload, cache=true) {
         if (uri == null) return;
         var url = uri;
-        if (uri.indexOf('bungalow:') == 0 || uri.indexOf('spotify:') == 0) {
+        if (url.indexOf('http') !== 0 || uri.indexOf('/') != 0) {
             if (uri.indexOf('spotify:') == 0) {
                 uri = 'bungalow:' + uri.substr('spotify:'.length);
             }
@@ -176,30 +292,10 @@ class Store extends EventEmitter {
              if (uri in this.state && method == "GET" && cache)
                 return this.state[uri];
             let result
-            if (method === 'GET') {
-                result = await fetch(url, {
-                    credentials: 'include',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    method: 'GET',
-                }).then((e) => e.json());
-            } else {
-                result = await fetch(url, {
-                    credentials: 'include',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    method: method,
-                    body: JSON.stringify(payload)
-                }).then((e) => e.json());
-            }
+            let service = uri.split(':')[0];
+            let service = this.services[service];
+            let result = await service.request(method, uri, payload, cache);
             this.setState(uri, result);
-         
-            return result;
-            
         }
         if (uri in this.state)
             return this.state[uri];

@@ -88,7 +88,6 @@ sp-sidebar {
     width: var(--sidebar-width);
 }
 sp-rightsidebar {
-    display: none;
     width: var(--sidebar-width);
 }
 sp-searchform {
