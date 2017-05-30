@@ -618,9 +618,13 @@ class SPHeaderElement extends SPResourceElement {
         let width = size;
         let height = size;  
         object.image_url = object.images && object.images[0].url ? object.images[0].url : '';
+        let titleHTML = '<sp-link uri="' + object.uri + '">' + object.name + '</sp-link>';
+        if (object.owner) {
+            titleHTML += ' <span style="opacity: 0.7">by <sp-link uri="spotify:user:' + object.owner.id + '">' + object.owner.id + '</sp-link></span>'; 
+        }
         this.innerHTML = '' + 
             '<div style="flex: 0 0 ' + width + ';">' +
-            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><h3><sp-link uri="' + object.uri + '">' + object.name + '</sp-link></h3><sp-toolbar></sp-toolbar><p>' + (object.description ? object.description : '') + '</p></div>';
+            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><h3>' + titleHTML + '</h3><sp-toolbar></sp-toolbar><p style="opacity: 0.5">' + (object.description ? object.description : '') + '</p></div>';
         if ('followers' in object) {
             let pop = '';
              if (object.popularity) {
@@ -636,7 +640,8 @@ class SPHeaderElement extends SPResourceElement {
 
 class SPToolbarElement extends HTMLElement {
     attachedCallback () {
-        this.innerHTML = '<button><i class="fa fa-share"></i> Share</button>';
+        this.innerHTML = '<button><i class="fa fa-play"></i> Play</button>&nbsp;';
+        this.innerHTML += '<button>...</button>';
     }
 }
 document.registerElement('sp-toolbar', SPToolbarElement);
@@ -927,6 +932,7 @@ class SPTrackContextElement extends SPResourceElement {
             this.attributeChangedCallback('uri', null, this.getAttribute('uri'));
             this.style.display = 'block';
             this.thead = this.querySelector('thead');
+            this.created = true;
         }
     }   
     set header(val) {
@@ -1441,10 +1447,7 @@ class SPPlaylistViewElement extends SPViewElement {
         this.header.setState(this.state);
         GlobalTabBar.setState({
             object: this.state,
-            objects: [{
-                name: 'Overview',
-                id: 'overview'
-            }]
+            objects: []
         });
     }
     navigate(uri) {
