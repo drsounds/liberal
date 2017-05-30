@@ -290,7 +290,10 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             resolve({
                                 type: 'toplist',
                                 name: 'Top Tracks',
-                                description: 'Top Tracks'
+                                uri: 'spotify:artist:' + parts[1] + ':top:' + parts[3],
+                                images: [{
+                                    url: '/images/toplist.svg'
+                                }]
                             });
                         }
                     }
@@ -453,7 +456,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                     uesrs.push({
                                         'id': 'follower' + i,
                                         'name': 'Track ' + i,
-                                        'uri': 'SpotifyBrowse:user:follower' + i
+                                        'uri': 'spotify:user:' + parts[3] + ':follower:' + i
                                     });
                                 }
                                 resolve({

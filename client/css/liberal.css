@@ -139,9 +139,14 @@ sp-toolbar {
     padding: 6pt;
 }
 
-sp-header {
+sp-header, sp-album, sp-playlist {
     display: flex;
     flex-direction: row;
+    padding: 10pt;
+    padding-right: -20pt;
+}
+sp-header > div, sp-album > div, sp-playlist > div {
+    padding-right: 12pt;
 }
 sp-header table td {
 }
