@@ -149,6 +149,7 @@ sp-tabbar {
     box-sizing: border-box;
     height: 28pt;
     padding-top: 6pt;
+    justify-content: space-between;
 
 }
 sp-main {
