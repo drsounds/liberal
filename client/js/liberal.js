@@ -82,6 +82,29 @@ class Store extends EventEmitter {
         this.saturation = this.saturation;
         this.flavor = this.flavor;
         this.stylesheet = this.stylesheet;
+        this.discoveredTracks = JSON.parse(localStorage.getItem('discoveredTracks'));
+    }
+    
+    getDiscoveredTracks(track, playlist=null) {
+        let results = this.discoveredTracks.objects.filter((t) => t.uri == track.uri);
+        if (playlist != null)
+            results = results.filter((t) => {
+                return t.playlists.filter((o) => o.uri == playlist.uri).length > 0
+            });
+        return results;
+        
+    }
+    hasDiscoveredTrack(track, playlist=null) {
+        return this.getDiscoveredTracks(track, playlist).length > 0;
+    }
+    discoverTrack(track, playlist=null, played=false) {
+        track.playlists = [];
+        track.played = played;
+        if (playlist != null) {
+            track.playlists.push(playlist);
+        }
+        this.discoveredTracks.objects.push(track);
+        localStorage.setItem('discoveredTracks', JSON.stringify(this.discoveredTracks));
     }
     get stylesheet() {
         let stylesheet = localStorage.getItem('stylesheet');
@@ -943,7 +966,7 @@ class SPTrackContextElement extends SPResourceElement {
     attachedCallback() {
         console.log("T");
         if (!this.created) {
-            this.setAttribute('fields', 'name,artists,album,user');
+            this.setAttribute('fields', 'discovered,name,artists,album,user');
     
             this.table = document.createElement('table');
             this.appendChild(this.table);
@@ -995,7 +1018,10 @@ class SPTrackContextElement extends SPResourceElement {
                 this.setState(result);
         }
     }
-    setState(obj) {
+    async setState(obj) {
+        let uri = this.getAttribute('uri');
+        if (this.playlist == null)
+            this.playlist = await store.request('GET', uri.substr(0, uri.length - ':track'.length));
         this.obj = obj;
         this.table.innerHTML = '<thead><tr></tr></thead><tbody></tbody>';
         this.thead = this.table.querySelector('thead');
@@ -1054,7 +1080,17 @@ class SPTrackContextElement extends SPResourceElement {
             fields.map((field, i) => {
               var td = document.createElement('td');
               let val = track[field];
-              if ((field === 'time' || field == 'added_at') && !!val) {
+              
+              if (field === 'discovered') {
+                  let discoverLevel = 0;
+                  let discovered = store.hasDiscoveredTrack(track, this.playlist);
+                  if (!discovered) {
+                      store.discoverTrack(track, this.playlist);
+                      val = '<i class="fa fa-circle marked"></i>';
+                  } else {
+                      val = "";
+                  }
+              } else if ((field === 'time' || field == 'added_at') && !!val) {
                   let date = moment(val);
                   let now = moment();
                 let dr = Math.abs(date.diff(now, 'days'));
