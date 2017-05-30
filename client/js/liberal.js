@@ -583,6 +583,9 @@ class SPImageElement extends HTMLElement {
 
     attachedCallback() {
         this.attributeChangedCallback('src', null, this.getAttribute('src'));
+        this.addEventListener('click', (e) => {
+           
+        });
     }
     attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName === 'src') {
@@ -906,12 +909,16 @@ class SPPlaylistElement extends SPResourceElement {
         }
     }
     setState(obj) {
+        let titleHTML = '<sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link>';
+        if (obj.owner) {
+            titleHTML += ' <span style="opacity: 0.7">by <sp-link uri="spotify:user:' + obj.owner.id + '">' + obj.owner.id + '</sp-link></span>'; 
+        }
         this.innerHTML = '' +
         '<div style="flex: 0 0 128">' +
             '<sp-image src="' + obj.images[0].url + '" width="128" height="128"></sp-image>' + 
         '</div>' +
         '<div style="flex: 2">' +
-            '<h3><sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link></h3>' +
+            '<h3>' + titleHTML + '</h3>' +
             (obj.description ? '<p>' + obj.description + '</p>' : '') +
             '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
         '</div>';
