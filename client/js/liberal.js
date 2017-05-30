@@ -104,7 +104,7 @@ class Store extends EventEmitter {
             track.playlists.push(playlist);
         }
         this.discoveredTracks.objects.push(track);
-        localStorage.setItem('discoveredTracks', JSON.stringify(this.discoveredTracks));
+  //      localStorage.setItem('discoveredTracks', JSON.stringify(this.discoveredTracks));
     }
     get stylesheet() {
         let stylesheet = localStorage.getItem('stylesheet');
