@@ -522,6 +522,10 @@ class SPViewStackElement extends HTMLElement {
             } else if (/^bungalow:genre:(.*)$/g.test(newUri)) {
                 view = document.createElement('sp-genreview');
                 
+            } else if (/^bungalow:artist:([a-zA-Z0-9._]+):top:([0-9]+)$/g.test(newUri)) {
+                view = document.createElement('sp-playlistview');
+              
+        
             } else if (/^bungalow:search:(.*)$/g.test(newUri)) {
                 view = document.createElement('sp-searchview');
                
@@ -623,7 +627,10 @@ class SPHeaderElement extends SPResourceElement {
         object.image_url = object.images && object.images[0].url ? object.images[0].url : '';
         let titleHTML = '<sp-link uri="' + object.uri + '">' + object.name + '</sp-link>';
         if (object.owner) {
-            titleHTML += ' <span style="opacity: 0.7">by <sp-link uri="spotify:user:' + object.owner.id + '">' + object.owner.id + '</sp-link></span>'; 
+            titleHTML += ' <span style="opacity: 0.7">by <sp-link uri="' + object.owner.uri + '">' + object.owner.name + '</sp-link></span>'; 
+        }
+        if (object.for) {
+            titleHTML += ' <span style="opacity: 0.7">for <sp-link uri="' + object.for.uri + '">' + object.for.name + '</sp-link></span>'; 
         }
         this.innerHTML = '' + 
             '<div style="flex: 0 0 ' + width + ';">' +
@@ -911,7 +918,12 @@ class SPPlaylistElement extends SPResourceElement {
     setState(obj) {
         let titleHTML = '<sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link>';
         if (obj.owner) {
-            titleHTML += ' <span style="opacity: 0.7">by <sp-link uri="spotify:user:' + obj.owner.id + '">' + obj.owner.id + '</sp-link></span>'; 
+            titleHTML += ' <span style="opacity: 0.7">by <sp-link uri="' + obj.owner.uri + '">' + obj.owner.name + '</sp-link></span>'; 
+        }
+        if (obj.artists) {
+            titleHTML += ' <span style="opacity: 0.7">by ' + obj.artists.map((obj) => {
+                return '<sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link>';
+            }).join(', ') + '</span>';
         }
         this.innerHTML = '' +
         '<div style="flex: 0 0 128">' +

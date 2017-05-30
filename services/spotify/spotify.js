@@ -287,13 +287,22 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 );
                             }
                         } else {
-                            resolve({
-                                type: 'toplist',
-                                name: 'Top Tracks',
-                                uri: 'spotify:artist:' + parts[1] + ':top:' + parts[3],
-                                images: [{
-                                    url: '/images/toplist.svg'
-                                }]
+                            request({
+                                url: 'https://api.spotify.com/v1/artists/' + parts[1] + '',
+                                headers: headers
+                            },
+                            function (error, response, body) {
+                                var obj = JSON.parse(body);
+                                resolve({
+                                    type: 'toplist',
+                                    name: 'Top Tracks',
+                                    description: 'The top ' + parts[3] + ' tracks by <sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link> that have played at most',
+                                    for: obj,
+                                    uri: obj.uri + ':top:' + parts[3],
+                                    images: [{
+                                        url: '/images/toplist.svg'
+                                    }]
+                                });
                             });
                         }
                     }
@@ -445,7 +454,10 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             }, function (error, response, body) {
                                 var result = JSON.parse(body);
                                 resolve({
-                                    'objects': result.items
+                                    'objects': result.items.map((p) => {
+                                        p.owner.name = p.owner.id;
+                                        return p;
+                                    })
                                 });
                             });
                             return;
@@ -485,6 +497,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                     headers: headers
                                 }, function (error, response, body) {
                                     var result = JSON.parse(body);
+                                    result.owner.name = result.owner.id;
                                     resolve(result);
                                 });
                             }
@@ -503,7 +516,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             }
                             var user = JSON.parse(body);
                             if (user) {
-                            user.name = user.id;
+                            user.name = user.display_name;
                             }
                             resolve(user);
                         }
@@ -547,6 +560,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             try {
                                 var user = JSON.parse(body);
                                 user.images = user.icons;
+                                user.name = user.display_name;
                                 resolve(user);
                             } catch (e) {
                                 fail();
