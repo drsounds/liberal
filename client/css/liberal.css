@@ -68,14 +68,15 @@ td {
 sp-link, a {
     cursor: pointer !important;
 }
+sp-toolbar button {
+    height: 100%;
+}
 sp-menuitem {
     display: block;
     width: 100%;
 }
 sp-header {
-    
-    padding-top: 35pt;
-    padding-bottom: 35pt;
+    padding: 12pt;
 }
 sp-header table td, sp-album table td, sp-playlist table td, sp-toptracks td {
     padding-left: 16pt;
@@ -132,11 +133,17 @@ sp-view {
     
 }
 
+sp-toolbar {
+    display: block;
+    width: 100%;
+    padding: 6pt;
+}
 
-
+sp-header {
+    display: flex;
+    flex-direction: row;
+}
 sp-header table td {
-    padding-top: 16pt;
-    padding-bottom: 16pt;
 }
 
 sp-tabcontent {

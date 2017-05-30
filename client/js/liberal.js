@@ -577,6 +577,7 @@ class SPViewStackElement extends HTMLElement {
 
 document.registerElement('sp-viewstack', SPViewStackElement);
 
+const TOTAL_ARTISTS_ON_SPOTIFY = 2000000;
 
 class SPImageElement extends HTMLElement {
 
@@ -613,13 +614,30 @@ class SPHeaderElement extends SPResourceElement {
         });
     }
     setState(object) {
-        let size = this.getAttribute('size') || 171;
+        let size = this.getAttribute('size') || 128;
         let width = size;
         let height = size;  
         object.image_url = object.images && object.images[0].url ? object.images[0].url : '';
-        this.innerHTML = '<table width="100%"><tbody><tr><td valign="top" width="' + width + '"><sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></td><td valign="top"><h3><sp-link uri="' + object.uri + '">' + object.name + '</sp-link></h3><p>' + object.description + '</p></td></tr></tbody></table>';
+        this.innerHTML = '<div style="flex: 0 0 ' + width + '; margin-right: 10pt; margin-left: 12pt"><sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><h3><sp-link uri="' + object.uri + '">' + object.name + '</sp-link></h3><sp-toolbar></sp-toolbar><p>' + (object.description ? object.description : '') + '</p></div>';
+        if ('followers' in object) {
+            let pop = '';
+             if (object.popularity) {
+                 pop = '<hr><h3>#' + numeral( TOTAL_ARTISTS_ON_SPOTIFY - (TOTAL_ARTISTS_ON_SPOTIFY * ((object.popularity) / 100))).format('0,0') + '</h3><br>In he world';
+            }
+            this.innerHTML += '<div style="flex: 0 0 50pt; margin-left: 15pt"> <h3>' + numeral(object.followers.total).format('0,0') + '</h3><br> followers<br> ' + pop + ' </div>';
+           
+        } 
+        
     }
 }
+
+
+class SPToolbarElement extends HTMLElement {
+    attachedCallback () {
+        this.innerHTML = '<button><i class="fa fa-share"></i> Share</button>';
+    }
+}
+document.registerElement('sp-toolbar', SPToolbarElement);
 
 document.registerElement('sp-header', SPHeaderElement);
 
@@ -839,7 +857,7 @@ class SPAlbumElement extends SPResourceElement {
         }
     }
     setState(obj) {
-        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="171"><img src="' + obj.images[0].url + '" width="171" height="171"></td>' +
+        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="128"><img src="' + obj.images[0].url + '" width="128" height="128"></td>' +
             '<td valign="top"><h3><sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link></h3>' +
             '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
             '</td></tr></tbody></table>';
@@ -860,7 +878,7 @@ class SPTopTracksElement extends SPResourceElement {
         }
     }
     setState(obj) {
-        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="171"><img src="/images/toplist.svg" width="171" height="171"></td>' +
+        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="128"><img src="/images/toplist.svg" width="128" height="128"></td>' +
             '<td valign="top"><h3>Top Tracks</h3>' +
             '<sp-trackcontext uri="' + obj.uri + ':top:5:track' + '"></sp-trackcontext>' +
             '</td></tr></tbody></table>';
@@ -881,7 +899,7 @@ class SPPlaylistElement extends SPResourceElement {
         }
     }
     setState(obj) {
-        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="171"><img src="' + obj.images[0].url + '" width="171" height="171"></td>' +
+        this.innerHTML = '<table width="100%" class="header"><tbody><tr><td valign="top" width="128"><img src="' + obj.images[0].url + '" width="128" height="128"></td>' +
             '<td valign="top"><h3><sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link></h3><p>' + obj.description + '</p>' +
             '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
             '</td></tr></tbody></table>';
@@ -1384,7 +1402,7 @@ class SPPlaylistViewElement extends SPViewElement {
         this.classList.add('sp-view');
         if (!this.header) {
             this.header = document.createElement('sp-header');
-            this.header.setAttribute('size', 64);
+            this.header.setAttribute('size', 128);
             this.appendChild(this.header);
         }
         if (!this.trackcontext) {
