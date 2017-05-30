@@ -606,9 +606,10 @@ class SPHeaderElement extends SPResourceElement {
         this.classList.add('header');
         GlobalTabBar.titleVisible  = false;
         this.parentNode.addEventListener('scroll', (e) => {
-        
-            GlobalTabBar.titleVisible = (this.getBoundingClientRect().top < this.parentNode.getBoundingClientRect().top - (this.getBoundingClientRect().height * 0.5));
-        
+            let headerBounds = this.getBoundingClientRect();
+            let viewBounds = this.parentNode.getBoundingClientRect();
+            GlobalTabBar.titleVisible = (headerBounds.top < viewBounds.top - (headerBounds.height * 0.5));
+            console.log(headerBounds.top, viewBounds.top)
         });
     }
     setState(object) {
@@ -662,11 +663,11 @@ document.registerElement('sp-view', SPViewElement);
 class SPArtistViewElement extends SPViewElement {
     async attachedCallback() {
         super.attachedCallback();
-        this.state = {
-            artist: null,
-            albums: []
-        }
         if (!this.loaded) {
+            this.state = {
+                artist: null,
+                albums: []
+            }
             this.header = document.createElement('sp-header');
             this.appendChild(this.header);
             
@@ -829,7 +830,6 @@ document.registerElement('sp-resource', SPResourceElement);
 
 class SPAlbumElement extends SPResourceElement {
     attachedCallback() {
-        super.attachedCallback();
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName == 'uri') {
@@ -1037,8 +1037,7 @@ class SPTrackContextElement extends SPResourceElement {
 document.registerElement('sp-trackcontext', SPTrackContextElement);
 
 class SPAlbumContextElement extends SPResourceElement {
-    attachedCallback() {
-        super.attachedCallback();
+    attachedCallback() {    
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName == 'uri') {
@@ -1212,7 +1211,7 @@ class SPTabBarElement extends HTMLElement {
         }
     }
     get titleVisible() {
-        return this.titleBar.style.display == 'block';
+        return this.titleBar.style.visibility == 'visible';
     }
     set titleVisible(val) {
         this.titleBar.style.visibility = val ? 'visible': 'hidden';
