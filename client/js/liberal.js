@@ -32,8 +32,8 @@ function applyTheme(theme, flavor='light') {
         document.head.appendChild(link2);
         link2.setAttribute('rel', 'stylesheet');
     }
-    link.setAttribute('href', '/themes/' + theme + '/css/' + theme + '.css');
     link2.setAttribute('href', '/themes/' + theme + '/css/' + flavor + '.css');
+    link.setAttribute('href', '/themes/' + theme + '/css/' + theme + '.css');
 }
 
 
@@ -277,31 +277,35 @@ var store = new Store();
 
 class SPThemeEditorElement extends HTMLElement {
     attachedCallback() {
-        this.colorChooser = document.createElement('input');
-        this.colorChooser.setAttribute('type', 'range');
-        this.appendChild(this.colorChooser);
-        this.colorChooser.setAttribute('max', 360);
-        this.colorChooser.addEventListener('change', this.colorSlider);
-        this.colorChooser.addEventListener('mousemove', this.colorSlider);
-        this.saturationChooser = document.createElement('input');
-        this.saturationChooser.setAttribute('type', 'range');
-        this.appendChild(this.saturationChooser);
-        this.saturationChooser.setAttribute('max', 360);
-        this.saturationChooser.addEventListener('change', this.saturationSlider);
-        this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
-        this.saturationChooser.value = store.saturation;
-        this.styleselect = document.createElement('select');
-        this.styleselect.innerHTML += '<option value="chromify">Chromify</option><option value="wmp_9">Windows Media Player 9</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_11_beta">Windows Media Player 11 Beta</option><option value="wmp_11">Windows Media Player 11</option><option value="chromify-flat">Chromify (flat version)</option><option value="obama">Obama</option>';
-        this.appendChild(this.styleselect);
-        this.flavorselect = document.createElement('select');
-        this.flavorselect.innerHTML += '<option value="dark">Dark</option><option value="light">Light</option>';
-        this.appendChild(this.flavorselect);
-        this.flavorselect.addEventListener('change', (e) => {
-            store.flavor = e.target.options[e.target.selectedIndex].value;
-        });
-         this.styleselect.addEventListener('change', (e) => {
-            store.stylesheet = e.target.options[e.target.selectedIndex].value;
-        });
+        if (!this.created) {
+            this.colorChooser = document.createElement('input');
+            this.colorChooser.setAttribute('type', 'range');
+            this.appendChild(this.colorChooser);
+            this.colorChooser.setAttribute('max', 360);
+            this.colorChooser.addEventListener('change', this.colorSlider);
+            this.colorChooser.addEventListener('mousemove', this.colorSlider);
+            this.saturationChooser = document.createElement('input');
+            this.saturationChooser.setAttribute('type', 'range');
+            this.appendChild(this.saturationChooser);
+            this.saturationChooser.setAttribute('max', 360);
+            this.saturationChooser.addEventListener('change', this.saturationSlider);
+            this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
+            this.saturationChooser.value = store.saturation;
+            this.styleselect = document.createElement('select');
+            this.styleselect.innerHTML += '<option value="chromify">Chromify</option><option value="wmp_9">Windows Media Player 9</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_11_beta">Windows Media Player 11 Beta</option><option value="wmp_11">Windows Media Player 11</option><option value="chromify-flat">Chromify (flat version)</option><option value="obama">Obama</option>';
+            this.appendChild(this.styleselect);
+            this.flavorselect = document.createElement('select');
+            this.flavorselect.innerHTML += '<option value="dark">Dark</option><option value="light">Light</option>';
+            this.appendChild(this.flavorselect);
+            this.flavorselect.addEventListener('change', (e) => {
+                store.flavor = e.target.options[e.target.selectedIndex].value;
+            });
+             this.styleselect.addEventListener('change', (e) => {
+                store.stylesheet = e.target.options[e.target.selectedIndex].value;
+            });
+            this.created = true;
+            
+        }
     }
     colorSlider(e) {
         let value = e.target.value;
@@ -600,7 +604,12 @@ document.registerElement('sp-image', SPImageElement);
 class SPHeaderElement extends SPResourceElement {
     attachedCallback() {
         this.classList.add('header');
-
+        GlobalTabBar.titleVisible  = false;
+        this.parentNode.addEventListener('scroll', (e) => {
+        
+            GlobalTabBar.titleVisible = (this.getBoundingClientRect().top < this.parentNode.getBoundingClientRect().top - (this.getBoundingClientRect().height * 0.5));
+        
+        });
     }
     setState(object) {
         let size = this.getAttribute('size') || 171;
@@ -615,15 +624,32 @@ document.registerElement('sp-header', SPHeaderElement);
 
 
 class SPViewElement extends HTMLElement {
+    constructor() {
+        super();
+        this.scrollX = 0;
+        this.scrollY = 0;
+    }
     acceptsUri(uri) {
         return false;
+    }
+    activate() {
+        this.scrollTop = (this.scrollY);
+    }
+    _onScroll(e) {
+        let view = e.target;
+        view.scrollY = view.scrollTop;
     }
     navigate(uri) {
         
         
     }
     attachedCallback() {
+        
         GlobalTabBar.setState({objects: []});
+        this.addEventListener('scroll', this._onScroll);
+    }
+    disconnectedCallback() {
+        this.removeEventListener('scroll', this._onScrll);
     }
     attributeChangedCallback(attr, oldValue, newVal) {
         
@@ -635,36 +661,32 @@ document.registerElement('sp-view', SPViewElement);
 
 class SPArtistViewElement extends SPViewElement {
     async attachedCallback() {
+        super.attachedCallback();
         this.state = {
             artist: null,
             albums: []
         }
-        if (!this.header) {
-        this.header = document.createElement('sp-header');
-        this.appendChild(this.header);
-        }
-        this.classList.add('sp-view');
-        this.state = {
+        if (!this.loaded) {
+            this.header = document.createElement('sp-header');
+            this.appendChild(this.header);
             
-        };
-         if (!this.topTracksDivider) {
-        this.topTracksDivider = document.createElement('sp-divider');
-        this.topTracksDivider.innerHTML = 'Top tracks';
-        this.appendChild(this.topTracksDivider);
-        }
-        if (!this.topTracks) {
-            this.topTracks = document.createElement('sp-toptracks');
-            this.appendChild(this.topTracks);
-        }
-        if (!this.albumsDivider) {
-        this.albumsDivider = document.createElement('sp-divider');
-        this.albumsDivider.innerHTML = 'albums';
-        this.appendChild(this.albumsDivider);
-        }
-        if (!this.albumList) {
+            this.classList.add('sp-view');
+         
+            this.topTracksDivider = document.createElement('sp-divider');
+            this.topTracksDivider.innerHTML = 'Top tracks';
+            this.appendChild(this.topTracksDivider);
+            
+                this.topTracks = document.createElement('sp-toptracks');
+                this.appendChild(this.topTracks);
+           
+            this.albumsDivider = document.createElement('sp-divider');
+            this.albumsDivider.innerHTML = 'albums';
+            this.appendChild(this.albumsDivider);
         
+      
             this.albumList = document.createElement('sp-albumcontext');
             this.appendChild(this.albumList);
+            this.loaded = true;
         }
     }
     acceptsUri(uri) {
@@ -674,6 +696,7 @@ class SPArtistViewElement extends SPViewElement {
             
     }
     activate() {
+        super.activate();
         GlobalTabBar.setState({
             object: this.state,
             objects: [{
@@ -703,6 +726,7 @@ document.registerElement('sp-artistview', SPArtistViewElement);
 
 class SPUserViewElement extends SPViewElement {
     async attachedCallback() {
+        super.attachedCallback();
         this.state = {
             artist: null,
             albums: []
@@ -730,6 +754,7 @@ class SPUserViewElement extends SPViewElement {
             
     }
     activate() {
+        super.activate();
         GlobalTabBar.setState({
             object: this.state,
             objects: [{
@@ -758,21 +783,24 @@ document.registerElement('sp-userview', SPUserViewElement);
 
 class SPGenreViewElement extends SPViewElement {
     async attachedCallback() {
-      
-        this.header = document.createElement('sp-header');
-        this.appendChild(this.header);
-        this.classList.add('sp-view');
-        this.state = {
-            
-        };
-        if (!this.albumsDivider) {
-        this.albumsDivider = document.createElement('sp-divider');
-        this.albumsDivider.innerHTML = 'Public playlists';
-        this.appendChild(this.albumsDivider);
-        }
-        if (!this.albumList) {
-            this.albumList = document.createElement('sp-playlistcontext');
-            this.appendChild(this.albumList);
+        super.attachedCallback();
+        if (!this.loaded) {
+          
+            this.header = document.createElement('sp-header');
+            this.appendChild(this.header);
+            this.classList.add('sp-view');
+            this.state = {
+                
+            };
+            if (!this.albumsDivider) {
+            this.albumsDivider = document.createElement('sp-divider');
+            this.albumsDivider.innerHTML = 'Public playlists';
+            this.appendChild(this.albumsDivider);
+            }
+            if (!this.albumList) {
+                this.albumList = document.createElement('sp-playlistcontext');
+                this.appendChild(this.albumList);
+            }
         }
     }
     acceptsUri(uri) {
@@ -801,7 +829,7 @@ document.registerElement('sp-resource', SPResourceElement);
 
 class SPAlbumElement extends SPResourceElement {
     attachedCallback() {
-        
+        super.attachedCallback();
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName == 'uri') {
@@ -843,7 +871,7 @@ document.registerElement('sp-toptracks', SPTopTracksElement);
 
 class SPPlaylistElement extends SPResourceElement {
     attachedCallback() {
-        
+        super.attachedCallback();    
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName == 'uri') {
@@ -875,38 +903,45 @@ class SPTrackContextElement extends SPResourceElement {
         this.style.display = 'block';
         this.thead = this.querySelector('thead');
     }   
-    setHeader(header) {
-        this.header = header;
+    set header(val) {
+        this._header = val;
     }
-
-    setView(view) {
-        this.view = view;
-        view.addEventListener('scroll', () => {
-            console.log(this);
-            let viewBounds = view.getBoundingClientRect();
-            let bounds = this.getBoundingClientRect();
-            let tabBar = GlobalTabBar.getBoundingClientRect();
-            let headerHeight = 0;
-            if (this.header) {
-                headerHeight = this.header.getBoundingClientRect().height;;
-            } 
-            console.log(bounds.top, viewBounds.top);
-            if (this.view.scrollTop > headerHeight ) {
-                this.style.display = 'block';
-                let transform = 'translateY(' + ( this.view.scrollTop - headerHeight) + 'px)';
-                console.log(transform);
-                this.thead.style.transform = transform; 
-            } else {
-                this.thead.style.transform = 'translateY(0px)';
-            }
-        });
+    get header() {
+        return this._header;
+    }
+    get view() {
+        return this._view;
+    }
+    set view(val) {
+        
+        this._view = val;
+        this._view.addEventListener('scroll', this._onScroll.bind(this));
+    }
+    _onScroll(e) {
+        let view = e.target;
+        let viewBounds = view.getBoundingClientRect();
+        let bounds = this.getBoundingClientRect();
+        let tabBar = GlobalTabBar.getBoundingClientRect();
+        let headerHeight = 0;
+        if (this.header) {  
+            headerHeight = this.header.getBoundingClientRect().height;;
+        } 
+        console.log(bounds.top, viewBounds.top);
+        if (view.scrollTop > headerHeight ) {
+            view.style.display = 'block';
+            let transform = 'translateY(' + ( view.scrollTop - headerHeight) + 'px)';
+            this.thead.style.transform = transform; 
+        } else {
+            this.thead.style.transform = 'translateY(0px)';
+        }
+    
     }
     
     async attributeChangedCallback(attrName, oldVal, newVal) {
         
         if (attrName == 'uri') {
           let result = await store.request('GET', newVal);
-            this.setState(result);
+                this.setState(result);
         }
     }
     setState(obj) {
@@ -971,12 +1006,12 @@ class SPTrackContextElement extends SPResourceElement {
                 let dr = Math.abs(date.diff(now, 'days'));
                 let tooOld = dr > 1;
                   let strTime = dr ? date.format('YYYY-MM-DD') : date.fromNow();
-                  td.innerHTML = strTime;
+                  td.innerHTML = '<span>' + strTime + '</span>';
                   if (tooOld) {
                       td.style.opacity = 0.5;
                   }
               } else if (typeof(val) === 'string') {
-                td.innerHTML = val;
+                td.innerHTML = '<span>' + val + '</span>';
               } else if (val instanceof Array) {
                  td.innerHTML = val.map((v, i) => {
                   
@@ -1003,6 +1038,7 @@ document.registerElement('sp-trackcontext', SPTrackContextElement);
 
 class SPAlbumContextElement extends SPResourceElement {
     attachedCallback() {
+        super.attachedCallback();
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName == 'uri') {
@@ -1143,8 +1179,9 @@ class SPTabElement extends HTMLElement {
 document.registerElement('sp-tab', SPTabElement);
 
 
-class SPSettingsViewElement extends HTMLElement {
+class SPSettingsViewElement extends SPViewElement {
     attachedCallback() {
+        super.attachedCallback();
         if (!this.created) {
             this.create();
             this.created = true;
@@ -1158,7 +1195,7 @@ class SPSettingsViewElement extends HTMLElement {
                         '</form>';
     }
     activate() {
-       
+       super.activate();
     }
 }
 
@@ -1167,8 +1204,19 @@ document.registerElement('sp-settingsview', SPSettingsViewElement);
 
 class SPTabBarElement extends HTMLElement {
     attachedCallback() {
-        this.titleBar = document.createElement('div');
-        this.appendChild(this.titleBar);
+        if (!this.created) {
+            this.titleBar = document.createElement('div');
+            this.titleBar.style.visibility = 'hidden';
+            this.appendChild(this.titleBar);
+            this.created = true;
+        }
+    }
+    get titleVisible() {
+        return this.titleBar.style.display == 'block';
+    }
+    set titleVisible(val) {
+        this.titleBar.style.visibility = val ? 'visible': 'hidden';
+ 
     }
     get title() {
         return this.titleBar.innerHTML;
@@ -1179,7 +1227,7 @@ class SPTabBarElement extends HTMLElement {
     setState(state) {
         this.innerHTML = '';
         this.titleBar = document.createElement('div');
-        this.titleBar.style.display = 'inline-block';
+        this.titleBar.style.visibility = 'hidden';
         this.titleBar.style.paddingRight = '113pt';
         this.titleBar.style.paddingTop = '-12px';
         this.appendChild(this.titleBar);
@@ -1311,6 +1359,7 @@ document.registerElement('sp-startview', SPStartViewElement);
 
 class SPAlbumViewElement extends SPViewElement {
     attachedCallback() {
+        super.attachedCallback();
         this.classList.add('sp-view');
     }
     acceptsUri(uri) {
@@ -1332,6 +1381,7 @@ document.registerElement('sp-albumview', SPAlbumViewElement);
 
 class SPPlaylistViewElement extends SPViewElement {
     attachedCallback() {
+        super.attachedCallback();
         this.classList.add('sp-view');
         if (!this.header) {
             this.header = document.createElement('sp-header');
@@ -1343,8 +1393,8 @@ class SPPlaylistViewElement extends SPViewElement {
             this.trackcontext.setAttribute('fields', 'name,artists,album,added_at');
             this.appendChild(this.trackcontext);
             this.trackcontext.setAttribute('headers', 'true');
-            this.trackcontext.setHeader(this.header);    
-            this.trackcontext.setView(this);    
+            this.trackcontext.header = (this.header);    
+            this.trackcontext.view = (this);    
         }
 
 
@@ -1354,6 +1404,7 @@ class SPPlaylistViewElement extends SPViewElement {
         return /^bungalow:user:(.*):playlist:([a-zA-Z0-9]+)$/.test(uri);
     }
     activate() {
+        super.activate();
         if (this.state == null) 
             return;
         this.header.setState(this.state);
@@ -1382,6 +1433,7 @@ document.registerElement('sp-playlistview', SPPlaylistViewElement);
 
 class SPPlayqueueViewElement extends SPViewElement {
     attachedCallback() {
+        super.attachedCallback();
         this.classList.add('sp-view');
         if (!this.header) {
             this.header = document.createElement('sp-header');
@@ -1412,16 +1464,17 @@ document.registerElement('sp-playqueueview', SPPlayqueueViewElement);
 
 class SPSearchViewElement extends SPViewElement {
     attachedCallback() {
-        this.classList.add('sp-view');
-        this.innerHTML = "<div style='padding: 13pt'><h3>Search results for '<span id='q'></span>";
-        this.header = this.querySelector('div');    
-        if (!this.trackcontext) {
+         if (!this.created) {
+            this.classList.add('sp-view');
+            this.innerHTML = "<div style='padding: 13pt'><h3>Search results for '<span id='q'></span>";
+            this.header = this.querySelector('div');    
+       
             this.trackcontext = document.createElement('sp-trackcontext');
             this.appendChild(this.trackcontext);
             this.trackcontext.setAttribute('headers', 'true');
             this.trackcontext.setHeader(this.header);
             this.trackcontext.setView(this);
-
+            this.created = true;    
         }
         
     }
