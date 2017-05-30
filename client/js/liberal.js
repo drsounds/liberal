@@ -538,6 +538,7 @@ class SPViewStackElement extends HTMLElement {
             this.setView(view);
         } else {
             let view = null;
+            
             if (newUri === 'bungalow:internal:settings') {
                 view = document.createElement('sp-settingsview');  
             } else if (/^bungalow:internal:start$/g.test(newUri)) {
@@ -546,6 +547,14 @@ class SPViewStackElement extends HTMLElement {
                 view = document.createElement('sp-genreview');
                 
             } else if (/^bungalow:artist:([a-zA-Z0-9._]+):top:([0-9]+)$/g.test(newUri)) {
+                view = document.createElement('sp-playlistview');
+              
+        
+            } else if (/^bungalow:country:([a-zA-Z0-9._]+)/g.test(newUri)) {
+                view = document.createElement('sp-countryview');
+              
+        
+            } else if (/^bungalow:country:([a-zA-Z0-9._]+):top:([0-9]+)$/g.test(newUri)) {
                 view = document.createElement('sp-playlistview');
               
         
@@ -632,6 +641,29 @@ class SPImageElement extends HTMLElement {
 document.registerElement('sp-image', SPImageElement);
 
 
+class SPTitleElement extends HTMLElement {
+    attachedCallback() {
+        
+    }
+    setState(object) {
+        let titleHTML = '<sp-link uri="' + object.uri + '">' + object.name + '</sp-link>';
+        if (object.owner) {
+            titleHTML += ' <span style="opacity: 0.7">by <sp-link uri="' + object.owner.uri + '">' + object.owner.name + '</sp-link></span>'; 
+        }
+        if (object.for) {
+            titleHTML += ' <span style="opacity: 0.7">for <sp-link uri="' + object.for.uri + '">' + object.for.name + '</sp-link></span>'; 
+        }
+        if (object.in) {
+            titleHTML += ' <span style="opacity: 0.7">in <sp-link uri="' + object.for.uri + '">' + object.for.name + '</sp-link></span>'; 
+        }
+        this.innerHTML = titleHTML;
+    }
+}
+
+document.registerElement('sp-title', SPTitleElement);
+
+
+
 class SPHeaderElement extends SPResourceElement {
     attachedCallback() {
         this.classList.add('header');
@@ -647,17 +679,13 @@ class SPHeaderElement extends SPResourceElement {
         let size = this.getAttribute('size') || 128;
         let width = size;
         let height = size;  
+        let titleElement = document.createElement('sp-title');
+        titleElement.setState(object);
         object.image_url = object.images && object.images[0].url ? object.images[0].url : '';
-        let titleHTML = '<sp-link uri="' + object.uri + '">' + object.name + '</sp-link>';
-        if (object.owner) {
-            titleHTML += ' <span style="opacity: 0.7">by <sp-link uri="' + object.owner.uri + '">' + object.owner.name + '</sp-link></span>'; 
-        }
-        if (object.for) {
-            titleHTML += ' <span style="opacity: 0.7">for <sp-link uri="' + object.for.uri + '">' + object.for.name + '</sp-link></span>'; 
-        }
+        
         this.innerHTML = '' + 
             '<div style="flex: 0 0 ' + width + ';">' +
-            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><h3>' + titleHTML + '</h3><sp-toolbar></sp-toolbar><p style="opacity: 0.5">' + (object.description ? object.description : '') + '</p></div>';
+            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><h3>' + titleElement.innerHTML + '</h3><sp-toolbar></sp-toolbar><p style="opacity: 0.5">' + (object.description ? object.description : '') + '</p></div>';
         if ('followers' in object) {
             let pop = '';
              if (object.popularity) {
@@ -939,21 +967,14 @@ class SPPlaylistElement extends SPResourceElement {
         }
     }
     setState(obj) {
-        let titleHTML = '<sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link>';
-        if (obj.owner) {
-            titleHTML += ' <span style="opacity: 0.7">by <sp-link uri="' + obj.owner.uri + '">' + obj.owner.name + '</sp-link></span>'; 
-        }
-        if (obj.artists) {
-            titleHTML += ' <span style="opacity: 0.7">by ' + obj.artists.map((obj) => {
-                return '<sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link>';
-            }).join(', ') + '</span>';
-        }
+        let titleElement = document.createElement('sp-title');
+        titleElement.setState(obj);
         this.innerHTML = '' +
         '<div style="flex: 0 0 128">' +
             '<sp-image src="' + obj.images[0].url + '" width="128" height="128"></sp-image>' + 
         '</div>' +
         '<div style="flex: 2">' +
-            '<h3>' + titleHTML + '</h3>' +
+            '<h3>' +  titleElement.innerHTML + '</h3>' +
             (obj.description ? '<p>' + obj.description + '</p>' : '') +
             '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
         '</div>';
@@ -961,6 +982,41 @@ class SPPlaylistElement extends SPResourceElement {
 }
 
 document.registerElement('sp-playlist', SPPlaylistElement);
+
+
+class SPCountryViewElement extends SPViewElement {
+    attachedCallback() {
+        super.attachedCallback();
+        if (!this.created) {
+            this.classList.add('sp-view');
+            this.header = document.createElement('sp-header');
+            this.appendChild(this.header);
+            this.albumsDivider = document.createElement('sp-divider');
+            this.albumsDivider.innerHTML = 'Top Tracks';
+            this.appendChild(this.albumsDivider);
+            this.topTracks = document.createElement('sp-playlist');
+            this.appendChild(this.topTracks);
+            this.created = true;
+        }
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'uri') {
+            
+            let result = await store.request('GET', newVal);
+            this.state = result;
+            
+            this.setState(this.state);    
+            this.topTracks.setAttribute('uri', newVal + ':top:5');
+            this.setState(this.state);
+            this.activate();
+        }
+    }
+    setState(state) {
+        this.header.setState(state);
+    }
+}
+
+document.registerElement('sp-countryview', SPCountryViewElement);
 
 class SPTrackContextElement extends SPResourceElement {
     attachedCallback() {

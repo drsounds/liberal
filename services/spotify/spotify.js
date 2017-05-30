@@ -287,7 +287,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 );
                             }
                         } else {
-                            request({
+                                request({
                                 url: 'https://api.spotify.com/v1/artists/' + parts[1] + '',
                                 headers: headers
                             },
@@ -403,40 +403,76 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                 }
             }
             if (parts[0] == 'country') {
-                if (parts.length > 1) {
-                    var code = parts[1];
-                    if (parts.length > 2) {
-    
-                        if (parts[2] == 'chart') {
-                            var chart = parts[3];
-                            var type = parts[4];
-                            if (type === 'tracks') {
-                                resolve({'objects': []});
-                            }
-                        }
-                        if (parts[2] == 'label') {
-                            var labels = [
-                                {
-                                    'id': 'substream',
-                                    'name': 'Substream Music Group',
-                                    'href': '/label/substream',
-                                    'uri': 'spotify:label:substream'
-                                }
-                            ];
-                            resolve({objects: labels});
-                        }
-                        
-                    } else {
-    
-                        resolve({
-                            'id': code,
-                            'name': code,
-                            'followers': {
-                                'count': 5000000,
-                                'href': '/country/' + code + '/follower'
-                            }
-                        })
+                var code = parts[1];
+                if (parts[2] === 'category') {
+                    if (parts[4] === 'playlist') {
+                        request({
+                            url: 'https://api.spotify.com/v1/browse/categories/' + parts[3] + '/playlists?country=' + parts[1] + '&limit=2',
+                            headers: headers
+                        }, function (err, response, body) {
+                            var result = JSON.parse(body);
+                            resolve({
+                                objects: result.playlists
+                            });
+                        });
+                        return;
                     }
+                } else if (parts[2] === 'top') {
+                    if (parts[4] === 'track') {
+                        request({
+                            url: 'https://api.spotify.com/v1/browse/categories/toplists/playlists?country=' + parts[1] + '&limit=2',
+                            headers: headers
+                        }, function (err, response, body) {
+                            var result = JSON.parse(body);
+                            result = { objects: result.playlists };
+                            request({
+                                url: result.objects[0].href + '/tracks',
+                                headers: headers
+                            }, function (err2, response2, body2) {
+                                var result = JSON.parse(body);
+                                resolve({
+                                    objects: result.items
+                                });
+                            });
+                        });
+                        return;
+                    } else {
+                        request({
+                            url: 'https://restcountries.eu/rest/v2/alpha/' + code,
+                            headers: headers
+                        }, function (err2, response2, body2) {
+                            var result = JSON.parse(body2);
+                            resolve({
+                                id: parts[3],
+                                uri: 'spotify:country:' + code + ':top:' + parts[3],
+                                name: 'Top Tracks',
+                                type: 'toplist',
+                                in: result,
+                                description: 'The most popular tracks in ' + result.name
+                            })
+                        });
+                    }
+                } else if (parts[2] === 'playlist') {
+                    request({
+                        url: 'https://api.spotify.com/v1/browse/categories/toplists/playlists?country=' + parts[1] + '&limit=2',
+                        headers: headers
+                    }, function (err, response, body) {
+                        var result = JSON.parse(body);
+                        resolve({
+                            objects: result.playlists
+                        });
+                        return;
+                    })
+                }  else {
+                    request({
+                        url: 'https://restcountries.eu/rest/v2/alpha/' + code,
+                    }, function (error, response, body) {
+                        var result = JSON.parse(body);
+                        result.type = 'country';
+                        resolve(result);
+                    });
+                    return;
+                    
                 }
             }
             if (parts[0] == 'user') {
