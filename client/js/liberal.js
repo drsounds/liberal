@@ -1407,7 +1407,7 @@ class SPAlbumViewElement extends SPViewElement {
     }
     attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName === 'uri') {
-            this.albumView = document.createElement('sp-album');
+            this.albumView = document.createElement('sp-playlist');
             this.appendChild(this.albumView);
             this.albumView.setAttribute('uri', newVal);
         }
