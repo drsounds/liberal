@@ -236,7 +236,7 @@ app.get('/social/*', function (req, res) {
 });
 
 app.get('/music/*', function (req, res) {
-    console.log('music');
+    
     music.session = req.session;
     var body = {};
     if (request.body) {

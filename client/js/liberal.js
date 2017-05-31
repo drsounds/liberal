@@ -625,6 +625,10 @@ class SPViewStackElement extends HTMLElement {
                 view = document.createElement('sp-playlistview');
               
         
+            } else if (/^bungalow:country:([a-zA-Z0-9._]+):top:([0-9]+)$/g.test(newUri)) {
+                view = document.createElement('sp-playlistview');
+              
+        
             } else if (/^bungalow:country:([a-zA-Z0-9._]+)/g.test(newUri)) {
                 view = document.createElement('sp-countryview');
               
@@ -735,7 +739,7 @@ class SPTitleElement extends HTMLElement {
             titleHTML += ' <span style="opacity: 0.7"> ' + _('for') + ' <sp-link uri="' + object.for.uri + '">' + _(object.for.name) + '</sp-link></span>'; 
         }
         if (object.in) {
-            titleHTML += ' <span style="opacity: 0.7"> ' + _('in') + ' <sp-link uri="' + object.for.uri + '">' + _(object.in.name) + '</sp-link></span>'; 
+            titleHTML += ' <span style="opacity: 0.7"> ' + _('in') + ' <sp-link uri="' + object.in.uri + '">' + _(object.in.name) + '</sp-link></span>'; 
         }
         this.innerHTML = titleHTML;
     }

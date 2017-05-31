@@ -113,7 +113,6 @@ SpotifyBrowseAPI.prototype.getMe = function () {
 SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, req, cb) {
     var self = this;
     this.req = req;
-    console.log("A");
     return new Promise(function (resolve, fail) {
         var activity = function () {
     
@@ -419,20 +418,60 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     }
                 } else if (parts[2] === 'top') {
                     if (parts[4] === 'track') {
+                        if (parts[1] == 'qi') {
+                            var result = { 
+                                name: 'Qiland',
+                                id: 'qi'
+                            };
+                            url = 'https://api.spotify.com/v1/users/drsounds/playlists/2KVJSjXlaz1PFl6sbOC5AU';
+                            request({
+                                url: url,
+                                headers: headers
+                            }, function (err, response, body) {
+                                try {
+                                    request({
+                                        url: url + '/tracks',
+                                        headers: headers
+                                    }, function (err2, response2, body2) {
+                                        var result3 = JSON.parse(body2);
+                                        resolve({
+                                            objects: result3.items.map(function (track) {
+                                                var track = assign(track, track.track);
+                                                track.user = track.added_by;
+                                                track.time = track.added_at;
+                                                if (track.user)
+                                                track.user.name = track.user.id;
+                                                return track;
+                                            })
+                                        });
+                                    });
+                                } catch (e) {
+                                    fail(500);
+                                }
+                            });
+                            return;
+                        }
                         request({
                             url: 'https://api.spotify.com/v1/browse/categories/toplists/playlists?country=' + parts[1] + '&limit=2',
                             headers: headers
                         }, function (err, response, body) {
                             try {
                                 var result = JSON.parse(body);
-                                result = { objects: result.playlists };
+                                result = { objects: result.playlists.items };
                                 request({
                                     url: result.objects[0].href + '/tracks',
                                     headers: headers
                                 }, function (err2, response2, body2) {
-                                    var result = JSON.parse(body);
+                                    var result3= JSON.parse(body2);
                                     resolve({
-                                        objects: result.items
+                                        objects: result3.items.map(function (track) {
+                                            var track = assign(track, track.track);
+                                            track.user = track.added_by;
+                                            track.time = track.added_at;
+                                            if (track.user)
+                                            track.user.name = track.user.id;
+                                            return track;
+                                        })
                                     });
                                 });
                             } catch (e) {
@@ -441,17 +480,45 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         });
                         return;
                     } else {
+                        if (code === 'qi') {
+                            var result = {
+                                id: parts[3],
+                                uri: 'spotify:country:' + code + ':top:' + parts[3],
+                                name: 'Top Tracks',
+                                type: 'toplist',
+                                images: [{
+                                    url: ''
+                                }],
+                                in: {
+                                    id: 'qi',
+                                    type: 'country',
+                                    name: 'Qiland',
+                                    uri: 'spotify:country:qi',
+                                    images: [{
+                                        url: ''
+                                    }]
+                                },
+                                description: 'The most popular tracks in Qiland'
+                            };
+                            resolve(result);
+                            return;
+                        }
                         request({
                             url: 'https://restcountries.eu/rest/v2/alpha/' + code,
                             headers: headers
                         }, function (err2, response2, body2) {
+                            
                             try {
                                 var result = JSON.parse(body2);
+                               
                                 resolve({
                                     id: parts[3],
                                     uri: 'spotify:country:' + code + ':top:' + parts[3],
                                     name: 'Top Tracks',
                                     type: 'toplist',
+                                    images: [{
+                                        url: result.flag
+                                    }],
                                     in: result,
                                     description: 'The most popular tracks in ' + result.name
                                 })
@@ -476,11 +543,29 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         return;
                     })
                 }  else {
+                    if (code == 'qi') {
+                        resolve({
+                            type: 'country',
+                            name: 'Qiland',
+                            id: 'qi',
+                            uri: 'spotify:country:qi',
+                            images: [
+                                {
+                                    url: ''
+                                }    
+                            ]
+                        })
+                    }
                     request({
                         url: 'https://restcountries.eu/rest/v2/alpha/' + code,
                     }, function (error, response, body) {
+                        
                         var result = JSON.parse(body);
                         result.type = 'country';
+                        result.uri = 'spotify:country:' + code;
+                        result.images = [{
+                            url: result.flag
+                        }]
                         resolve(result);
                     });
                     return;
