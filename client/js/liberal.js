@@ -85,7 +85,7 @@ class Store extends EventEmitter {
             track.playlists.push(playlist);
         }
         this.discoveredTracks.objects.push(track);
-        // localStorage.setItem('discoveredTracks', JSON.stringify(this.discoveredTracks));
+    //    localStorage.setItem('discoveredTracks', JSON.stringify(this.discoveredTracks));
     }
     get stylesheet() {
         let stylesheet = localStorage.getItem('stylesheet');
@@ -1182,11 +1182,13 @@ class SPTrackContextElement extends SPResourceElement {
         }
     }
     async setState(obj) {
+        if (!obj) return;
         let uri = this.getAttribute('uri');
         if (uri != null && this.playlist == null)
             this.playlist = await store.request('GET', uri.substr(0, uri.length - ':track'.length));
         this.obj = obj;
         this.table.innerHTML = '<thead><tr></tr></thead><tbody></tbody>';
+        
         this.thead = this.table.querySelector('thead');
         this.tbody = this.table.querySelector('tbody');
         this.theadtr = this.table.querySelector('thead tr');
@@ -1253,7 +1255,7 @@ class SPTrackContextElement extends SPResourceElement {
                     
                   if (!discovered) {
                       store.discoverTrack(track, this.playlist);
-                      val = '<i class="fa fa-circle new"></i>';
+                      val = ''; // '<i class="fa fa-circle new"></i>';
                   } else {
                       val = "";
                   }
@@ -1262,11 +1264,16 @@ class SPTrackContextElement extends SPResourceElement {
                   let date = moment(val);
                   let now = moment();
                 let dr = Math.abs(date.diff(now, 'days'));
+                let fresh = Math.abs(date.diff(now, 'days'));
                 let tooOld = dr > 1;
                   let strTime = dr ? date.format('YYYY-MM-DD') : date.fromNow();
                   td.innerHTML = '<span>' + strTime + '</span>';
                   if (tooOld) {
                       td.style.opacity = 0.5;
+                  }
+                  let discoveredField = tr.querySelector('td.discovered');
+                  if (discoveredField != null && fresh < 1) {
+                      discoveredField.innerHTML = '<i class="fa fa-circle new"></i>';
                   }
               } else if (typeof(val) === 'string') {
                 td.innerHTML = '<span>' + val + '</span>';
