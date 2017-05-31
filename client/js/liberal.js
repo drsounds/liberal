@@ -87,7 +87,7 @@ class SpotifyMusicService extends MusicService {
         this.emit('change');
     }
     async playTrack(track, context) {
-        await this.request('PUT', 'spotify:me:player:play', {
+        await this._request('PUT', 'spotify:me:player:play', {
             context_uri: context.uri,
             position: {
                 uri: track.uri
@@ -95,24 +95,27 @@ class SpotifyMusicService extends MusicService {
         });
     }
     async playTrackAtPosition(position, context) {
-        await this.request('PUT', 'spotify:me:player:play', {
+        await this._request('PUT', 'spotify:me:player:play', {
             context_uri: context.uri,
             position: {
                 offset: position
             }
         });
     }
+    async lookupTrack(name, version, artist, album) {
+         q
+    }
     async getCurrentTrack() {
-        let result = await this.request('GET', 'spotify:me:player:currently-playing', null, false);
+        let result = await this._request('GET', 'spotify:me:player:currently-playing', null, false);
         
         return result;
     }
     async resume() {
-        return await this.request('PUT', 'spotify:me:player:play');
+        return await this._request('PUT', 'spotify:me:player:play');
         
     }
     async pause() {
-        return await this.request('PUT', 'spotify:me:player:pause');
+        return await this._request('PUT', 'spotify:me:player:pause');
     }
     async _request(method, uri, payload, cache=true) {
         try {
@@ -737,6 +740,8 @@ class SPViewStackElement extends HTMLElement {
             newUri = 'bungalow:search:' + uri;
             uri = newUri;
         }
+        if (GlobalViewStack.currentView != null && newUri === GlobalViewStack.currentView.getAttribute('uri'))
+            return;
         if (newUri in this.views) {
             let view = this.views[newUri];
             
@@ -1867,9 +1872,10 @@ document.registerElement('sp-playqueueview', SPPlayqueueViewElement);
 
 class SPSearchViewElement extends SPViewElement {
     attachedCallback() {
+        super.attachedCallback();
          if (!this.created) {
             this.classList.add('sp-view');
-            this.innerHTML = "<div style='padding: 13pt'><h3>Search results for '<span id='q'></span>";
+            this.innerHTML = "<div style='padding: 13pt'><h3>Search results for '<span id='q'>'</span>";
             this.header = this.querySelector('div');    
        
             this.trackcontext = document.createElement('sp-trackcontext');
@@ -1880,6 +1886,19 @@ class SPSearchViewElement extends SPViewElement {
             this.created = true;    
         }
         
+    }
+    activate() {
+        let uri = ''
+        if (!this.hasAttribute('uri'))
+            return;
+        uri = this.getAttribute('uri');
+        let query = this.getAttribute('uri').substr('bungalow:search:'.length);
+        GlobalTabBar.setState({
+            id: query,
+            uri: this.getAttribute('uri'),
+            name: query,
+            type: 'search'
+        })
     }
     acceptsUri(uri) {
         return /^bungalow:search:(.*)$/.test(uri);
