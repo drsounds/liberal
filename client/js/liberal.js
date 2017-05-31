@@ -1496,6 +1496,9 @@ class SPTabBarElement extends HTMLElement {
             }
             if (state.object.name != null) {
                 this.titleBar.innerHTML += '<span>'+ state.object.name + '</span>';
+                if (VERIFIED_PROFILES.filter((o) => (state.object.id === o)).length > 0) {
+                    this.titleBar.innerHTML += ' <i class="fa fa-check-circle new"></i>';
+                }
                 
             }
         }
