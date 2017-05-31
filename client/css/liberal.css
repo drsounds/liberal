@@ -61,6 +61,7 @@ sp-infobar {
     display: none;
     flex: 0 0 20pt;
     padding-left: 12pt;
+    padding-right: 12pt;
     font-size: 15pt;
     padding-top: 3pt;
 }

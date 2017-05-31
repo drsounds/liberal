@@ -296,22 +296,26 @@ class SPThemeEditorElement extends HTMLElement {
         if (!this.created) {
             this.colorChooser = document.createElement('input');
             this.colorChooser.setAttribute('type', 'range');
+            this.innerHTML += '<label>' + _('Accent color') + '</label>';
             this.appendChild(this.colorChooser);
             this.colorChooser.setAttribute('max', 360);
             this.colorChooser.addEventListener('change', this.colorSlider);
             this.colorChooser.addEventListener('mousemove', this.colorSlider);
             this.saturationChooser = document.createElement('input');
             this.saturationChooser.setAttribute('type', 'range');
+            this.innerHTML += '<label>' + _('Saturation') + '</label>';
             this.appendChild(this.saturationChooser);
             this.saturationChooser.setAttribute('max', 360);
             this.saturationChooser.addEventListener('change', this.saturationSlider);
             this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
             this.saturationChooser.value = store.saturation;
+            this.innerHTML += '<label>' + _('Visual style') + '</label>';
             this.styleselect = document.createElement('select');
             this.styleselect.innerHTML += '<option value="chromify">Chromify</option><option value="wmp_9">Windows Media Player 9</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_11_beta">Windows Media Player 11 Beta</option><option value="wmp_11">Windows Media Player 11</option><option value="chromify-flat">Chromify (flat version)</option><option value="obama">Obama</option>';
             this.appendChild(this.styleselect);
+            this.innerHTML += '<label>' + _('Light preference') + '</label>';
             this.flavorselect = document.createElement('select');
-            this.flavorselect.innerHTML += '<option value="dark">Dark</option><option value="light">Light</option>';
+            this.flavorselect.innerHTML += '<option value="dark">' + _('Dark') + '</option><option value="light">' + _('Light') + '</option>';
             this.appendChild(this.flavorselect);
             this.flavorselect.addEventListener('change', (e) => {
                 store.flavor = e.target.options[e.target.selectedIndex].value;
@@ -370,6 +374,10 @@ class SPInfoBarElement extends HTMLElement {
         this.innerHTML = '';
         this.innerHTML = '<i class="fa fa-info"></i> ' + obj.name;
         this.closeButton = document.createElement('a');
+        this.appendChild(this.closeButton);
+        this.closeButton.classList.add('fa');
+        this.closeButton.classList.add('fa-times');
+        this.closeButton.style = 'float: right';
         this.closeButton.addEventListener('click', (e) => {
             this.hide();
         });
@@ -495,7 +503,7 @@ class SPChromeElement extends HTMLElement {
         this.playlist = document.createElement('sp-trackcontext');
         this.rightSideBar.appendChild(this.playlist);
         this.playlist.uri = 'spotify:me:tracks';
-        alert("Test");
+        
     }
     alert(obj) {
         this.infoBar.show();
@@ -608,7 +616,7 @@ class SPViewStackElement extends HTMLElement {
         } else {
             let view = null;
             
-            if (newUri === 'bungalow:internal:settings') {
+            if (newUri === 'bungalow:internal:settings' || newUri === 'bungalow:config') {
                 view = document.createElement('sp-settingsview');  
             } else if (/^bungalow:internal:start$/g.test(newUri)) {
                 view = document.createElement('sp-startview');
@@ -1443,7 +1451,7 @@ class SPSettingsViewElement extends SPViewElement {
         this.classList.add('sp-view');
         this.innerHTML = '<form>' +
                         '<h1>' + _('Settings') + '</h1>' +
-                        '<fieldset><legend>Appearance</legend><sp-themeeditor></sp-themeeditor></fieldset>' +
+                        '<fieldset><legend>' + _('Appearance') + '</legend><sp-themeeditor></sp-themeeditor></fieldset>' +
                         '</form>';
     }
     activate() {
@@ -1477,7 +1485,6 @@ class SPTabBarElement extends HTMLElement {
         this.titleBar.innerHTML = value;
     }
     setState(state) {
-        this.innerHTML = '';
         this.titleBar = document.createElement('div');
         this.titleBar.style.visibility = 'hidden';
         this.titleBar.style.paddingRight = '113pt';
@@ -1493,6 +1500,7 @@ class SPTabBarElement extends HTMLElement {
                 
             }
         }
+        if (state && state.objects instanceof Array)
         for (let i = 0; i < state.objects.length; i++) {
             let obj = state.objects[i];
             let tab = document.createElement('sp-tab');
