@@ -50,33 +50,7 @@ class Store extends EventEmitter {
         this.heart = setInterval(async () => {
             this.state.player = await this.getCurrentTrack();
             this.emit('change');
-            let trackItems = document.querySelectorAll('.sp-track');
-            let playButton = document.querySelector('#playButton');
-            if (this.state.player && this.state.player.item) {
-                let playThumb = document.querySelector('#playthumb');
-                if (playThumb) {
-                    playThumb.setAttribute('min', 0);
-                    playThumb.setAttribute('max', this.state.player.item.duration_ms);
-                    playThumb.value = (this.state.player.progress_ms);
-                }
-                    
-                playButton.classList.remove('fa-play');
-                playButton.classList.add('fa-pause');
-                document.querySelector('sp-nowplaying').style.backgroundImage = 'url("' + this.state.player.item.album.images[0].url + '")';
-             
-                for(var tr of trackItems) {
-                    if (tr.getAttribute('data-uri') === this.state.player.item.uri) {
-                        tr.classList.add('sp-current-track');
-                        
-                    } else {
-                        tr.classList.remove('sp-current-track');
-                    }
-                }
-            } else {
-                
-                playButton.classList.remove('fa-pause');
-                playButton.classList.add('fa-play');
-            }
+            
         }, 1000);
         this.hue = this.hue;
         this.saturation = this.saturation;
@@ -97,14 +71,21 @@ class Store extends EventEmitter {
     hasDiscoveredTrack(track, playlist=null) {
         return this.getDiscoveredTracks(track, playlist).length > 0;
     }
-    discoverTrack(track, playlist=null, played=false) {
+    discoverTrack(track, playlist=null, position=-1, played=false) {
         track.playlists = [];
         track.played = played;
         if (playlist != null) {
+            if(!playlist.positions) {
+                playlist.positions = [];
+            }
+            playlist.positions.push({
+                position: position,
+                time: new Date()    
+            });
             track.playlists.push(playlist);
         }
         this.discoveredTracks.objects.push(track);
-  //      localStorage.setItem('discoveredTracks', JSON.stringify(this.discoveredTracks));
+        // localStorage.setItem('discoveredTracks', JSON.stringify(this.discoveredTracks));
     }
     get stylesheet() {
         let stylesheet = localStorage.getItem('stylesheet');
@@ -176,7 +157,15 @@ class Store extends EventEmitter {
     }
     
     async playPause() {
-        let result = await this.request('PUT', 'spotify:me:player:pause', context, false);
+        this.state.player = await this.getCurrentTrack();
+        let result = null;
+        if (this.state.player.is_playing) {
+            result = await this.request('PUT', 'spotify:me:player:pause');
+            debugger;
+        } else {
+            result = await this.request('PUT', 'spotify:me:player:play');
+            debugger;
+        }
         this.state.player = await this.getCurrentTrack();
         this.emit('change');
     }
@@ -218,50 +207,54 @@ class Store extends EventEmitter {
         return result;
     }
     async request(method, uri, payload, cache=true) {
-        if (uri == null) return;
-        var url = uri;
-        if (uri.indexOf('bungalow:') == 0 || uri.indexOf('spotify:') == 0) {
-            if (uri.indexOf('spotify:') == 0) {
-                uri = 'bungalow:' + uri.substr('spotify:'.length);
+        try {
+            if (uri == null) return;
+            var url = uri;
+            if (uri.indexOf('bungalow:') == 0 || uri.indexOf('spotify:') == 0) {
+                if (uri.indexOf('spotify:') == 0) {
+                    uri = 'bungalow:' + uri.substr('spotify:'.length);
+                }
+                url = uri.substr('bungalow:'.length).split(':').join('/');
+                
+                url = '/api/music/' + url;
+                 if (uri in this.state && method == "GET" && cache)
+                    return this.state[uri];
+                let result
+                if (method === 'GET') {
+                    result = await fetch(url, {
+                        credentials: 'include',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        method: 'GET',
+                    }).then((e) => e.json());
+                } else {
+                    result = await fetch(url, {
+                        credentials: 'include',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        method: method,
+                        body: JSON.stringify(payload)
+                    }).then((e) => e.json());
+                }
+                this.setState(uri, result);
+             
+                return result;
+                
             }
-            url = uri.substr('bungalow:'.length).split(':').join('/');
-            
-            url = '/api/music/' + url;
-             if (uri in this.state && method == "GET" && cache)
+            if (uri in this.state)
                 return this.state[uri];
-            let result
-            if (method === 'GET') {
-                result = await fetch(url, {
-                    credentials: 'include',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    method: 'GET',
-                }).then((e) => e.json());
-            } else {
-                result = await fetch(url, {
-                    credentials: 'include',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    method: method,
-                    body: JSON.stringify(payload)
-                }).then((e) => e.json());
-            }
+            
+            let result = await fetch(url, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
             this.setState(uri, result);
          
             return result;
-            
+        } catch (e) {
+            alert("An error occured");
         }
-        if (uri in this.state)
-            return this.state[uri];
-        
-        let result = await fetch(url, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
-        this.setState(uri, result);
-     
-        return result;
     }
     
     /**
@@ -354,7 +347,7 @@ class SPAppHeaderElement extends HTMLElement {
                 this.searchForm.style.marginRight = '5pt';
             }
             this.loginButton = document.createElement('button');
-            this.loginButton.innerHTML = 'Log in';
+            this.loginButton.innerHTML = _('Log in');
             this.loginButton.addEventListener('click', (e) => {
                GlobalViewStack.navigate('bungalow:internal:login'); 
             });
@@ -364,7 +357,34 @@ class SPAppHeaderElement extends HTMLElement {
     }
     
 }
+
+
+class SPInfoBarElement extends HTMLElement {
+    hide() {
+        this.style.display = 'none';
+    }
+    show() {
+        this.style.display = 'block';
+    }
+    setState(obj) {
+        this.innerHTML = '';
+        this.innerHTML = '<i class="fa fa-info"></i> ' + obj.name;
+        this.closeButton = document.createElement('a');
+        this.closeButton.addEventListener('click', (e) => {
+            this.hide();
+        });
+    }
+}
+
+
+document.registerElement('sp-infobar', SPInfoBarElement);
+
 document.registerElement('sp-appheader', SPAppHeaderElement);
+
+window.addEventListener('error', (e) => {
+    debugger;
+    alert(e);
+})
 
 class SPAppFooterElement extends HTMLElement {
     attachedCallback() {
@@ -410,15 +430,57 @@ class SPAppFooterElement extends HTMLElement {
                store.hue = hue;
             });
             this.created = true;
+            store.on('change', (e) => {
+                let trackItems = document.querySelectorAll('.sp-track');
+                let playButton = document.querySelector('#playButton');
+                if (store.state.player && store.state.player.item) {
+                    let playThumb = document.querySelector('#playthumb');
+                    if (playThumb) {
+                        playThumb.setAttribute('min', 0);
+                        playThumb.setAttribute('max', store.state.player.item.duration_ms);
+                        playThumb.value = (store.state.player.progress_ms);
+                    }
+                        
+                    playButton.classList.remove('fa-play');
+                    playButton.classList.add('fa-pause');
+                    document.querySelector('sp-nowplaying').style.backgroundImage = 'url("' + store.state.player.item.album.images[0].url + '")';
+                 
+                    for(var tr of trackItems) {
+                        if (tr.getAttribute('data-uri') === store.state.player.item.uri) {
+                            tr.classList.add('sp-current-track');
+                            
+                        } else {
+                            tr.classList.remove('sp-current-track');
+                        }
+                    }
+                } else {
+                    
+                    playButton.classList.remove('fa-pause');
+                    playButton.classList.add('fa-play');
+                } 
+            });
         }
     }
 }
+
+
+window.alert = function (message) {
+    document.querySelector('sp-chrome').alert({
+        type: 'info',
+        name: message,
+        uri: 'bungalow:error:0x00'
+    });
+}
+
+
 document.registerElement('sp-appfooter', SPAppFooterElement);
 
 class SPChromeElement extends HTMLElement { 
     attachedCallback() {
         this.appHeader = document.createElement('sp-appheader');
         this.appendChild(this.appHeader);
+        this.infoBar = document.createElement('sp-infobar');
+        this.appendChild(this.infoBar);
         this.main = document.createElement('main');
         this.appendChild(this.main);
         this.sidebar = document.createElement('sp-sidebar');
@@ -433,8 +495,15 @@ class SPChromeElement extends HTMLElement {
         this.playlist = document.createElement('sp-trackcontext');
         this.rightSideBar.appendChild(this.playlist);
         this.playlist.uri = 'spotify:me:tracks';
+        alert("Test");
+    }
+    alert(obj) {
+        this.infoBar.show();
+        this.infoBar.setState(obj);
     }
 }
+
+
 
 GlobalViewStack = null;
 
@@ -463,7 +532,7 @@ class SPMainElement extends HTMLElement {
             this.viewStack = document.createElement('sp-viewstack');
             GlobalViewStack = this.viewStack;
             this.appendChild(this.viewStack);
-          
+            
             
         }
     }
@@ -640,21 +709,27 @@ class SPImageElement extends HTMLElement {
 }
 document.registerElement('sp-image', SPImageElement);
 
+const VERIFIED_PROFILES = ['drsounds', 'alexanderforselius', 'daniel', 'spotify'];
 
 class SPTitleElement extends HTMLElement {
     attachedCallback() {
         
     }
     setState(object) {
-        let titleHTML = '<sp-link uri="' + object.uri + '">' + object.name + '</sp-link>';
+        let title = _(object.name);
+        if (VERIFIED_PROFILES.filter((o) => (object.id === o)).length > 0) {
+            title += ' <i class="fa fa-check-circle new"></i>';
+        }
+        let titleHTML = '<sp-link uri="' + object.uri + '">' + title + '</sp-link>';
+        
         if (object.owner) {
-            titleHTML += ' <span style="opacity: 0.7">by <sp-link uri="' + object.owner.uri + '">' + object.owner.name + '</sp-link></span>'; 
+            titleHTML += ' <span style="opacity: 0.7"> ' + _('by') + ' <sp-link uri="' + object.owner.uri + '">' + _(object.owner.name) + '</sp-link></span>'; 
         }
         if (object.for) {
-            titleHTML += ' <span style="opacity: 0.7">for <sp-link uri="' + object.for.uri + '">' + object.for.name + '</sp-link></span>'; 
+            titleHTML += ' <span style="opacity: 0.7"> ' + _('for') + ' <sp-link uri="' + object.for.uri + '">' + _(object.for.name) + '</sp-link></span>'; 
         }
         if (object.in) {
-            titleHTML += ' <span style="opacity: 0.7">in <sp-link uri="' + object.for.uri + '">' + object.for.name + '</sp-link></span>'; 
+            titleHTML += ' <span style="opacity: 0.7"> ' + _('in') + ' <sp-link uri="' + object.for.uri + '">' + _(object.in.name) + '</sp-link></span>'; 
         }
         this.innerHTML = titleHTML;
     }
@@ -685,13 +760,13 @@ class SPHeaderElement extends SPResourceElement {
         
         this.innerHTML = '' + 
             '<div style="flex: 0 0 ' + width + ';">' +
-            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><h3>' + titleElement.innerHTML + '</h3><sp-toolbar></sp-toolbar><p style="opacity: 0.5">' + (object.description ? object.description : '') + '</p></div>';
+            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><small>' + _(object.type) + '</small><h3>' + titleElement.innerHTML + '</h3><sp-toolbar></sp-toolbar><p style="opacity: 0.5">' + (_(object.description) ? object.description : '') + '</p></div>';
         if ('followers' in object) {
             let pop = '';
              if (object.popularity) {
-                 pop = '<hr><h3>#' + numeral( TOTAL_ARTISTS_ON_SPOTIFY - (TOTAL_ARTISTS_ON_SPOTIFY * ((object.popularity) / 100))).format('0,0') + '</h3><br>In he world';
+                 pop = '<hr><h3>#' + numeral( TOTAL_ARTISTS_ON_SPOTIFY - (TOTAL_ARTISTS_ON_SPOTIFY * ((object.popularity) / 100))).format('0,0') + '</h3><br>' + _('In he world');
             }
-            this.innerHTML += '<div style="flex: 0 0 50pt;"> <h3>' + numeral(object.followers.total).format('0,0') + '</h3><br> followers<br> ' + pop + ' </div>';
+            this.innerHTML += '<div style="flex: 0 0 50pt;"> <h3>' + numeral(object.followers.total).format('0,0') + '</h3><br> ' + _('followers') + '<br> ' + pop + ' </div>';
            
         } 
         
@@ -701,7 +776,7 @@ class SPHeaderElement extends SPResourceElement {
 
 class SPToolbarElement extends HTMLElement {
     attachedCallback () {
-        this.innerHTML = '<button><i class="fa fa-play"></i> Play</button>&nbsp;';
+        this.innerHTML = '<button><i class="fa fa-play"></i> ' + _('Play') + '</button>&nbsp;';
         this.innerHTML += '<button>...</button>';
     }
 }
@@ -767,7 +842,7 @@ class SPArtistViewElement extends SPViewElement {
             this.appendChild(this.topTracks);
            
             this.albumsDivider = document.createElement('sp-divider');
-            this.albumsDivider.innerHTML = 'albums';
+            this.albumsDivider.innerHTML = _('Albums');
             this.appendChild(this.albumsDivider);
         
       
@@ -823,7 +898,7 @@ class SPUserViewElement extends SPViewElement {
         };
         if (!this.albumsDivider) {
         this.albumsDivider = document.createElement('sp-divider');
-        this.albumsDivider.innerHTML = 'Public playlists';
+        this.albumsDivider.innerHTML = _('Public playlists');
         this.appendChild(this.albumsDivider);
         }
         if (!this.albumList) {
@@ -976,7 +1051,7 @@ class SPPlaylistElement extends SPResourceElement {
         '<div style="flex: 2">' +
             '<h3>' +  titleElement.innerHTML + '</h3>' +
             (obj.description ? '<p>' + obj.description + '</p>' : '') +
-            '<sp-trackcontext uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
+            '<sp-trackcontext fields="name,artists,album,user,added_at" uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
         '</div>';
     }
 }
@@ -1022,7 +1097,8 @@ class SPTrackContextElement extends SPResourceElement {
     attachedCallback() {
         console.log("T");
         if (!this.created) {
-            this.setAttribute('fields', 'discovered,name,artists,album,user');
+            if (!this.hasAttribute('fields'))
+            this.setAttribute('fields', 'name,artists,album,user');
     
             this.table = document.createElement('table');
             this.appendChild(this.table);
@@ -1033,6 +1109,9 @@ class SPTrackContextElement extends SPResourceElement {
             this.created = true;
         }
     }   
+    activate() {
+        // this.checkState();
+    }
     set header(val) {
         this._header = val;
     }
@@ -1067,6 +1146,24 @@ class SPTrackContextElement extends SPResourceElement {
     
     }
     
+    checkState() {
+        let trs = this.querySelectorAll('tr.sp-track');
+        for (let i = 0; i < trs.length; i++) {
+            let tr = trs[i];
+            let track = store.discoveredTracks.objects.filter((t) => t.uri === tr.getAttribute('data-uri'))[0];
+            if (track) {
+                let discovered = track.playlists.filter((p) => {
+                    let uri1 = p.uri.substr(p.uri.split(':')[0].length) + ':track';
+                    let uri2 = this.getAttribute('uri').substr(p.uri.split(':')[0].length + 1);
+                    return uri1 === uri2;
+                }).length > 0;
+                if (discovered) {
+                    tr.querySelector('td.discovered').innerHTML = '';
+                }
+            }
+        }
+    }
+    
     async attributeChangedCallback(attrName, oldVal, newVal) {
         
         if (attrName == 'uri') {
@@ -1076,7 +1173,7 @@ class SPTrackContextElement extends SPResourceElement {
     }
     async setState(obj) {
         let uri = this.getAttribute('uri');
-        if (this.playlist == null)
+        if (uri != null && this.playlist == null)
             this.playlist = await store.request('GET', uri.substr(0, uri.length - ':track'.length));
         this.obj = obj;
         this.table.innerHTML = '<thead><tr></tr></thead><tbody></tbody>';
@@ -1090,12 +1187,13 @@ class SPTrackContextElement extends SPResourceElement {
         var fields = this.getAttribute('fields').split(',');
         fields.map((f, i) => {
             let field = document.createElement('th');
-            field.innerHTML = f;
+            field.innerHTML = _(f);
             this.querySelector('thead tr').appendChild(field);
             if (f === 'name') {
                 field.width = '500pt';
             }
         });
+        if (obj && 'objects' in obj)
         var rows = obj.objects.map((track, i) => {
             let tr = document.createElement('tr');
             tr.addEventListener('mousedown', (e) => {
@@ -1139,13 +1237,17 @@ class SPTrackContextElement extends SPResourceElement {
               
               if (field === 'discovered') {
                   let discoverLevel = 0;
+                  td.width = "10pt";
+                  td.classList.add('discovered');
                   let discovered = store.hasDiscoveredTrack(track, this.playlist);
+                    
                   if (!discovered) {
                       store.discoverTrack(track, this.playlist);
-                      val = '<i class="fa fa-circle marked"></i>';
+                      val = '<i class="fa fa-circle new"></i>';
                   } else {
                       val = "";
                   }
+                  td.innerHTML = val;
               } else if ((field === 'time' || field == 'added_at') && !!val) {
                   let date = moment(val);
                   let now = moment();
@@ -1223,15 +1325,17 @@ class SPPlaylistContextElement extends SPResourceElement {
     }
     setState(obj) {
         this.innerHTML = '';
-        let albums = obj.objects.map((item) => {
-           var a = document.createElement('sp-playlist');
-           a.setState(item);
-           store.state[item.uri] = item;
-           return a;
-        });
-        albums.forEach((album) => {
-            this.appendChild(album);
-        })
+        if (obj && obj.objects instanceof Array) {
+            let albums = obj.objects.map((item) => {
+               var a = document.createElement('sp-playlist');
+               a.setState(item);
+               store.state[item.uri] = item;
+               return a;
+            });
+            albums.forEach((album) => {
+                this.appendChild(album);
+            });
+        }
     }
 }
 
@@ -1259,22 +1363,22 @@ document.registerElement('sp-sidebar', SPSidebarElement);
 class SPSidebarMenuElement extends HTMLElement {
     async attachedCallback() {
         if (!this.menu) {
-            this.innerHTML += '<label>Main</label>';
+            this.innerHTML += '<label>' + _('Main Menu') + '</label>';
             this.menu = document.createElement('sp-menu');
             this.appendChild(this.menu);
             this.menu.setState({
                 objects: [
                     {
-                        name: 'Start',
+                        name: _('Start'),
                         uri: 'bungalow:internal:start'
                     },
                     {
-                        name: 'Settings',
+                        name: _('Settings'),
                         uri: 'bungalow:internal:settings'
                     }
                 ]
             });
-            this.innerHTML += '<br><label>Playlists</label>';
+            this.innerHTML += '<br><label>' + _('Playlists') + '</label>';
             this.playlistsMenu = document.createElement('sp-menu');
             this.appendChild(this.playlistsMenu);
             let playlists = await store.request('GET', 'spotify:me:playlist');
@@ -1338,7 +1442,7 @@ class SPSettingsViewElement extends SPViewElement {
     create() {
         this.classList.add('sp-view');
         this.innerHTML = '<form>' +
-                        '<h1>Settings</h1>' +
+                        '<h1>' + _('Settings') + '</h1>' +
                         '<fieldset><legend>Appearance</legend><sp-themeeditor></sp-themeeditor></fieldset>' +
                         '</form>';
     }
@@ -1425,6 +1529,7 @@ class SPMenuElement extends HTMLElement {
     }
     render() {
         this.innerHTML = '';
+        if (this.state && this.state.objects instanceof Array)
         this.state.objects.map((item) => {
             if (!item) {
                 this.appendChild(document.createElement('br'));
@@ -1538,11 +1643,12 @@ class SPPlaylistViewElement extends SPViewElement {
         }
         if (!this.trackcontext) {
             this.trackcontext = document.createElement('sp-trackcontext');
-            this.trackcontext.setAttribute('fields', 'name,artists,album,added_at');
             this.appendChild(this.trackcontext);
+            this.trackcontext.setAttribute('fields', 'discovered,name,artists,album,user,added_at');
             this.trackcontext.setAttribute('headers', 'true');
             this.trackcontext.header = (this.header);    
-            this.trackcontext.view = (this);    
+            this.trackcontext.view = (this);   
+        
         }
 
 
@@ -1553,6 +1659,7 @@ class SPPlaylistViewElement extends SPViewElement {
     }
     activate() {
         super.activate();
+        this.trackcontext.activate();
         if (this.state == null) 
             return;
         this.header.setState(this.state);
@@ -1617,8 +1724,8 @@ class SPSearchViewElement extends SPViewElement {
             this.trackcontext = document.createElement('sp-trackcontext');
             this.appendChild(this.trackcontext);
             this.trackcontext.setAttribute('headers', 'true');
-            this.trackcontext.setHeader(this.header);
-            this.trackcontext.setView(this);
+            this.trackcontext.header = (this.header);
+            this.trackcontext.view = (this);
             this.created = true;    
         }
         

@@ -57,6 +57,14 @@ main {
 input {
 }
 
+sp-infobar {
+    display: none;
+    flex: 0 0 20pt;
+    padding-left: 12pt;
+    font-size: 15pt;
+    padding-top: 3pt;
+}
+
 sp-divider {
     padding: 16pt;
     padding-top: 12pt;
