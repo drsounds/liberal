@@ -309,11 +309,9 @@ class SPThemeEditorElement extends HTMLElement {
             this.saturationChooser.addEventListener('change', this.saturationSlider);
             this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
             this.saturationChooser.value = store.saturation;
-            this.innerHTML += '<label>' + _('Visual style') + '</label>';
             this.styleselect = document.createElement('select');
             this.styleselect.innerHTML += '<option value="chromify">Chromify</option><option value="wmp_9">Windows Media Player 9</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_11_beta">Windows Media Player 11 Beta</option><option value="wmp_11">Windows Media Player 11</option><option value="chromify-flat">Chromify (flat version)</option><option value="obama">Obama</option>';
             this.appendChild(this.styleselect);
-            this.innerHTML += '<label>' + _('Light preference') + '</label>';
             this.flavorselect = document.createElement('select');
             this.flavorselect.innerHTML += '<option value="dark">' + _('Dark') + '</option><option value="light">' + _('Light') + '</option>';
             this.appendChild(this.flavorselect);
@@ -728,7 +726,7 @@ class SPTitleElement extends HTMLElement {
         if (VERIFIED_PROFILES.filter((o) => (object.id === o)).length > 0) {
             title += ' <i class="fa fa-check-circle new"></i>';
         }
-        let titleHTML = '<sp-link uri="' + object.uri + '">' + title + '</sp-link>';
+        let titleHTML = '<sp-link uri="' + object.uri + '">' + _(title) + '</sp-link>';
         
         if (object.owner) {
             titleHTML += ' <span style="opacity: 0.7"> ' + _('by') + ' <sp-link uri="' + object.owner.uri + '">' + _(object.owner.name) + '</sp-link></span>'; 
@@ -768,7 +766,7 @@ class SPHeaderElement extends SPResourceElement {
         
         this.innerHTML = '' + 
             '<div style="flex: 0 0 ' + width + ';">' +
-            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><small>' + _(object.type) + '</small><h3>' + titleElement.innerHTML + '</h3><sp-toolbar></sp-toolbar><p style="opacity: 0.5">' + (_(object.description) ? object.description : '') + '</p></div>';
+            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><small>' + _(object.type) + '</small><h3>' + titleElement.innerHTML + '</h3><sp-toolbar></sp-toolbar><p style="opacity: 0.5">' + (object.description ? object.description : '') + '</p></div>';
         if ('followers' in object) {
             let pop = '';
              if (object.popularity) {
@@ -843,7 +841,7 @@ class SPArtistViewElement extends SPViewElement {
             this.classList.add('sp-view');
          
             this.topTracksDivider = document.createElement('sp-divider');
-            this.topTracksDivider.innerHTML = 'Top tracks';
+            this.topTracksDivider.innerHTML = _('Top Tracks');
             this.appendChild(this.topTracksDivider);
         
             this.topTracks = document.createElement('sp-playlist');
@@ -1485,6 +1483,7 @@ class SPTabBarElement extends HTMLElement {
         this.titleBar.innerHTML = value;
     }
     setState(state) {
+        this.innerHTML = '';
         this.titleBar = document.createElement('div');
         this.titleBar.style.visibility = 'hidden';
         this.titleBar.style.paddingRight = '113pt';

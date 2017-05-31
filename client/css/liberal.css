@@ -72,7 +72,6 @@ sp-divider {
     padding-bottom: 12pt;
     display: block;
     width: 100%;
-    height: 14pt;
 }
 td {
     padding-left: 3pt;
@@ -81,7 +80,6 @@ sp-link, a {
     cursor: pointer !important;
 }
 sp-toolbar button {
-    height: 100%;
 }
 sp-menuitem {
     display: block;
