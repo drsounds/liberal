@@ -158,7 +158,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
             if (parts[0] == 'me') {
                 if (parts[1] == 'track') {
                     request({
-                        url: 'https://api.spotify.com/v1/me/tracks?limit=85&offset=' + (payload.offset || 0) + '&country=se',
+                        url: 'https://api.spotify.com/v1/me/tracks?limit=85&limit=' + (payload.limit || 100) + '&offset=' + (payload.offset || 0) + '&country=se',
                         headers: headers
                         
                     },
@@ -181,7 +181,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     );
                 } else if (parts[1] == 'playlist') {
                  request({
-                        url: 'https://api.spotify.com/v1/me/playlists?limit=25&offset=' + (payload.offset || 0) + '&country=se',
+                        url: 'https://api.spotify.com/v1/me/playlists?limit=' + (payload.limit || 100) + '&offset=' + (payload.offset || 0) + '&country=se',
                         headers: headers
                         
                     },
@@ -288,7 +288,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         if (parts.length > 4) {
                             if (parts[4] == 'track') {
                                 request({
-                                    url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/top-tracks?limit=5&offset=' + payload.offset + '&country=se',
+                                    url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/top-tracks?limit=' + (payload.limit || 100) + '&offset=' + (payload.offset || 0) + '&country=se',
                                     headers: headers
                                 },
                                     function (error, response, body) {
@@ -333,7 +333,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     if (parts[2] == 'release') {
                         var limit = (payload.limit || 10);
                         request({
-                                url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/albums?limit=' + limit + '&offset=' + (limit * (payload.p || 0)),
+                                url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/albums?limit=' + (payload.limit || 100) + '&offset=' + (payload.offset || 0),
                                 headers: headers
                             },
                             function (error, response, body) {
@@ -632,8 +632,9 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 limit: 10,
                                 offset: 0
                             };
+                            url = 'https://api.spotify.com/v1/users/' + userid + '/playlists?limit=' + (payload.limit || 100) + '&offset=' + (payload.offset || 0)
                             request({
-                                url: 'https://api.spotify.com/v1/users/' + userid + '/playlists?limit=' + payload.limit + '&offset=' + payload.offset,
+                                url: url,
                                 headers: headers
                             }, function (error, response, body) {
                                 try {
@@ -656,7 +657,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             if (parts[4] == 'follower') {
                                 var users = [];
                                 for (var i = 0; i < 10; i++) {
-                                    uesrs.push({
+                                    users.push({
                                         'id': 'follower' + i,
                                         'name': 'Track ' + i,
                                         'uri': 'spotify:user:' + parts[3] + ':follower:' + i,
@@ -676,8 +677,9 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                     }
                                 });
                             } else if (parts[4] == 'track') {
+                                url = 'https://api.spotify.com/v1/users/' + parts[1] + '/playlists/' + parts[3] + '/tracks?limit=' + (payload.limit || 50) + '&offset=' + (payload.offset || 1);
                                 request({
-                                    url: 'https://api.spotify.com/v1/users/' + parts[1] + '/playlists/' + parts[3] + '/tracks',
+                                    url: url,
                                     headers: headers
                                 }, function (error, response, body) {
                                     try {

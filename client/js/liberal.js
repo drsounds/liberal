@@ -1238,6 +1238,102 @@ class SPCountryViewElement extends SPViewElement {
 
 document.registerElement('sp-countryview', SPCountryViewElement);
 
+const createTrack = (track, i) => {
+    let tr = document.createElement('tr');
+    tr.addEventListener('mousedown', (e) => {
+       let selectedTracks = document.querySelectorAll('.sp-track-selected');
+       for (let t of selectedTracks) {
+           t.classList.remove('sp-track-selected');
+       }
+       tr.classList.add('sp-track-selected');
+    });
+    /*if (!(track.is_playable || (track.track && track.track.is_playable) || 'is_playable')) {
+        tr.classList.add('sp-track-unavailable');
+    }*/
+    tr.classList.add('sp-track');
+    tr.setAttribute('data-uri', track.uri);
+    tr.setAttribute('data-index', i);
+    tr.addEventListener('dblclick', (e) => {
+        let tr = e.target;
+        if (this.getAttribute('uri').indexOf('bungalow:album') == 0 || this.getAttribute('uri').indexOf('bungalow:user') == 0 ) {
+            
+            store.play({
+                context_uri: 'spotify:' + this.getAttribute('uri').substr('bungalow:'.length),
+                offset: {
+                    position: i
+                }
+            });
+        } else {
+            store.play({
+                uris: this.obj.objects.map((o) => o.uri),
+                offset: {
+                    position: i
+                }
+            });
+        }
+    });
+    if (store.state.player && store.state.player.item && store.state.player.item.uri == track.uri) {
+        tr.classList.add('sp-current-track');
+    }
+    fields.map((field, i) => {
+      var td = document.createElement('td');
+      let val = track[field];
+      
+      if (field === 'discovered') {
+          let discoverLevel = 0;
+          td.width = "10pt";
+          td.classList.add('discovered');
+          let discovered = store.hasDiscoveredTrack(track, this.playlist);
+            
+          if (!discovered) {
+              store.discoverTrack(track, this.playlist);
+              val = ''; // '<i class="fa fa-circle new"></i>';
+          } else {
+              val = "";
+          }
+          td.innerHTML = val;
+      } else if ((field === 'time' || field == 'added_at') && !!val) {
+          let date = moment(val);
+          let now = moment();
+        let dr = Math.abs(date.diff(now, 'days'));
+        let fresh = Math.abs(date.diff(now, 'days'));
+        let tooOld = dr > 1;
+          let strTime = dr ? date.format('YYYY-MM-DD') : date.fromNow();
+          td.innerHTML = '<span>' + strTime + '</span>';
+          if (tooOld) {
+              td.style.opacity = 0.5;
+          }
+          let discoveredField = tr.querySelector('td.discovered');
+          if (discoveredField != null && fresh < 1) {
+              discoveredField.innerHTML = '<i class="fa fa-circle new"></i>';
+          }
+      } else if (typeof(val) === 'string') {
+        td.innerHTML = '<span>' + val + '</span>';
+      } else if (val instanceof Array) {
+         td.innerHTML = val.map((v, i) => {
+          
+             return '<sp-link uri="' + v.uri + '">' + v.name + '</sp-link>'
+        }).join(', '); 
+      } else if (val instanceof Object) {
+          if (val) {
+          td.innerHTML = '<sp-link uri="' + val.uri + '">' + val.name + '</sp-link>'; 
+          } else {
+              td.innerHTML = '&nbsp;';
+          }
+      } else {
+        td.innerHTML = '';
+      }
+      if (field === 'name') {
+        td.width = '500pt';
+    }
+
+    tr.appendChild(td);
+   });
+    this.tbody.appendChild(tr);
+    this.tfoot = document.createElement('tfoot');
+    this.tfoot.innerHTML = '<sp-gondole></sp-gondole>';
+}
+
 class SPTrackContextElement extends SPResourceElement {
     attachedCallback() {
         console.log("T");
@@ -1252,6 +1348,8 @@ class SPTrackContextElement extends SPResourceElement {
             this.style.display = 'block';
             this.thead = this.querySelector('thead');
             this.created = true;
+            this.offset = 0;
+            this.limit = 100;
         }
     }   
     activate() {
@@ -1288,8 +1386,13 @@ class SPTrackContextElement extends SPResourceElement {
         } else {
             this.thead.style.transform = 'translateY(0px)';
         }
+        let gondole = this.querySelector('sp-gondole');
+        if (gondole && gondole.getBoundingClientRect().top < viewBounds.top + viewBounds.height) {
+            this.fetchNext();
+        }
     
     }
+    
     
     checkState() {
         let trs = this.querySelectorAll('tr.sp-track');
@@ -1306,6 +1409,21 @@ class SPTrackContextElement extends SPResourceElement {
                     tr.querySelector('td.discovered').innerHTML = '';
                 }
             }
+        }
+    }
+    
+    async fetchNext() {
+        let gondole = this.querySelector('sp-gondole');
+        if (gondole)
+        gondole.setAttribute('activated', 'true');
+        let result = await store.request('GET', this.getAttribute('uri') + '?offset=' + this.offset + '&limit=100');
+        if (result && result.tracks instanceof Array && result.tracks.length > 0) {
+            result.tracks.map(createTrack);
+            if (gondole)
+                gondole.setAttribute('activated', false);
+        } else {  
+            if (gondole)
+                this.removeChild(gondole);
         }
     }
     
@@ -1341,100 +1459,7 @@ class SPTrackContextElement extends SPResourceElement {
             }
         });
         if (obj && 'objects' in obj)
-        var rows = obj.objects.map((track, i) => {
-            let tr = document.createElement('tr');
-            tr.addEventListener('mousedown', (e) => {
-               let selectedTracks = document.querySelectorAll('.sp-track-selected');
-               for (let t of selectedTracks) {
-                   t.classList.remove('sp-track-selected');
-               }
-               tr.classList.add('sp-track-selected');
-            });
-            /*if (!(track.is_playable || (track.track && track.track.is_playable) || 'is_playable')) {
-                tr.classList.add('sp-track-unavailable');
-            }*/
-            tr.classList.add('sp-track');
-            tr.setAttribute('data-uri', track.uri);
-            tr.setAttribute('data-index', i);
-            tr.addEventListener('dblclick', (e) => {
-                let tr = e.target;
-                if (this.getAttribute('uri').indexOf('bungalow:album') == 0 || this.getAttribute('uri').indexOf('bungalow:user') == 0 ) {
-                    
-                    store.play({
-                        context_uri: 'spotify:' + this.getAttribute('uri').substr('bungalow:'.length),
-                        offset: {
-                            position: i
-                        }
-                    });
-                } else {
-                    store.play({
-                        uris: this.obj.objects.map((o) => o.uri),
-                        offset: {
-                            position: i
-                        }
-                    });
-                }
-            });
-            if (store.state.player && store.state.player.item && store.state.player.item.uri == track.uri) {
-                tr.classList.add('sp-current-track');
-            }
-            fields.map((field, i) => {
-              var td = document.createElement('td');
-              let val = track[field];
-              
-              if (field === 'discovered') {
-                  let discoverLevel = 0;
-                  td.width = "10pt";
-                  td.classList.add('discovered');
-                  let discovered = store.hasDiscoveredTrack(track, this.playlist);
-                    
-                  if (!discovered) {
-                      store.discoverTrack(track, this.playlist);
-                      val = ''; // '<i class="fa fa-circle new"></i>';
-                  } else {
-                      val = "";
-                  }
-                  td.innerHTML = val;
-              } else if ((field === 'time' || field == 'added_at') && !!val) {
-                  let date = moment(val);
-                  let now = moment();
-                let dr = Math.abs(date.diff(now, 'days'));
-                let fresh = Math.abs(date.diff(now, 'days'));
-                let tooOld = dr > 1;
-                  let strTime = dr ? date.format('YYYY-MM-DD') : date.fromNow();
-                  td.innerHTML = '<span>' + strTime + '</span>';
-                  if (tooOld) {
-                      td.style.opacity = 0.5;
-                  }
-                  let discoveredField = tr.querySelector('td.discovered');
-                  if (discoveredField != null && fresh < 1) {
-                      discoveredField.innerHTML = '<i class="fa fa-circle new"></i>';
-                  }
-              } else if (typeof(val) === 'string') {
-                td.innerHTML = '<span>' + val + '</span>';
-              } else if (val instanceof Array) {
-                 td.innerHTML = val.map((v, i) => {
-                  
-                     return '<sp-link uri="' + v.uri + '">' + v.name + '</sp-link>'
-                }).join(', '); 
-              } else if (val instanceof Object) {
-                  if (val) {
-                  td.innerHTML = '<sp-link uri="' + val.uri + '">' + val.name + '</sp-link>'; 
-                  } else {
-                      td.innerHTML = '&nbsp;';
-                  }
-              } else {
-                td.innerHTML = '';
-              }
-              if (field === 'name') {
-                td.width = '500pt';
-            }
-
-            tr.appendChild(td);
-           });
-           this.tbody.appendChild(tr);
-           
-        });
+        var rows = obj.objects.map(createTrack);
     }
 }
 document.registerElement('sp-trackcontext', SPTrackContextElement);
@@ -1465,6 +1490,14 @@ class SPAlbumContextElement extends SPResourceElement {
 
 document.registerElement('sp-albumcontext', SPAlbumContextElement);
 */
+
+
+class SPGondoleElement extends HTMLElement {
+    
+}
+document.registerElement('sp-gondole', SPGondoleElement);
+
+
 class SPPlaylistContextElement extends SPResourceElement {
     attachedCallback() {
     }
@@ -1476,7 +1509,6 @@ class SPPlaylistContextElement extends SPResourceElement {
         }
     }
     setState(obj) {
-        this.innerHTML = '';
         if (obj && obj.objects instanceof Array) {
             let albums = obj.objects.map((item) => {
                var a = document.createElement('sp-playlist');
@@ -1488,6 +1520,38 @@ class SPPlaylistContextElement extends SPResourceElement {
                 this.appendChild(album);
             });
         }
+        this.innerHTML += '<sp-gondole></sp-gondole>';
+    }
+    async fetchNext() {
+        let gondole = this.querySelector('sp-gondole');
+        if (gondole)
+        gondole.setAttribute('activated', 'true');
+        let result = await store.request('GET', this.getAttribute('uri') + '?offset=' + this.offset + '&limit=100');
+        if (result && result.tracks instanceof Array && result.tracks.length > 0) {
+            result.tracks.map(createTrack);
+            if (gondole)
+                gondole.setAttribute('activated', false);
+        } else {  
+            if (gondole)
+                this.removeChild(gondole);
+        }
+    }
+    get view() {
+        return this._view;
+    }
+    set view(val) {
+        
+        this._view = val;
+        this._view.addEventListener('scroll', this._onScroll.bind(this));
+    }
+    _onScroll(e) {
+        let view = e.target;
+        let viewBounds = view.getBoundingClientRect();
+        let gondole = this.querySelector('sp-gondole');
+        if (gondole && gondole.getBoundingClientRect().top < viewBounds.top + viewBounds.height) {
+            this.fetchNext();
+        }
+    
     }
 }
 
