@@ -110,12 +110,20 @@ SpotifyBrowseAPI.prototype.getMe = function () {
     return JSON.parse(localStorage.getItem("me"));
 }
 
+var service = {
+    id: 'spotify',
+    uri: 'bungalow:service:spotify',
+    type: 'service',
+    name: 'Spotify',
+    description: 'Music service'
+};
+
 SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, req, cb) {
     var self = this;
     this.req = req;
     return new Promise(function (resolve, fail) {
         var activity = function () {
-    
+            
             var token = self.getAccessToken();
             var headers = {};
             headers["Authorization"] = "Bearer " + token.access_token;
@@ -140,7 +148,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     
                         var data = JSON.parse(body);
                         try {
-                            resolve({'objects': data[payload.type + 's'].items});
+                            resolve({'objects': data[payload.type + 's'].items, 'service': service});
                         } catch (e) {
                             fail(e);
                         }
@@ -160,7 +168,11 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 resolve({
                                     type: 'library',
                                     name: 'Library',
-                                    'objects': data.items.map((t) => t.track)
+                                    'objects': data.items.map(function (t) {
+                                        var track = t.track;
+                                        track.service = service;
+                                        return track;
+                                    })
                                 });
                             } catch (e) {
                                 fail();
@@ -179,10 +191,14 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 resolve({
                                     type: 'collection',
                                     name: 'Playlists',
-                                    'objects': data.items
+                                    'objects': data.items.map(function (s){
+                                        s.service = service;
+                                        return s;
+                                    }),
+                                    service: service
                                 });
                             } catch (e) {
-                                fail();
+                                fail(500);
                             }
                         }
                     );
@@ -211,9 +227,11 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                     },
                                     function (error2, response2, body2) {
                                          try {
-                                            resolve(JSON.parse(body2));
+                                            var result = JSON.parse(body2);
+                                            result.service = service;
+                                            resolve(result);
                                         } catch (e) {
-                                            fail();
+                                            fail(500);
                                         }
                                     return;
                                 });
@@ -246,7 +264,9 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             },
                             function (error2, response2, body2) {
                                  try {
-                                    resolve(JSON.parse(body2));
+                                     var result = JSON.parse(body2);
+                                     result.service = service;
+                                    resolve(result);
                                 } catch (e) {
                                     fail();
                                 }
@@ -277,7 +297,11 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                             resolve({
                                                 type: 'toplist',
                                                 name: 'Top Tracks',
-                                                'objects': data.tracks.slice(0,parseInt(parts[3]))
+                                                'objects': data.tracks.slice(0,parseInt(parts[3])).map(function (t) {
+                                                    t.service = service;
+                                                    return t;
+                                                }),
+                                                service: service
                                             });
                                         } catch (e) {
                                             fail();
@@ -295,6 +319,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 resolve({
                                     type: 'toplist',
                                     name: 'Top Tracks',
+                                    service: service,
                                     description: 'The top ' + parts[3] + ' tracks by <sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link> that have played at most',
                                     for: obj,
                                     uri: obj.uri + ':top:' + parts[3],
@@ -328,9 +353,14 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 headers: headers
                         },
                         function (error, response, body) {
-                            var data = JSON.parse(body);
-                            console.log(data);
-                            resolve(data);
+                            try {
+                                var data = JSON.parse(body);
+                                console.log(data);
+                                data.service = service;
+                                resolve(data);
+                            } catch (e) {
+                                fail(500);
+                            }
                         }
                     );
                     return;
@@ -348,7 +378,11 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             var data = JSON.parse(body);
                             try {
                                 resolve({
-                                    'objects': data.items
+                                    'objects': data.items.map(function (t) {
+                                        t.service = service;
+                                        return t;
+                                    }),
+                                    service: service
                                 });
                             } catch (e) {
                                 resolve({
@@ -363,12 +397,14 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 headers: headers
                         },
                         function (error, response, body) {
-                            body = body.replace(/spotify\:/, 'bungalow:');
-                            var data = JSON.parse(body);
-                            try {
+                           try {
+                                body = body.replace(/spotify\:/, 'bungalow:');
+                            
+                                var data = JSON.parse(body);
+                                data.service = service;
                                 resolve(data);
                             } catch (e) {
-                                fail();
+                                fail(500);
                             }
                         }
                     );
@@ -379,27 +415,15 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         url: 'https://api.spotify.com/v1/tracks/' + parts[1] + ''
                     },
                     function (error, response, body) {
-                        var data = JSON.parse(body);
                         try {
+                            var data = JSON.parse(body);
+                            data.service = service;
                             resolve(data);
                         } catch (e) {
                             fail();
                         }
                     }
                 );
-            }
-            if (parts[0] == 'label') {
-                if (parts.length > 2) {
-                    if (parts[2] == 'artists') {
-                        request({
-                            url: 'https://api.spotify.com/v1/search/?q=label:"' + encodeURI(parts[1]) + '"&type=artist&limit=' + payload.limit + '&offset=' + payload.offset,
-                            headers: headers
-                        },  function (error, response, body) {
-                            resolve(body);
-                        });
-                        resolve({objects: labels});
-                    }
-                }
             }
             if (parts[0] == 'country') {
                 var code = parts[1];
@@ -409,10 +433,17 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             url: 'https://api.spotify.com/v1/browse/categories/' + parts[3] + '/playlists?country=' + parts[1] + '&limit=2',
                             headers: headers
                         }, function (err, response, body) {
-                            var result = JSON.parse(body);
-                            resolve({
-                                objects: result.playlists
-                            });
+                            try {
+                                var result = JSON.parse(body);
+                                resolve({
+                                    objects: result.playlists.map(function (o) {
+                                        o.service = service;
+                                        return o;
+                                    })
+                                });
+                            } catch (e) {
+                                fail(500);
+                            }
                         });
                         return;
                     }
@@ -421,7 +452,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         if (parts[1] == 'qi') {
                             var result = { 
                                 name: 'Qiland',
-                                id: 'qi'
+                                id: 'qi',
+                                service: service
                             };
                             url = 'https://api.spotify.com/v1/users/drsounds/playlists/2KVJSjXlaz1PFl6sbOC5AU';
                             request({
@@ -439,8 +471,10 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                                 var track = assign(track, track.track);
                                                 track.user = track.added_by;
                                                 track.time = track.added_at;
+                                                track.service = service;
                                                 if (track.user)
                                                 track.user.name = track.user.id;
+                                                track.user.service = service;
                                                 return track;
                                             })
                                         });
@@ -467,6 +501,12 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                         objects: result3.items.map(function (track) {
                                             var track = assign(track, track.track);
                                             track.user = track.added_by;
+                                            track.album.service = service;
+                                            track.artists = track.artists.map(function (a) {
+                                                a.service = service;
+                                                return a;
+                                            })
+                                            track.service = service;
                                             track.time = track.added_at;
                                             if (track.user)
                                             track.user.name = track.user.id;
@@ -486,6 +526,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 uri: 'spotify:country:' + code + ':top:' + parts[3],
                                 name: 'Top Tracks',
                                 type: 'toplist',
+                                service: service,
                                 images: [{
                                     url: ''
                                 }],
@@ -494,6 +535,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                     type: 'country',
                                     name: 'Qiland',
                                     uri: 'spotify:country:qi',
+                                    service: service,
                                     images: [{
                                         url: ''
                                     }]
@@ -516,6 +558,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                     uri: 'spotify:country:' + code + ':top:' + parts[3],
                                     name: 'Top Tracks',
                                     type: 'toplist',
+                                    service: service,
                                     images: [{
                                         url: result.flag
                                     }],
@@ -535,7 +578,10 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         try {
                             var result = JSON.parse(body);
                             resolve({
-                                objects: result.playlists
+                                objects: result.playlists.map(function (p) {
+                                    p.service = service;
+                                    p.owner.service = service;
+                                })
                             });
                         } catch (e) {
                             fail(500);
@@ -549,6 +595,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             name: 'Qiland',
                             id: 'qi',
                             uri: 'spotify:country:qi',
+                            service: service,
                             images: [
                                 {
                                     url: ''
@@ -559,14 +606,18 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     request({
                         url: 'https://restcountries.eu/rest/v2/alpha/' + code,
                     }, function (error, response, body) {
-                        
-                        var result = JSON.parse(body);
-                        result.type = 'country';
-                        result.uri = 'spotify:country:' + code;
-                        result.images = [{
-                            url: result.flag
-                        }]
-                        resolve(result);
+                        try {
+                            var result = JSON.parse(body);
+                            result.type = 'country';
+                            result.uri = 'spotify:country:' + code;
+                            result.service = service;
+                            result.images = [{
+                                url: result.flag
+                            }]
+                            resolve(result);
+                        } catch (e) {
+                            fail(500);
+                        }
                     });
                     return;
                     
@@ -590,6 +641,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                      resolve({
                                         'objects': result.items.map((p) => {
                                             p.owner.name = p.owner.id;
+                                            p.service = service;
+                                            p.owner.service = service;
                                             return p;
                                         })
                                     });
@@ -606,37 +659,67 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                     uesrs.push({
                                         'id': 'follower' + i,
                                         'name': 'Track ' + i,
-                                        'uri': 'spotify:user:' + parts[3] + ':follower:' + i
+                                        'uri': 'spotify:user:' + parts[3] + ':follower:' + i,
+                                        service: {
+                                            id: 'mock',
+                                            name: 'Mock',
+                                            uri: 'bungalow:service:mock'
+                                        }
                                     });
                                 }
                                 resolve({
-                                    'objects': users
+                                    'objects': users,
+                                    service: {
+                                        id: 'mock',
+                                        name: 'Mock',
+                                        uri: 'bungalow:service:mock'
+                                    }
                                 });
                             } else if (parts[4] == 'track') {
                                 request({
                                     url: 'https://api.spotify.com/v1/users/' + parts[1] + '/playlists/' + parts[3] + '/tracks',
                                     headers: headers
                                 }, function (error, response, body) {
-                                    var result = JSON.parse(body);
-                                    resolve({
-                                        'objects': result.items.map(function (track) {
-                                            var track = assign(track, track.track);
-                                            track.user = track.added_by;
-                                            track.time = track.added_at;
-                                            if (track.user)
-                                            track.user.name = track.user.id;
-                                            return track;
+                                    try {
+                                        var result = JSON.parse(body);
+                                        resolve({
+                                            'objects': result.items.map(function (track) {
+                                                var track = assign(track, track.track);
+                                                if (track.added_by)
+                                                    track.added_by.service = service;
+                                                track.user = track.added_by;
+                                                track.time = track.added_at;
+                                                track.service = service;
+                                                track.album.service = service;
+                                                track.artists = track.artists.map(function (a) {
+                                                    a.service = service;
+                                                    return a;
+                                                })
+                                                if (track.user) {
+                                                    track.user.name = track.user.id;
+                                                    track.user.service = service;
+                                                }
+                                                return track;
+                                            })
                                         })
-                                    })
+                                    } catch (e) {
+                                        fail(500);
+                                    }
                                 });
                             } else {
                                 request({
                                     url: 'https://api.spotify.com/v1/users/' + parts[1] + '/playlists/' + parts[3] + '',
                                     headers: headers
                                 }, function (error, response, body) {
-                                    var result = JSON.parse(body);
-                                    result.owner.name = result.owner.id;
-                                    resolve(result);
+                                    try {
+                                        var result = JSON.parse(body);
+                                        result.owner.name = result.owner.id;
+                                        result.service = service;
+                                        result.owner.service = service;
+                                        resolve(result);
+                                    } catch (e) {
+                                        fail(500);
+                                    }
                                 });
                             }
                         }
@@ -650,13 +733,18 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     },
                         function (error, response, body) {
                             if (error) {
-                                fail({'error': ''});
+                                fail(500);
                             }
-                            var user = JSON.parse(body);
-                            if (user) {
-                            user.name = user.display_name;
+                            try {
+                                var user = JSON.parse(body);
+                                if (user) {
+                                    user.name = user.display_name;
+                                    user.service = service;
+                                }
+                                resolve(user);
+                            } catch (e) {
+                                fail(500);
                             }
-                            resolve(user);
                         }
                     );
     
@@ -675,12 +763,19 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 url: 'https://api.spotify.com/v1/browse/categories/' + userid + '/playlists?limit=' + payload.limit + '&offset=' + payload.offset,
                                 headers: headers
                             }, function (error, response, body) {
-                                var result = JSON.parse(body);
+                                try {
+                                    var result = JSON.parse(body);
                                 
-                                
-                                resolve({
-                                    'objects': result.playlists.items
-                                });
+                                    
+                                    resolve({
+                                        'objects': result.playlists.items.map(function (pls) {
+                                            pls.service = service;
+                                        }),
+                                        service: service
+                                    });
+                                } catch (e) {
+                                    fail(500);
+                                }
                             });
                             return;
                         }
@@ -698,10 +793,10 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             try {
                                 var user = JSON.parse(body);
                                 user.images = user.icons;
-                                user.name = user.display_name;
+                                user.service = service;
                                 resolve(user);
                             } catch (e) {
-                                fail();
+                                fail(500);
                             }
                         }
                     );
