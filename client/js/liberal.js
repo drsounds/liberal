@@ -1939,8 +1939,8 @@ class SPSearchViewElement extends SPViewElement {
         super.attachedCallback();
          if (!this.created) {
             this.classList.add('sp-view');
-            this.innerHTML = "<div style='padding: 13pt'><h3>Search results for '<span id='q'>'</span>";
-            this.header = this.querySelector('div');    
+            //this.innerHTML = "<div style='padding: 13pt'><h3>Search results for '<span id='q'>'</span>";
+            this.header = document.createElement('sp-header');    
        
             this.trackcontext = document.createElement('sp-trackcontext');
             this.appendChild(this.trackcontext);
@@ -1973,10 +1973,19 @@ class SPSearchViewElement extends SPViewElement {
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName === 'uri') {
             let query = newVal.substr('bungalow:search:'.length);
-            this.querySelector('#q').innerHTML = query;
             this.trackcontext.setAttribute('uri', 'bungalow:search?q=' + query + '&type=track&limit=50');
             let result = await store.request('GET', newVal);
-            this.header.setState(result);
+            debugger;
+            this.header.setState({
+                name: query,
+                id: query,
+                description: "Search results for '" + query + "'",
+                uri: 'bungalow:search: ' + query,
+                type: 'search',
+                images: [{
+                    url: ''
+                }]
+            });
         }
     }   
 }
