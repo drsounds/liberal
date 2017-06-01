@@ -1,0 +1,33 @@
+
+:root {
+    --background-color: #fafafa;
+    --foreground-color: #777;
+}
+body {
+    background-color: var(--background-color);
+    color: var(--foreground-color);
+}
+sp-sidebar {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+sp-menuitem.active {
+    background-color: var(--brand-primary);
+    color: var(--foreground-color);
+}
+
+
+sp-tabbar {
+    background-color:#eaeaea;
+}
+table {
+    border-collapse: collapse;
+}
+th {
+    background-color:#e0e0e0;
+}
+sp-gondole {
+    min-height: 300pt;
+    width: 100%;
+    background-color: rgba(0, 0, 0, .01);
+}

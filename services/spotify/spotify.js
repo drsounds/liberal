@@ -140,8 +140,9 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
             var parts = url.split(/\//g);
             console.log(parts);
             if (parts[0] == 'search') {
+                url = 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 39) + '&offset=' + (payload.offset || 1);
                 request({
-                        url: 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 120) + '&offset=' + (payload.offset || 1),
+                        url: url,
                         headers: headers
                     },
                     function (error, response, body) {
@@ -158,7 +159,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
             if (parts[0] == 'me') {
                 if (parts[1] == 'track') {
                     request({
-                        url: 'https://api.spotify.com/v1/me/tracks?limit=85&limit=' + (payload.limit || 100) + '&offset=' + (payload.offset || 0) + '&country=se',
+                        url: 'https://api.spotify.com/v1/me/tracks?limit=85&limit=' + (payload.limit || 99) + '&offset=' + (payload.offset || 0) + '&country=se',
                         headers: headers
                         
                     },
@@ -181,7 +182,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     );
                 } else if (parts[1] == 'playlist') {
                  request({
-                        url: 'https://api.spotify.com/v1/me/playlists?limit=' + (payload.limit || 100) + '&offset=' + (payload.offset || 0) + '&country=se',
+                        url: 'https://api.spotify.com/v1/me/playlists?limit=' + (payload.limit || 99) + '&offset=' + (payload.offset || 0) + '&country=se',
                         headers: headers
                         
                     },
@@ -288,7 +289,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         if (parts.length > 4) {
                             if (parts[4] == 'track') {
                                 request({
-                                    url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/top-tracks?limit=' + (payload.limit || 100) + '&offset=' + (payload.offset || 0) + '&country=se',
+                                    url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/top-tracks?limit=' + (payload.limit || 99) + '&offset=' + (payload.offset || 0) + '&country=se',
                                     headers: headers
                                 },
                                     function (error, response, body) {
@@ -333,7 +334,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     if (parts[2] == 'release') {
                         var limit = (payload.limit || 10);
                         request({
-                                url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/albums?limit=' + (payload.limit || 100) + '&offset=' + (payload.offset || 0),
+                                url: 'https://api.spotify.com/v1/artists/' + parts[1] + '/albums?limit=' + (payload.limit || 99) + '&offset=' + (payload.offset || 0),
                                 headers: headers
                             },
                             function (error, response, body) {
@@ -632,7 +633,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 limit: 10,
                                 offset: 0
                             };
-                            url = 'https://api.spotify.com/v1/users/' + userid + '/playlists?limit=' + (payload.limit || 100) + '&offset=' + (payload.offset || 0)
+                            url = 'https://api.spotify.com/v1/users/' + userid + '/playlists?limit=' + (payload.limit || 99) + '&offset=' + (payload.offset || 0)
                             request({
                                 url: url,
                                 headers: headers
@@ -913,7 +914,7 @@ SpotifyBrowseAPI.prototype.login = function () {
                     })
                 }
             }
-        }, 100);
+        }, 99);
     });
     return promise;
 }
@@ -965,7 +966,7 @@ SpotifyBrowseAPI.prototype.search = function (query, limit, offset, type, callba
         self.request('GET', 'https://api.spotify.com/v1/search?q=' + encodeURI(query) + '&type=' + type + '&limit=' + limit + '&offset=' + offset).then(function (data) {
             if ('tracks' in data) {
                 var tracks = data.tracks.items.map(function (track) {
-                    track.duration = track.duration_ms / 1000;
+                    track.duration = track.duration_ms / 990;
                     return track;
                 });
                 resolve(data.tracks.items);
