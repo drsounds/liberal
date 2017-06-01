@@ -1,0 +1,30 @@
+sp-appfooter button, input[type=range]::-webkit-slider-runnable-track {
+  box-shadow: 0pt 0pt 3pt rgba(0, 0, 0, .5);
+  border-radius: 28pt;
+  background-image: url('/themes/chromify/img/btn_gloss.png') !important;
+  background-size: cover;
+  margin-right: 6pt;
+}
+button.fa-play {
+    -webkit-transform: scale(1.08);
+}
+sp-appfooter button:active {
+    opacity: 0.5;
+}
+input[type=range]{
+    -webkit-appearance: none;
+    background: transparent;
+}
+input[type=range]::-webkit-slider-thumb {
+    background: transparent;
+}
+
+
+span, h1, h2, h3, h4, p, sp-link, sp-menuitem {
+  -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
+}    
+
+h3 > sp-link, td sp-image {
+  -webkit-filter: hue-rotate(calc(1-var(--primary-hue))) saturate(calc(1-var(--primary-saturation)));
+  
+}    
