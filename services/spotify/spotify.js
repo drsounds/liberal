@@ -124,6 +124,9 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
     return new Promise(function (resolve, fail) {
         var activity = function () {
             if (!payload.offset) payload.offset = 0;
+            if (!isNaN(payload.offset)) payload.offset = parseInt(payload.offset);
+            if (!payload.type) payload.type = 'track';
+            if (!isNaN(payload.limit)) payload.limit = parseInt(payload.limit);
             if (!payload.limit) payload.limit = 30;
             
             var token = self.getAccessToken();
@@ -153,6 +156,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         try {
                             resolve({'objects': data[payload.type + 's'].items.map((o, i) => {
                                 o.position = i + payload.offset;
+                                return o;
                             }), 'service': service});
                         } catch (e) {
                             fail(e);

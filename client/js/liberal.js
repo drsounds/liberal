@@ -1394,7 +1394,7 @@ class SPTrackContextElement extends SPResourceElement {
     async attributeChangedCallback(attrName, oldVal, newVal) {
         
         if (attrName == 'uri') {
-          let result = await store.request('GET', newVal);
+          let result = await store.request('GET', newVal + '?q=' + this.query);
                 this.setState(result);
         }
     }
@@ -1417,6 +1417,9 @@ class SPTrackContextElement extends SPResourceElement {
         tr.setAttribute('data-index', i);
         tr.addEventListener('dblclick', (e) => {
             let tr = e.target.parentNode;
+            while (tr.localName != 'tr') {
+                tr = tr.parentNode;
+            }
             let position = tr.getAttribute('data-position'); 
             position = parseInt(position);
             if (this.getAttribute('uri').indexOf('bungalow:album') == 0 || this.getAttribute('uri').indexOf('bungalow:user') == 0 ) {
@@ -1531,6 +1534,11 @@ class SPTrackContextElement extends SPResourceElement {
             this.tfoot = document.createElement('tfoot');
             this.tfoot.innerHTML = '<sp-gondole></sp-gondole>';
             this.appendChild(this.tfoot);
+            let gondole = this.querySelector('sp-gondole');
+            let viewBounds = this.parentNode.getBoundingClientRect();
+            if (gondole && gondole.getBoundingClientRect().top < viewBounds.top + viewBounds.height) {
+                this.fetchNext();
+            }
         } catch (e) {
             
         }
@@ -1600,6 +1608,11 @@ class SPPlaylistContextElement extends SPResourceElement {
             });
         }
         this.innerHTML += '<sp-gondole></sp-gondole>';
+        let gondole = this.querySelector('sp-gondole');
+            let viewBounds = this.parentNode.getBoundingClientRect();
+            if (gondole && gondole.getBoundingClientRect().top < viewBounds.top + viewBounds.height) {
+                this.fetchNext();
+            }
     }
     async fetchNext() {
         if (this.fetching) return;
@@ -1981,6 +1994,7 @@ class SPPlaylistViewElement extends SPViewElement {
             this.trackcontext.setAttribute('uri', newVal + ':track');
             let result = await store.request('GET', newVal);
             this.trackcontext.playlist = result;
+          
             this.state = result;
            
             this.activate();
@@ -2060,7 +2074,7 @@ class SPSearchViewElement extends SPViewElement {
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName === 'uri') {
             let query = newVal.substr('bungalow:search:'.length);
-            this.trackcontext.setAttribute('query', query);
+            this.trackcontext.query = query;
             this.trackcontext.setAttribute('uri', 'bungalow:search');
             let result = await store.request('GET', newVal);
             this.header.setState({
