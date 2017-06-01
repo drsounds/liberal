@@ -5,9 +5,10 @@
     --brand-secondary: #C6FF00;
 }
 body {
-    font-family: "Montserrat Light";
+    font-family: "Tahoma";
+    font-size: 11px;
 }
 
 sp-appheader, sp-appfooter {
-    background-color: var(--brand-primary);
+    background-color: #555;
 }

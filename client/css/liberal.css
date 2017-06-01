@@ -23,7 +23,6 @@ sp-image {
     background-size: cover;
     display: block;
     border-radius: 5pt;
-    box-shadow:0pt 0pt 5pt rgba(0, 0, 0, 0.5), inset 0pt 1pt 0pt rgba(255, 255, 255, .11);
 }
 sp-chrome {
     left: 0pt;
@@ -155,7 +154,7 @@ sp-header, sp-album, sp-playlist {
     padding: 10pt;
     padding-right: -20pt;
 }
-sp-header > div, sp-album > div, sp-playlist > div {
+sp-header > div:first-child, sp-album > div, sp-playlist > div {
     padding-right: 12pt;
 }
 sp-header table td {

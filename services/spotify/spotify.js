@@ -123,6 +123,8 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
     this.req = req;
     return new Promise(function (resolve, fail) {
         var activity = function () {
+            if (!payload.offset) payload.offset = 0;
+            if (!payload.limit) payload.limit = 30;
             
             var token = self.getAccessToken();
             var headers = {};
@@ -149,7 +151,9 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     
                         var data = JSON.parse(body);
                         try {
-                            resolve({'objects': data[payload.type + 's'].items, 'service': service});
+                            resolve({'objects': data[payload.type + 's'].items.map((o, i) => {
+                                o.position = i + payload.offset;
+                            }), 'service': service});
                         } catch (e) {
                             fail(e);
                         }
@@ -169,9 +173,10 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 resolve({
                                     type: 'library',
                                     name: 'Library',
-                                    'objects': data.items.map(function (t) {
+                                    'objects': data.items.map(function (t, i) {
                                         var track = t.track;
                                         track.service = service;
+                                        track.position = i + payload.offset;
                                         return track;
                                     })
                                 });
@@ -192,8 +197,9 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 resolve({
                                     type: 'collection',
                                     name: 'Playlists',
-                                    'objects': data.items.map(function (s){
+                                    'objects': data.items.map(function (s, i){
                                         s.service = service;
+                                        s.position = i + payload.offset;
                                         return s;
                                     }),
                                     service: service
@@ -218,7 +224,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         request(d,
                             function (error, response, body) {
                                 if (error) {
-                                    fail();
+                                    fail(500);
                                     return;
                                 }
                                 request(
@@ -298,8 +304,9 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                             resolve({
                                                 type: 'toplist',
                                                 name: 'Top Tracks',
-                                                'objects': data.tracks.slice(0,parseInt(parts[3])).map(function (t) {
+                                                'objects': data.tracks.slice(0,parseInt(parts[3])).map(function (t, i) {
                                                     t.service = service;
+                                                    t.position = i;
                                                     return t;
                                                 }),
                                                 service: service
@@ -375,12 +382,18 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 headers: headers
                         },
                         function (error, response, body) {
-                            body = body.replace('spotify:', 'bungalow:');
-                            var data = JSON.parse(body);
+                            if (error) {
+                                fail(500);
+                            }
                             try {
+                                body = body.replace('spotify:', 'bungalow:');
+                            
+                                var data = JSON.parse(body);
+                            
                                 resolve({
-                                    'objects': data.items.map(function (t) {
+                                    'objects': data.items.map(function (t, i) {
                                         t.service = service;
+                                        t.position = i;
                                         return t;
                                     }),
                                     service: service
@@ -431,7 +444,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                 if (parts[2] === 'category') {
                     if (parts[4] === 'playlist') {
                         request({
-                            url: 'https://api.spotify.com/v1/browse/categories/' + parts[3] + '/playlists?country=' + parts[1] + '&limit=2',
+                            url: 'https://api.spotify.com/v1/browse/categories/' + parts[3] + '/playlists?country=' + parts[1] + '&limit=' + payload.limit + '&offset=' + payload.offset,
                             headers: headers
                         }, function (err, response, body) {
                             try {
@@ -468,10 +481,11 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                     }, function (err2, response2, body2) {
                                         var result3 = JSON.parse(body2);
                                         resolve({
-                                            objects: result3.items.map(function (track) {
+                                            objects: result3.items.map(function (track, i) {
                                                 var track = assign(track, track.track);
                                                 track.user = track.added_by;
                                                 track.time = track.added_at;
+                                                track.position = i;
                                                 track.service = service;
                                                 if (track.user)
                                                 track.user.name = track.user.id;
@@ -487,7 +501,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                             return;
                         }
                         request({
-                            url: 'https://api.spotify.com/v1/browse/categories/toplists/playlists?country=' + parts[1] + '&limit=2',
+                            url: 'https://api.spotify.com/v1/browse/categories/toplists/playlists?country=' + parts[1] + '&limit=' + payload.limit + '&offset=' + payload.offset,
                             headers: headers
                         }, function (err, response, body) {
                             try {
@@ -499,10 +513,11 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 }, function (err2, response2, body2) {
                                     var result3= JSON.parse(body2);
                                     resolve({
-                                        objects: result3.items.map(function (track) {
+                                        objects: result3.items.map(function (track, i) {
                                             var track = assign(track, track.track);
                                             track.user = track.added_by;
                                             track.album.service = service;
+                                            track.position = i;
                                             track.artists = track.artists.map(function (a) {
                                                 a.service = service;
                                                 return a;
@@ -573,7 +588,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                     }
                 } else if (parts[2] === 'playlist') {
                     request({
-                        url: 'https://api.spotify.com/v1/browse/categories/toplists/playlists?country=' + parts[1] + '&limit=2',
+                        url: 'https://api.spotify.com/v1/browse/categories/toplists/playlists?country=' + parts[1] + '&limit=' + payload.limit + '&offset=' + payload.offset,
                         headers: headers
                     }, function (err, response, body) {
                         try {
@@ -686,12 +701,13 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                     try {
                                         var result = JSON.parse(body);
                                         resolve({
-                                            'objects': result.items.map(function (track) {
+                                            'objects': result.items.map(function (track, i) {
                                                 var track = assign(track, track.track);
                                                 if (track.added_by)
                                                     track.added_by.service = service;
                                                 track.user = track.added_by;
                                                 track.time = track.added_at;
+                                                track.position = parseInt(payload.offset) + i;
                                                 track.service = service;
                                                 track.album.service = service;
                                                 track.artists = track.artists.map(function (a) {
@@ -771,8 +787,9 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                 
                                     
                                     resolve({
-                                        'objects': result.playlists.items.map(function (pls) {
+                                        'objects': result.playlists.items.map(function (pls, i) {
                                             pls.service = service;
+                                            pls.position = i + payload.offset;
                                         }),
                                         service: service
                                     });

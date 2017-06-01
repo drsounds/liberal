@@ -1,0 +1,51 @@
+
+:root {
+    --background-color: #303030;
+    --foreground-color: #fff;
+}
+body {
+    background-color: var(--background-color);
+    color: var(--foreground-color);
+}
+sp-sidebar {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+sp-menuitem.active {
+    background-color: var(--brand-primary);
+    color: var(--foreground-color);
+}
+
+
+sp-tabbar {
+    background-color:#eaeaea;
+}
+table {
+    border-collapse: collapse;
+}
+th, td {
+    padding: 3pt;
+}
+th, td {
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+.sp-track-selected {
+    background-color: var(--brand-primary);
+}
+sp-gondole {
+    min-height: 300pt;
+    width: 100%;
+    background-color: rgba(0, 0, 0, .01);
+}
+sp-tabbar {
+    background-color: #383838;
+}
+sp-toolbar {
+    background-color: rgba(255, 255, 255, .1);
+}
+sp-header {
+    background-color: rgba(255, 255, 255, .025);
+}
+.sp-current-track {
+    color: #00ff00;
+}
