@@ -114,3 +114,74 @@ fieldset input, fieldset button, fieldset select {
     display: block;
     margin-top: 13pt;
 }
+
+
+body {
+	font-family: Gotham, "Helvetica Neue", Helvetica, Arial, sans-serif;	
+}
+
+@-webkit-keyframes MOVE-BG {
+	from {
+		-webkit-transform: translateX(0);
+	}
+	to { 
+		-webkit-transform: translateX(46px);
+	}
+}
+
+@keyframes MOVE-BG {
+	from {
+		transform: translateX(0);
+	}
+	to { 
+		transform: translateX(46px);
+	}
+}
+
+
+.loading {
+	height: auto;
+    text-align: center;
+    color: #4c3f2e;	
+    position: relative;
+    overflow: hidden;
+	padding: 1rem;
+	margin: 3%;
+	font-style: italic;
+}
+
+.loading-bg {
+    position: absolute;
+    left: -46px;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+	
+  background: -webkit-repeating-linear-gradient(
+    145deg,
+    transparent 1px,
+    rgba(0, 0, 0, .01) 2px,
+    rgba(0, 0, 0, .01) 11px,
+    transparent 12px,
+    transparent 20px
+  );
+  background: repeating-linear-gradient(
+    -55deg,
+    transparent 1px,
+    rgba(0, 0, 0, .01) 2px,
+    rgba(0, 0, 0, .01) 11px,
+    transparent 12px,
+    transparent 20px
+	);
+    
+    -webkit-animation-name: MOVE-BG;
+	-webkit-animation-duration: .6s;
+	-webkit-animation-timing-function: linear;
+	-webkit-animation-iteration-count: infinite;
+	
+    animation-name: MOVE-BG;
+	animation-duration: .6s;
+	animation-timing-function: linear;
+	animation-iteration-count: infinite;
+}

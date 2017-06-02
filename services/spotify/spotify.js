@@ -144,6 +144,30 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
     
             var parts = url.split(/\//g);
             console.log(parts);
+            if (parts[0] == 'internal') {
+                if (parts[1] == 'history') {
+                    if (parts[2] === 'track') {
+                        url = 'https://api.spotify.com/v1/me/player/recently-played?limit=' + (payload.limit || 39) + '&offset=' + (payload.offset || 1);
+                        request({
+                                url: url,
+                                headers: headers
+                            },
+                            function (error, response, body) {
+                            
+                                var data = JSON.parse(body);
+                                try {
+                                    resolve({'objects': data[payload.type + 's'].items.map((o, i) => {
+                                        o.position = i + payload.offset;
+                                        return o;
+                                    }), 'service': service});
+                                } catch (e) {
+                                    fail(e);
+                                }
+                            }
+                        );
+                    }
+                }
+            }
             if (parts[0] == 'search') {
                 url = 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 39) + '&offset=' + (payload.offset || 1);
                 request({
@@ -697,7 +721,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                                     }
                                 });
                             } else if (parts[4] == 'track') {
-                                url = 'https://api.spotify.com/v1/users/' + parts[1] + '/playlists/' + parts[3] + '/tracks?limit=' + (payload.limit || 50) + '&offset=' + (payload.offset || 1);
+                                url = 'https://api.spotify.com/v1/users/' + parts[1] + '/playlists/' + parts[3] + '/tracks?limit=' + (payload.limit || 50) + '&offset=' + (payload.offset || 0);
                                 request({
                                     url: url,
                                     headers: headers

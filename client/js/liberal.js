@@ -441,7 +441,7 @@ class SPThemeEditorElement extends HTMLElement {
             this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
             this.saturationChooser.value = store.saturation;
             this.styleselect = document.createElement('select');
-            this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="obama">Obama</option><option value="chromify">Chromify</option>';
+            this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="maestro">Maestro</option><option value="obama">Obama</option><option value="chromify">Chromify</option>';
             this.appendChild(this.styleselect);
             this.flavorselect = document.createElement('select');
             this.flavorselect.innerHTML += '<option value="dark">' + _('Dark') + '</option><option value="light">' + _('Light') + '</option>';
@@ -922,7 +922,7 @@ class SPHeaderElement extends SPResourceElement {
 
 class SPToolbarElement extends HTMLElement {
     attachedCallback () {
-        this.innerHTML = '<button><i class="fa fa-play"></i> ' + _('Play') + '</button>&nbsp;';
+        this.innerHTML = '<button class="primary"><i class="fa fa-play"></i> ' + _('Play') + '</button>&nbsp;';
         this.innerHTML += '<button>...</button>';
     }
 }
@@ -1412,6 +1412,7 @@ class SPTrackContextElement extends SPResourceElement {
         }*/
         tr.classList.add('sp-track');
         tr.setAttribute('data-uri', track.uri);
+        console.log(track.position);
         tr.setAttribute('data-position', track.position);
         if (isNaN(track.position)) throw "Error";
         tr.setAttribute('data-index', i);
@@ -1430,6 +1431,8 @@ class SPTrackContextElement extends SPResourceElement {
                         position: position
                     }
                 });
+                 tr.classList.remove('loading-bg');
+           
             } else {
                 let xris = Array.prototype.filter.call(this.querySelectorAll('tr'), (o) => {
                     return o != null && o.getAttribute('data-uri') != null && o.getAttribute('data-uri').indexOf('spotify:local') != 0;
@@ -1662,6 +1665,7 @@ document.registerElement('sp-divider', SPDividerElement);
 
 class SPSidebarElement extends HTMLElement {
     async attachedCallback() {
+        
        this.menu = document.createElement('sp-sidebarmenu');
        this.appendChild(this.menu);
        this.nowplaying = document.createElement('sp-nowplaying');
@@ -1675,7 +1679,13 @@ document.registerElement('sp-sidebar', SPSidebarElement);
 class SPSidebarMenuElement extends HTMLElement {
     async attachedCallback() {
         if (!this.menu) {
-            this.innerHTML += '<label>' + _('Main Menu') + '</label>';
+            this.searchForm = document.createElement('sp-searchform');
+            this.appendChild(this.searchForm);
+            
+            
+            this.label = document.createElement('label');
+            this.label.innerHTML = _('Main Menu');
+            this.appendChild(this.label);
             this.menu = document.createElement('sp-menu');
             this.appendChild(this.menu);
             this.menu.setState({
@@ -1690,7 +1700,10 @@ class SPSidebarMenuElement extends HTMLElement {
                     }
                 ]
             });
-            this.innerHTML += '<br><label>' + _('Playlists') + '</label>';
+            this.appendChild(document.createElement('br'));
+            this.label2 = document.createElement('label');
+            this.label2.innerHTML = _('Playlists');
+            this.appendChild(this.label2);
             this.playlistsMenu = document.createElement('sp-menu');
             this.appendChild(this.playlistsMenu);
             let playlists = await store.request('GET', 'spotify:me:playlist');
@@ -1893,23 +1906,28 @@ document.registerElement('sp-menuitem', SPMenuItemElement);
 class SPSearchFormElement extends HTMLElement {
    
     attachedCallback() {
-        this.form = document.createElement('form');
-        this.form.setAttribute('action', '/');
-        this.form.setAttribute('method', 'GET');
-        this.appendChild(this.form);
-        this.form.addEventListener('submit', (event) => {
-            let query = this.searchTextBox.value;
-            GlobalViewStack.navigate(query);
-            event.preventDefault();
-        })
-        this.searchTextBox = document.createElement('input');
-        this.searchTextBox.setAttribute('type', 'search');
-        this.searchTextBox.setAttribute('placeholder', 'search');
-        this.form.appendChild(this.searchTextBox);
-        this.btnSubmit = document.createElement('button');
-        this.btnSubmit.setAttribute('type', 'submit');
-        this.btnSubmit.style.display = 'none';
-        this.form.appendChild(this.btnSubmit);
+        if (!this.created) {
+            this.form = document.createElement('form');
+            this.form.setAttribute('action', '/');
+            this.form.setAttribute('method', 'GET');
+            this.appendChild(this.form);
+            this.form.addEventListener('submit', (event) => {
+                let query = this.searchTextBox.value;
+                GlobalViewStack.navigate(query);
+                event.preventDefault();
+            })
+            this.searchTextBox = document.createElement('input');
+            this.searchTextBox.setAttribute('type', 'search');
+            this.searchTextBox.setAttribute('placeholder', 'search');
+            this.form.appendChild(this.searchTextBox);
+            this.btnSubmit = document.createElement('button');
+            this.btnSubmit.setAttribute('type', 'submit');
+            this.btnSubmit.style.display = 'none';
+            this.form.appendChild(this.btnSubmit);
+            this.created = true;
+            
+        }
+        
     }
 }
 

@@ -1,0 +1,103 @@
+
+
+body {
+    
+    
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,ffffff+100&0.69+0,0+75 */
+/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,ffffff+100&0.15+0,0+75 */
+background: -moz-linear-gradient(top,  rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 75%, rgba(255,255,255,0) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top,  rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 75%,rgba(255,255,255,0) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom,  rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 75%,rgba(255,255,255,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#26ffffff', endColorstr='#00ffffff',GradientType=0 ); /* IE6-9 */
+background-position: fixed;
+background-color: var(--background-color);
+    color: var(--foreground-color);
+}
+
+sp-appheader {
+    display: none;
+}
+
+sp-appheader, sp-appfooter {
+    
+}
+table {
+    border-collapse: collapse;
+}
+small {
+    display: none;
+}
+sp-infobar {
+    background-color: var(--brand-primary);
+    padding: 3pt;
+}
+td, th {
+    padding: 3pt;
+    border-bottom: 1px solid rgba(255, 255, 255, .03);
+}
+sp-appfooter {
+    background-color: rgba(255, 255, 255, .1);
+}
+sp-menuitem {
+    opacity: 0.8;
+}
+.new {
+    color: var(--brand-primary);
+}
+sp-sidebar {
+    background-color: rgba(255, 255, 255, .1);
+}
+sp-menuitem:hover {
+    opacity: 1;
+}
+sp-divider {
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+
+}
+sp-menuitem.active {
+    opacity: 1;
+    color: var(--brand-primary);
+    font-weight: bold;
+}
+button {
+    color: white;
+    border: 1pt solid white;
+    background: transparent;
+    padding: 7pt;
+    border-radius: 12pt;
+}
+sp-tabbar {
+    background-color: rgba(0, 0, 0, .1);
+}
+button.primary {
+    background-color: var(--brand-primary);
+    border: 1pt solid var(--brand-primary);
+    color: black;
+    
+}
+sp-toolbar {
+    background-color: rgba(0, 0, 0, .1);
+}
+.sp-current-track {
+    color: var(--brand-primary);
+}
+sp-image {
+    box-shadow: 0pt 0pt 2pt rgba(0, 0, 0, .5);
+}
+.sp-track-selected {
+    background-color: rgba(255, 255, 255, .1);
+}
+sp-trackcontext tr:hover td {
+    background-color: rgba(255, 255, 255, .05);
+}
+
+
+::-webkit-scrollbar, ::-webkit-scrollbar-corner {
+    background: none;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--foreground-color);
+    border-radius: 12pt;
+    opacity: 0.1;
+}
+
