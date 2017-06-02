@@ -2071,6 +2071,39 @@ class SPCarouselElement extends SPResourceElement {
 
 document.registerElement('sp-carousel', SPCarouselElement);
 
+
+class SPFlowElement extends SPResourceElement {
+    attachedCallback() {
+        this.classList.add('row');
+    }
+    setState(object) {
+        this.innerHTML = '';
+        object.objects.map((o) => {
+           let div = document.createElement('div');
+           let card = document.createElement('sp-card');
+           div.appendChild(card);
+           return div;
+        }).map((d) => {
+            this.appendChild(d);
+        });
+    }
+}
+
+document.registerElement('sp-flow');
+
+
+class SPCardElement extends SPResourceElement {
+    setState(object) {
+        let image = object.images && object.images.length > 0 ? object.images[0].url : '';
+        this.innerHTML = '<sp-cardheader style="' + image + '"></sp-cardheader>' + 
+                        '<sp-carcontent><h3><sp-link uri="' + object.uri + '">' + object.name + '</sp-link></h3>' +
+                        '</sp-cardcontent>';
+    
+    }
+}
+
+document.registerElement('sp-card', SPCardElement);
+
 class SPAlbumViewElement extends SPViewElement {
     attachedCallback() {
         super.attachedCallback();
