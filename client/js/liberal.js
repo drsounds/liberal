@@ -935,8 +935,10 @@ class SPHeaderElement extends SPResourceElement {
         this.vibrant();
     }
     vibrant() {
+        if (localStorage.getItem('stylesheet') != 'maestro') return;
         let object = this.object;
         if (!this.object) return;
+        
         if (object.images instanceof Array && object.images.length > 0) {
             let imageUrl = object.images[0].url;
             let img = document.createElement('img');
@@ -946,7 +948,7 @@ class SPHeaderElement extends SPResourceElement {
             
                 var vibrant = new Vibrant(img);
                 let color = vibrant.swatches()['Vibrant'];
-                let bg = 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.03)';
+                let bg = 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.05)';
                 this.parentNode.style.backgroundColor = bg;
                 GlobalTabBar.style.backgroundColor = bg;
                 
@@ -1230,6 +1232,14 @@ class SPPlaylistElement extends SPResourceElement {
         }
     }
     setState(obj) {
+        let strReleaseDate = '';
+        if (obj.release_date instanceof String) {
+            strReleaseDate = obj.release_date;
+            let releaseDate = moment(obj.release_date);
+            if (Math.abs(releaseDate.diff(moment(), 'days')) < 15) {
+                strReleaseDate = releaseDate.fromNow();
+            } 
+        }
         let titleElement = document.createElement('sp-title');
         titleElement.setState(obj);
         let copyrights = null;
@@ -1243,7 +1253,8 @@ class SPPlaylistElement extends SPResourceElement {
             '<sp-image src="' + obj.images[0].url + '" width="128" height="128"></sp-image>' + 
         '</div>' +
         '<div style="flex: 2">' +
-            '<h3>' +  titleElement.innerHTML + '</h3>' +
+            '<h3>' +  titleElement.innerHTML + ' '+  strReleaseDate + ' </h3>' +
+            
             (obj.description ? '<p>' + obj.description + '</p>' : '') +
             '<sp-trackcontext fields="name,artists,album,user,added_at" uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
             (copyrights ? copyrights : '') +
