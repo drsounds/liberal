@@ -3,7 +3,7 @@ var os = require('os');
 var request = require('request');
 var assign = require('object-assign');
 var Promise = require("es6-promise").Promise;
-var SpotifyBrowseAPI = function (session) {
+var SpotifyService = function (session) {
     var self = this;
     this.cache = {};
     this.isPlaying = false;
@@ -19,11 +19,11 @@ var SpotifyBrowseAPI = function (session) {
 };
 
 
-SpotifyBrowseAPI.prototype.getLoginUrl = function () {
+SpotifyService.prototype.getLoginUrl = function () {
     return 'https://accounts.spotify.com/authorize?client_id=' + this.apikeys.client_id + '&scope=user-read-private user-read-currently-playing user-read-playback-state user-library-read user-library-modify user-modify-playback-state&response_type=code&redirect_uri=' + encodeURI(this.apikeys.redirect_uri);
 }
 
-SpotifyBrowseAPI.prototype.authenticate = function (req) {
+SpotifyService.prototype.authenticate = function (req) {
     var self = this;
     this.req = req;
     console.log(req);
@@ -54,7 +54,7 @@ SpotifyBrowseAPI.prototype.authenticate = function (req) {
     
 }
 
-SpotifyBrowseAPI.prototype.getAccessToken = function () {
+SpotifyService.prototype.getAccessToken = function () {
     try {
         return this.req.session.spotifyAccessToken; //JSON.parse(fs.readFileSync(os.homedir() + '/.bungalow/spotify_access_token.json'));
     } catch (e) {
@@ -62,7 +62,7 @@ SpotifyBrowseAPI.prototype.getAccessToken = function () {
     }
 }
 
-SpotifyBrowseAPI.prototype.setAccessToken = function (req, accessToken) {
+SpotifyService.prototype.setAccessToken = function (req, accessToken) {
 
     accessToken.time = new Date().getTime();
     console.log(accessToken);
@@ -70,13 +70,13 @@ SpotifyBrowseAPI.prototype.setAccessToken = function (req, accessToken) {
     req.session.spotifyAccessToken = accessToken;
 }
 
-SpotifyBrowseAPI.prototype.isAccessTokenValid = function () {
+SpotifyService.prototype.isAccessTokenValid = function () {
     var access_token = this.getAccessToken();
     if (!access_token) return false;
     return new Date() < new Date(access_token.time) + access_token.expires_in;
 }
 
-SpotifyBrowseAPI.prototype.refreshAccessToken = function () {
+SpotifyService.prototype.refreshAccessToken = function () {
     var self = this;
     return new Promise(function (resolve, fail) {
         var accessToken = self.getAccessToken();
@@ -106,7 +106,7 @@ SpotifyBrowseAPI.prototype.refreshAccessToken = function () {
         });
     });
 }
-SpotifyBrowseAPI.prototype.getMe = function () {
+SpotifyService.prototype.getMe = function () {
     return JSON.parse(localStorage.getItem("me"));
 }
 
@@ -117,8 +117,64 @@ var service = {
     name: 'Spotify',
     description: 'Music service'
 };
+SpotifyService.prototype._request = function (method, url, payload, postData) {
+    return new Promise(function (resolve, fail) {
+        if (!payload.offset) payload.offset = 0;
+        if (!isNaN(payload.offset)) payload.offset = parseInt(payload.offset);
+        if (!payload.type) payload.type = 'track';
+        if (!isNaN(payload.limit)) payload.limit = parseInt(payload.limit);
+        if (!payload.limit) payload.limit = 30;
+        
+        var token = self.getAccessToken();
+        var headers = {};
+        headers["Authorization"] = "Bearer " + token.access_token;
+        if (payload instanceof Object) {
+            headers["Content-type"] = "application/json";
+    
+        } else {
+            headers["Content-type"] = ("application/x-www-form-urlencoded");
+        }
+        url = 'https://api.spotify.com/v1' + url;
+        request({
+                url: url,
+                headers: headers
+            },
+            function (error, response, body) {
+            
+                
+                try {
+                    var data = JSON.parse(body);
+                    data.service = {
+                        name: 'Spotify',
+                        id: 'spotify',
+                        type: 'service',
+                        description: ''
+                    }
+                    resolve(data);
+                } catch (e) {
+                    fail(e);
+                }
+            }
+        );
+    });
+}
 
-SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, req, cb) {
+
+/**
+ * Returns user by id
+ **/
+SpotifyService.prototype.getUserById = function (id) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        self._request('GET', '/users/' + id).then(function (result) {
+           resolve(result); 
+        });
+    });
+}
+
+
+
+SpotifyService.prototype.request = function (method, url, payload, postData, req, cb) {
     var self = this;
     this.req = req;
     return new Promise(function (resolve, fail) {
@@ -890,7 +946,7 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
 }
 
 
-SpotifyBrowseAPI.prototype.requestAccessToken = function (code) {
+SpotifyService.prototype.requestAccessToken = function (code) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
         var headers = {};
@@ -908,8 +964,8 @@ SpotifyBrowseAPI.prototype.requestAccessToken = function (code) {
                     fail({'error': 'Request problem'});
                     return;
                 }
-                self.nodeSpotifyBrowseAPI.setAccessToken(data);
-                self.nodeSpotifyBrowseAPI.getMe().then(function (data) {
+                self.nodeSpotifyService.setAccessToken(data);
+                self.nodeSpotifyService.getMe().then(function (data) {
                     localStorage.setItem("me", JSON.stringify(data.body));
 
 
@@ -923,51 +979,51 @@ SpotifyBrowseAPI.prototype.requestAccessToken = function (code) {
 }
 
 
-SpotifyBrowseAPI.prototype.addToCache = function (resource) {
+SpotifyService.prototype.addToCache = function (resource) {
 }
 
-SpotifyBrowseAPI.prototype.events = {};
+SpotifyService.prototype.events = {};
 
-SpotifyBrowseAPI.prototype.notify = function (event) {
+SpotifyService.prototype.notify = function (event) {
     var type = event.type;
     if (type in this.events) {
         this.events[type].call(this, event);
     }
 }
 
-SpotifyBrowseAPI.prototype.addEventListener = function (event, callback) {
+SpotifyService.prototype.addEventListener = function (event, callback) {
     this.events[event] = callback;
 }
 
-SpotifyBrowseAPI.prototype.ready = function () {
+SpotifyService.prototype.ready = function () {
 
 }
 
-SpotifyBrowseAPI.prototype.getPosition = function () {
+SpotifyService.prototype.getPosition = function () {
     return this.SpotifyBrowse.player.currentSecond;
 }
 
-SpotifyBrowseAPI.prototype.logout = function () {
+SpotifyService.prototype.logout = function () {
     this.SpotifyBrowse.logout();
 }
 
-SpotifyBrowseAPI.prototype.playTrack = function (uri) {
+SpotifyService.prototype.playTrack = function (uri) {
     return track;
 }
 
-SpotifyBrowseAPI.prototype.stop = function () {
+SpotifyService.prototype.stop = function () {
 }
 
-SpotifyBrowseAPI.prototype.getImageForTrack = function (id, callback) {
+SpotifyService.prototype.getImageForTrack = function (id, callback) {
     this.request('GET', 'https://api.spotify.com/v1/tracks/' + id).then(function (track) {
         callback(track.album.images[0].url);
     });
 }
 
-SpotifyBrowseAPI.prototype.seek = function (position) {
+SpotifyService.prototype.seek = function (position) {
 }
 
-SpotifyBrowseAPI.prototype.login = function () {
+SpotifyService.prototype.login = function () {
     console.log("Log in");
     var self = this;
     var promise = new Promise(function (resolve, fail) {
@@ -997,7 +1053,7 @@ SpotifyBrowseAPI.prototype.login = function () {
     return promise;
 }
 
-SpotifyBrowseAPI.followPlaylist = function (playlist) {
+SpotifyService.followPlaylist = function (playlist) {
     
 }
 
@@ -1011,7 +1067,7 @@ var Uri = function (uri) {
 /**
  * Adds songs to a playlist
  **/
-SpotifyBrowseAPI.prototype.addTracksToPlaylist = function (user, playlist_id, uris, position) {
+SpotifyService.prototype.addTracksToPlaylist = function (user, playlist_id, uris, position) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
         self.request("POST", "/users/" + user + "/playlists/" + playlist_id + "/tracks", {
@@ -1025,7 +1081,7 @@ SpotifyBrowseAPI.prototype.addTracksToPlaylist = function (user, playlist_id, ur
 
 }
 
-SpotifyBrowseAPI.prototype.getAlbumTracks = function (id, callback) {
+SpotifyService.prototype.getAlbumTracks = function (id, callback) {
 
     var self = this;
     var promise = new Promies(function (resolve, fail) {
@@ -1038,7 +1094,7 @@ SpotifyBrowseAPI.prototype.getAlbumTracks = function (id, callback) {
 };
 
 
-SpotifyBrowseAPI.prototype.search = function (query, limit, offset, type, callback) {
+SpotifyService.prototype.search = function (query, limit, offset, type, callback) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
         self.request('GET', 'https://api.spotify.com/v1/search?q=' + encodeURI(query) + '&type=' + type + '&limit=' + limit + '&offset=' + offset).then(function (data) {
@@ -1055,7 +1111,7 @@ SpotifyBrowseAPI.prototype.search = function (query, limit, offset, type, callba
     });
     return promise;
 };
-SpotifyBrowseAPI.prototype.loadPlaylist = function (user, id, callback) {
+SpotifyService.prototype.loadPlaylist = function (user, id, callback) {
     var self = this;
     var promise = new Promies(function (resolve, fail) {
         self.request("GET", "/users/" + user + "/playlists/" + id + "/tracks").then(function (tracklist) {
@@ -1068,7 +1124,7 @@ SpotifyBrowseAPI.prototype.loadPlaylist = function (user, id, callback) {
     return promise;
 }
 
-SpotifyBrowseAPI.prototype.createPlaylist = function (title) {
+SpotifyService.prototype.createPlaylist = function (title) {
     var self = this;
 
     var promise = new Promise(function (resolve, fail) {
@@ -1080,11 +1136,11 @@ SpotifyBrowseAPI.prototype.createPlaylist = function (title) {
     return promise;
 };
 
-SpotifyBrowseAPI.prototype.getTopList = function (uri, callback) {
+SpotifyService.prototype.getTopList = function (uri, callback) {
 
 }
 
-SpotifyBrowseAPI.prototype.getUserPlaylists = function () {
+SpotifyService.prototype.getUserPlaylists = function () {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
         var user = self.getMe();
@@ -1098,7 +1154,7 @@ SpotifyBrowseAPI.prototype.getUserPlaylists = function () {
 }
 
 
-SpotifyBrowseAPI.prototype.getPlaylistsForUser = function (id) {
+SpotifyService.prototype.getPlaylistsForUser = function (id) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
 
@@ -1111,7 +1167,7 @@ SpotifyBrowseAPI.prototype.getPlaylistsForUser = function (id) {
     return promise;
 }
 
-SpotifyBrowseAPI.prototype.getArtistById = function (id, callback) {
+SpotifyService.prototype.getArtistById = function (id, callback) {
     var self = this;
 
     var promise = new Promies(function (resolve, fail) {
@@ -1122,7 +1178,7 @@ SpotifyBrowseAPI.prototype.getArtistById = function (id, callback) {
     return promise;
 }
 
-SpotifyBrowseAPI.prototype.getAlbum = function (id) {
+SpotifyService.prototype.getAlbum = function (id) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
         self.request('https://api.spotify.com/v1/albums/' + id).then(function (album) {
@@ -1138,11 +1194,11 @@ SpotifyBrowseAPI.prototype.getAlbum = function (id) {
     return promise;
 }
 
-SpotifyBrowseAPI.prototype.resolveTracks = function (uris, callback) {
+SpotifyService.prototype.resolveTracks = function (uris, callback) {
 
 }
 
-SpotifyBrowseAPI.prototype.getPlaylistTracks = function (user, playlist_id, page, callback) {
+SpotifyService.prototype.getPlaylistTracks = function (user, playlist_id, page, callback) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
          self.request('GET', '/users/' + user + '/playlists/' + playlist_id).then(function (data) {
@@ -1154,30 +1210,30 @@ SpotifyBrowseAPI.prototype.getPlaylistTracks = function (user, playlist_id, page
     return promise;
 }
 
-SpotifyBrowseAPI.prototype.playPause = function () {
+SpotifyService.prototype.playPause = function () {
     if (this.isPlaying) {
         this.pause();
     } else {
         this.resume();
     }
 }
-SpotifyBrowseAPI.prototype.pause = function () {
+SpotifyService.prototype.pause = function () {
     this.isPlaying = false;
 }
-SpotifyBrowseAPI.prototype.resume = function () {
+SpotifyService.prototype.resume = function () {
     this.isPlaying = true;
 }
-SpotifyBrowseAPI.prototype.reorderTracks = function (playlistUri, indices, newPosition) {
+SpotifyService.prototype.reorderTracks = function (playlistUri, indices, newPosition) {
     console.log("SpotifyBrowse is now reordering tracks");
     console.log("Done successfully");
 }
 
-SpotifyBrowseAPI.prototype.removeTracks = function (playlist, indices) {
+SpotifyService.prototype.removeTracks = function (playlist, indices) {
     playlist.reorderTracks(indices, newPosition);
 }
 
-SpotifyBrowseAPI.prototype.addTracks = function (playlist, tracks, position) {
+SpotifyService.prototype.addTracks = function (playlist, tracks, position) {
     playlist.addTracks(tracks, position);
 }
 
-module.exports = SpotifyBrowseAPI;
+module.exports = SpotifyService;
