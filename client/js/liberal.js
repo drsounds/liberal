@@ -576,11 +576,23 @@ class SPAppFooterElement extends HTMLElement {
                         playThumb.setAttribute('min', 0);
                         playThumb.setAttribute('max', store.state.player.item.duration_ms);
                         playThumb.value = (store.state.player.progress_ms);
+                
                     }
-                        
+                
                     playButton.classList.remove('fa-play');
                     playButton.classList.add('fa-pause');
+                    let imageUrl = store.state.player.item.album.images[0].url;
+                    let img = document.createElement('img');
+                    img.crossOrigin = '';
+                    img.src = imageUrl;
+                    img.onload = function () {
+                    
+                        var vibrant = new Vibrant(img);
+                        let color = vibrant.swatches()['Vibrant'];
+                        document.documentElement.style.setProperty('--now-playing-accent-color', 'rgba(' + color.rgb.r + ',' + color.rgb.g + ',' + color.rgb.b + ',1)');
+                    }
                     document.querySelector('sp-nowplaying').style.backgroundImage = 'url("' + store.state.player.item.album.images[0].url + '")';
+                  
                     document.querySelector('sp-nowplaying').setAttribute('uri', store.state.context_uri);
                     for(var tr of trackItems) {
                         if (tr.getAttribute('data-uri') === store.state.player.item.uri) {
@@ -762,6 +774,10 @@ class SPViewStackElement extends HTMLElement {
                 view = document.createElement('sp-playlistview');
               
         
+            } else if (/^bungalow:internal:library/g.test(newUri)) {
+                view = document.createElement('sp-playlistview');
+              
+        
             } else if (/^bungalow:country:([a-zA-Z0-9._]+)/g.test(newUri)) {
                 view = document.createElement('sp-countryview');
               
@@ -915,7 +931,30 @@ class SPHeaderElement extends SPResourceElement {
             this.innerHTML += '<div style="flex: 0 0 50pt;"> <h3>' + numeral(object.followers.total).format('0,0') + '</h3><br> ' + _('followers') + '<br> ' + pop + ' </div>';
            
         } */
-        
+        this.object = object;
+        this.vibrant();
+        debugger;
+    }
+    vibrant() {
+        debugger;
+        let object = this.object;
+        if (!this.object) return;
+        if (object.images instanceof Array && object.images.length > 0) {
+            let imageUrl = object.images[0].url;
+            let img = document.createElement('img');
+            img.crossOrigin = '';
+            img.src = imageUrl;
+            img.onload = () => {
+            
+                var vibrant = new Vibrant(img);
+                let color = vibrant.swatches()['Vibrant'];
+                let bg = 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.1)';
+                this.parentNode.style.backgroundColor = bg;
+                GlobalTabBar.style.backgroundColor = bg;
+                
+            
+            }
+        }
     }
 }
 
@@ -942,7 +981,11 @@ class SPViewElement extends HTMLElement {
     }
     activate() {
         this.scrollTop = (this.scrollY);
+        if (this.header) {
+            this.header.vibrant();
+        }
     }
+    
     _onScroll(e) {
         let view = e.target;
         view.scrollY = view.scrollTop;
@@ -1697,6 +1740,10 @@ class SPSidebarMenuElement extends HTMLElement {
                     {
                         name: _('Settings'),
                         uri: 'bungalow:internal:settings'
+                    },
+                    {
+                        name: _('Library'),
+                        uri: 'bungalow:internal:library'
                     }
                 ]
             });
@@ -1704,6 +1751,8 @@ class SPSidebarMenuElement extends HTMLElement {
             this.label2 = document.createElement('label');
             this.label2.innerHTML = _('Playlists');
             this.appendChild(this.label2);
+            this.searchesMenu = document.createElement('sp-menu');
+            
             this.playlistsMenu = document.createElement('sp-menu');
             this.appendChild(this.playlistsMenu);
             let playlists = await store.request('GET', 'spotify:me:playlist');
@@ -1869,7 +1918,13 @@ class SPMenuElement extends HTMLElement {
             }
             let menuItem = document.createElement('sp-menuitem');
             this.appendChild(menuItem);
-            menuItem.innerHTML = item.name;
+            /*let updated = moment(item.updated_at);
+            let now = moment();
+            let range = Math.abs(now.diff(updated, 'days'));
+            if (range < 1) {
+                menuItem.innerHTML = '<i class="fa fa-circle new"></i>';
+            }*/
+            menuItem.innerHTML += '<span>' + item.name + '</span>';
             menuItem.setAttribute('uri', item.uri);
         });
     }
@@ -1903,7 +1958,7 @@ class SPMenuItemElement extends SPLinkElement {
 document.registerElement('sp-menuitem', SPMenuItemElement);
 
 
-class SPSearchFormElement extends HTMLElement {
+class SPSearchFormElement extends HTMLFormElement {
    
     attachedCallback() {
         if (!this.created) {

@@ -19,6 +19,10 @@ body,html {
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome and Opera */
 }
+h1, h2, h3, h4 {
+    margin: 0pt;
+    margin-bottom: 3pt;
+}
 sp-image {
     background-size: cover;
     display: block;
@@ -217,16 +221,16 @@ sp-themeeditor select {
 
    transform: translate(0pt, -50%);
 }
+sp-searchform {
+    display: block;
+}
 sp-sidebarmenu label {
 
 }
- sp-searchform {
-    position: fixed;
-    right: 110pt;
-    top: 28pt;
+sp-sidebarmenu sp-searchform {
+   padding: 13pt 11pt;
 }
 sp-sidebarmenu {
-    padding-top: 13pt;
 }
 
 sp-appheader button, sp-appfooter button {

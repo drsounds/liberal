@@ -167,6 +167,39 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                         );
                     }
                 }
+                if (parts[1] == 'library')  {
+                    if (parts[2] == 'track') {
+                        request({
+                        url: 'https://api.spotify.com/v1/me/tracks?limit=' + (payload.limit) + '&offset=' + (payload.offset),
+                            headers: headers
+                        },
+                            function (error, response, body) {
+                                var data = JSON.parse(body);
+                                try {
+                                    resolve({
+                                        type: 'library',
+                                        name: 'Library',
+                                        'objects': data.items.map(function (t, i) {
+                                            var track = t.track;
+                                            track.service = service;
+                                            track.position = i + payload.offset;
+                                            return track;
+                                        })
+                                    });
+                                } catch (e) {
+                                    fail();
+                                }
+                            }
+                        );
+                    }
+                    resolve({
+                        id: 'library',
+                        uri: 'bungalow:internal:library',
+                        name: 'Library',
+                        type: 'library',
+                        description: ''
+                    });
+                }
             }
             if (parts[0] == 'search') {
                 url = 'https://api.spotify.com/v1/search?q=' + payload.q + '&type=' + (payload.type || 'track') + '&limit=' + (payload.limit || 39) + '&offset=' + (payload.offset || 1);

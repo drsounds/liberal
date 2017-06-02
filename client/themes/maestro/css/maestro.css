@@ -1,4 +1,6 @@
-
+:root {
+    --background-color: var(--now-playing-brand-accent);
+}
 
 body {
     
@@ -21,6 +23,10 @@ sp-appheader {
 sp-appheader, sp-appfooter {
     
 }
+sp-trackcontext {
+    background-color: rgba(255, 255, 255, .02);
+    box-shadow: 0pt 0pt 15pt rgba(0, 0, 0, .05);
+}
 table {
     border-collapse: collapse;
 }
@@ -34,6 +40,7 @@ sp-infobar {
 td, th {
     padding: 3pt;
     border-bottom: 1px solid rgba(255, 255, 255, .03);
+    padding: 10pt;
 }
 sp-appfooter {
     background-color: rgba(255, 255, 255, .1);
@@ -41,6 +48,7 @@ sp-appfooter {
 sp-menuitem {
     opacity: 0.8;
 }
+
 .new {
     color: var(--brand-primary);
 }
@@ -66,17 +74,27 @@ button {
     padding: 7pt;
     border-radius: 12pt;
 }
+input:focus {
+    outline: none;
+}
+input {
+    border: none;
+    padding: 3pt;
+    border-radius: 10pt;
+}
 sp-tabbar {
     background-color: rgba(0, 0, 0, .1);
 }
 button.primary {
     background-color: var(--brand-primary);
     border: 1pt solid var(--brand-primary);
-    color: black;
+    color: white;
     
 }
 sp-toolbar {
-    background-color: rgba(0, 0, 0, .1);
+    background-color: rgba(255, 255, 255, .03);
+    border-radius: 14pt;
+    padding: 3pt;
 }
 .sp-current-track {
     color: var(--brand-primary);
