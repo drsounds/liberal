@@ -589,7 +589,7 @@ class SPAppFooterElement extends HTMLElement {
                     
                         var vibrant = new Vibrant(img);
                         let color = vibrant.swatches()['Vibrant'];
-                        document.documentElement.style.setProperty('--now-playing-accent-color', 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 1)');
+                 //       document.documentElement.style.setProperty('--now-playing-accent-color', 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 1)');
                     }
                     document.querySelector('sp-nowplaying').style.backgroundImage = 'url("' + store.state.player.item.album.images[0].url + '")';
                   
@@ -619,6 +619,19 @@ window.alert = function (message) {
         name: message,
         uri: 'bungalow:error:0x00'
     });
+    let x = 0;
+    var i = setInterval(() => {
+        x++;
+        $('sp-infobar').animate({
+            opacity: 0.1
+        }, 50, () => {
+             $('sp-infobar').animate({
+                 opacity: 1
+             }, 50);
+        });
+        clearInterval(i);
+        
+    }, 100);
 }
 
 
@@ -1554,7 +1567,7 @@ class SPTrackContextElement extends SPResourceElement {
               let strTime = dr ? date.format('YYYY-MM-DD') : date.fromNow();
               td.innerHTML = '<span>' + strTime + '</span>';
               if (tooOld) {
-                  td.style.opacity = 0.5;
+                  td.querySelector('span').style.opacity = 0.5;
               }
               let discoveredField = tr.querySelector('td.discovered');
               if (discoveredField != null && fresh < 1) {
