@@ -1,0 +1,32 @@
+:root {
+    --background-color: #fff;
+    --foreground-color: #777;
+    --header-height: 0pt;
+    --footer-height: 30pt;
+    --brand-primary: #8BC34A;
+}
+
+body {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,ffffff+100&0.15+0,0+75 */
+background: -moz-linear-gradient(top,  rgba(0, 0, 0 ,0.15) 0%, rgba(0, 0, 0 ,0) 75%, rgba(0, 0, 0 ,0) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top,  rgba(0, 0, 0 ,0.15) 0%,rgba(0, 0, 0 ,0) 75%,rgba(0, 0, 0 ,0) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom,  rgba(0, 0, 0 ,0.15) 0%,rgba(0, 0, 0 ,0) 75%,rgba(0, 0, 0 ,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#26ffffff', endColorstr='#00ffffff',GradientType=0 ); /* IE6-9 */
+
+}
+sp-tabbar {
+    background-color: rgba(0, 0, 0,0.15);
+}
+button {
+    color: var(--foreground-color);
+    border: 1pt solid var(--foreground-color);
+    
+}
+td, th {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+
+body {
+    text-shadow: 0pt 1pt 0pt rgba(0, 0, 0, 0.05);
+}

@@ -25,7 +25,7 @@ sp-appheader, sp-appfooter {
 }
 sp-trackcontext {
     background-color: rgba(255, 255, 255, .02);
-    box-shadow: 0pt 0pt 15pt rgba(0, 0, 0, .05);
+    box-shadow: 0pt 0pt 15pt rgba(0, 0, 0, .02);
 }
 table {
     border-collapse: collapse;
@@ -39,7 +39,6 @@ sp-infobar {
 }
 td, th {
     padding: 3pt;
-    border-bottom: 1px solid rgba(255, 255, 255, .03);
     padding: 10pt;
 }
 sp-appfooter {
@@ -68,8 +67,6 @@ sp-menuitem.active {
     font-weight: bold;
 }
 button {
-    color: white;
-    border: 1pt solid white;
     background: transparent;
     padding: 7pt;
     border-radius: 12pt;
@@ -91,8 +88,11 @@ button.primary {
     color: white;
     
 }
+a {
+    text-decoration: none;
+    color: var(--brand-primary);
+}
 sp-toolbar {
-    background-color: rgba(255, 255, 255, .03);
     border-radius: 14pt;
     padding: 3pt;
 }
@@ -100,7 +100,7 @@ sp-toolbar {
     color: var(--brand-primary);
 }
 sp-image {
-    box-shadow: 0pt 0pt 2pt rgba(0, 0, 0, .5);
+    box-shadow: 0pt 0pt 12pt rgba(0, 0, 0, .1);
 }
 .sp-track-selected {
     background-color: rgba(255, 255, 255, .1);

@@ -589,7 +589,7 @@ class SPAppFooterElement extends HTMLElement {
                     
                         var vibrant = new Vibrant(img);
                         let color = vibrant.swatches()['Vibrant'];
-                        document.documentElement.style.setProperty('--now-playing-accent-color', 'rgba(' + color.rgb.r + ',' + color.rgb.g + ',' + color.rgb.b + ',1)');
+                        document.documentElement.style.setProperty('--now-playing-accent-color', 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 1)');
                     }
                     document.querySelector('sp-nowplaying').style.backgroundImage = 'url("' + store.state.player.item.album.images[0].url + '")';
                   
@@ -933,10 +933,8 @@ class SPHeaderElement extends SPResourceElement {
         } */
         this.object = object;
         this.vibrant();
-        debugger;
     }
     vibrant() {
-        debugger;
         let object = this.object;
         if (!this.object) return;
         if (object.images instanceof Array && object.images.length > 0) {
@@ -948,7 +946,7 @@ class SPHeaderElement extends SPResourceElement {
             
                 var vibrant = new Vibrant(img);
                 let color = vibrant.swatches()['Vibrant'];
-                let bg = 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.1)';
+                let bg = 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.03)';
                 this.parentNode.style.backgroundColor = bg;
                 GlobalTabBar.style.backgroundColor = bg;
                 
@@ -1234,6 +1232,12 @@ class SPPlaylistElement extends SPResourceElement {
     setState(obj) {
         let titleElement = document.createElement('sp-title');
         titleElement.setState(obj);
+        let copyrights = null;
+        if (this.showCopyrights) {
+            copyrights = obj.copyrights.map((c) => {
+                return '<span style="opacity: 0.5">' + '(' + c.type + ') ' +  c.text + '</span>';
+            }).join('<br>');
+        }
         this.innerHTML = '' +
         '<div style="flex: 0 0 128">' +
             '<sp-image src="' + obj.images[0].url + '" width="128" height="128"></sp-image>' + 
@@ -1242,7 +1246,25 @@ class SPPlaylistElement extends SPResourceElement {
             '<h3>' +  titleElement.innerHTML + '</h3>' +
             (obj.description ? '<p>' + obj.description + '</p>' : '') +
             '<sp-trackcontext fields="name,artists,album,user,added_at" uri="' + obj.uri + ':track' + '"></sp-trackcontext>' +
+            (copyrights ? copyrights : '') +
+        
         '</div>';
+        this.object = obj;
+        if (this.view != null) {
+            this.vibrance();
+        }
+    }
+    vibrance() {
+        let img = document.createElement('img');
+        img.crossOrigin = '';
+        img.src = this.object.images[0].url;
+        img.onload = () => {
+        
+            var vibrant = new Vibrant(img);
+            let color = vibrant.swatches()['Vibrant'];
+            let bgColor = 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.03)';
+            this.view.style.backgroundColor = bgColor;
+        }
     }
 }
 
@@ -1527,6 +1549,7 @@ class SPTrackContextElement extends SPResourceElement {
               if (discoveredField != null && fresh < 1) {
                   discoveredField.innerHTML = '<i class="fa fa-circle new"></i>';
               }
+              
           } else if (typeof(val) === 'string') {
             td.innerHTML = '<span>' + val + '</span>';
           } else if (val instanceof Array) {
@@ -1996,11 +2019,33 @@ class SPStartViewElement extends SPViewElement {
         
     }
     attachedCallback() {
+        this.classList.add('container');
         this.innerHTML = '<h3>Start</h3>';
+        this.innerHTML += '<sp-divider>Featured</sp-divider>';
+        this.innerHTML += '<sp-carousel uri="bungalow:me:playlist"></sp-carousel>';
     }
 }
 document.registerElement('sp-startview', SPStartViewElement);
 
+
+class SPCarouselElement extends SPResourceElement {
+    attachedCallback() {
+        this.style.position = 'relative';
+    }
+    setState(object) {
+        this.innerHTML = '';
+        for (let i = 0; i < object.objects.length; i++) {
+            let obj = object.objects[i];
+            let inlay = document.createElement('div');
+            inlay.style.backgroundImge = 'url("' + obj.images[0].url + '")';
+            this.appendChild(inlay);
+        }
+        $(this).slick();
+    }
+}
+
+
+document.registerElement('sp-carousel', SPCarouselElement);
 
 class SPAlbumViewElement extends SPViewElement {
     attachedCallback() {
@@ -2015,9 +2060,14 @@ class SPAlbumViewElement extends SPViewElement {
     }
     attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName === 'uri') {
+            this.innerHTML = '';
             this.albumView = document.createElement('sp-playlist');
             this.appendChild(this.albumView);
+            this.albumView.showCopyrights = true;
+            this.albumView.view = this;
             this.albumView.setAttribute('uri', newVal);
+            
+            
         }
     }   
 }

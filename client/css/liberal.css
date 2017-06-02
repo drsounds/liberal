@@ -227,6 +227,9 @@ sp-searchform {
 sp-sidebarmenu label {
 
 }
+sp-nowplaying {
+    cursor: pointer;
+}
 sp-sidebarmenu sp-searchform {
    padding: 13pt 11pt;
 }

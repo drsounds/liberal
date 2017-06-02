@@ -3,5 +3,17 @@
     --foreground-color: #fff;
     --header-height: 0pt;
     --footer-height: 30pt;
-    --brand-primary: #00E5FF;
+    --brand-primary: #8BC34A;
+}
+button {
+    color: white;
+    border: 1pt solid white;
+}
+
+td, th {
+    
+    border-bottom: 1px solid rgba(255, 255, 255, .03);
+}
+body {
+    text-shadow: 0pt -1pt 0pt rgba(0, 0, 0, .05);
 }
