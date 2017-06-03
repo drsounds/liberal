@@ -108,6 +108,7 @@ SpotifyBrowseAPI.prototype.refreshAccessToken = function (req) {
                 accessToken.refresh_token = refresh_token 
                 self.setAccessToken(req, accessToken);
                 console.log("Refresh", body);
+                
                 resolve();
             } catch (e) {
                 fail(500);
