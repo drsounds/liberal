@@ -76,7 +76,7 @@ SpotifyBrowseAPI.prototype.isAccessTokenValid = function () {
     return new Date() < new Date(access_token.time) + access_token.expires_in;
 }
 
-SpotifyBrowseAPI.prototype.refreshAccessToken = function () {
+SpotifyBrowseAPI.prototype.refreshAccessToken = function (req) {
     var self = this;
     return new Promise(function (resolve, fail) {
         var accessToken = self.getAccessToken();
@@ -93,16 +93,25 @@ SpotifyBrowseAPI.prototype.refreshAccessToken = function () {
                 'Authorization': 'Basic ' + new Buffer(self.apikeys.client_id + ':' + self.apikeys.client_secret).toString('base64')
             }
         }, function (error, response, body) {
-            if (error || 'error' in body) {
+            
+            if (error) {
                 fail();
                 return;
             }
-            console.log(self.apikeys);
-            var accessToken = JSON.parse(body);
-            accessToken.refresh_token = refresh_token 
-            self.setAccessToken(accessToken);
-             console.log("Refresh", body);
-            resolve(JSON.parse(body));
+            try {
+                var accessToken = JSON.parse(body);
+                if ('error' in accessToken) {
+                    fail(500);
+                    return;
+                }
+                console.log(self.apikeys);
+                accessToken.refresh_token = refresh_token 
+                self.setAccessToken(req, accessToken);
+                console.log("Refresh", body);
+                resolve();
+            } catch (e) {
+                fail(500);
+            }
         });
     });
 }
@@ -885,7 +894,13 @@ SpotifyBrowseAPI.prototype.request = function (method, url, payload, postData, r
                 }
             }
         };
-     activity();
+        if (!self.isAccessTokenValid()) {
+            self.refreshAccessToken(req).then((e) => {
+                activity();
+            });
+            return;
+        }
+         activity();
     });
 }
 

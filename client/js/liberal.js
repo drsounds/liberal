@@ -948,7 +948,7 @@ class SPHeaderElement extends SPResourceElement {
         this.vibrant();
     }
     vibrant() {
-        if (localStorage.getItem('stylesheet') != 'maestro') return;
+        if (!localStorage.getItem('vibrantColor')) return;
         let object = this.object;
         if (!this.object) return;
         
@@ -1489,6 +1489,11 @@ class SPTrackContextElement extends SPResourceElement {
     }
     createTrack (track, i) {
         let tr = document.createElement('tr');
+        tr.setAttribute('draggable', true);
+        tr.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData("text/uri-list", tr.getAttribute('data-uri'));
+            e.dataTransfer.setData("text/plain", tr.getAttribute('data-uri'));
+        })
         tr.addEventListener('mousedown', (e) => {
            let selectedTracks = document.querySelectorAll('.sp-track-selected');
            for (let t of selectedTracks) {
@@ -1674,6 +1679,12 @@ document.registerElement('sp-gondole', SPGondoleElement);
 
 
 class SPPlaylistContextElement extends SPResourceElement {
+    attachedCallback() {
+        super.attachedCallback();
+        this.addEventListener('dragover', (e) => {
+           e.preventDefault(); 
+        });
+    }
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName == 'uri') {
             this.limit = 30;
@@ -1800,10 +1811,11 @@ class SPSidebarMenuElement extends HTMLElement {
             this.appendChild(this.label2);
             this.searchesMenu = document.createElement('sp-menu');
             
-            this.playlistsMenu = document.createElement('sp-menu');
+            this.playlistsMenu = document.createElement('sp-playlistmenu');
+            this.playlistsMenu.view = this;
             this.appendChild(this.playlistsMenu);
-            let playlists = await store.request('GET', 'spotify:me:playlist');
-            this.playlistsMenu.setState(playlists);
+            this.playlistsMenu.setAttribute('uri', 'bungalow:me:playlist');
+            
         }
     }
     
@@ -1811,6 +1823,82 @@ class SPSidebarMenuElement extends HTMLElement {
 
 document.registerElement('sp-sidebarmenu', SPSidebarMenuElement);
 
+
+
+class SPPlaylistMenuElement extends SPResourceElement {
+    attachedCallback() {
+        this.offset = 0;
+        this.limit = 30;
+        this.fetching = false;
+        this.view.addEventListener('scroll', this._onScroll.bind(this));
+    }
+    _onScroll(e) {
+        let gondole = this.querySelector('sp-gondole');
+        let viewBounds = this.view.getBoundingClientRect();
+        if (gondole && gondole.getBoundingClientRect().top < viewBounds.top + viewBounds.height) {
+            this.fetchNext();
+ 
+        }
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName === 'uri') {
+            let playlists = await store.request('GET', 'spotify:me:playlist');
+            this.setState(playlists);
+        }
+    }
+    
+    createMenuItem(item) {
+        if (!item) {
+            this.appendChild(document.createElement('br'));
+            return;
+        }
+        let menuItem = document.createElement('sp-menuitem');
+        this.appendChild(menuItem);
+        /*let updated = moment(item.updated_at);
+        let now = moment();
+        let range = Math.abs(now.diff(updated, 'days'));
+        if (range < 1) {
+            menuItem.innerHTML = '<i class="fa fa-circle new"></i>';
+        }*/
+        menuItem.innerHTML += '<span>' + item.name + '</span>';
+        menuItem.setAttribute('uri', item.uri);
+        return menuItem;
+    }
+    
+    setState(state) {
+        this.state = state;
+        this.render();
+    }
+    
+    async fetchNext() {
+        if (this.fetching) return;
+        this.fetching = true;
+        let gondole = this.querySelector('sp-gondole');
+        this.removeChild(gondole);
+        this.offset += this.limit;
+        let result = await store.request('GET', this.getAttribute('uri') + '?offset=' + this.offset + '&limit=' + this.limit);
+        if (result && result.objects instanceof Array && result.objects.length > 0) {
+            
+            result.objects.map(this.createMenuItem.bind(this)).map((tr) => {
+                this.appendChild(tr);
+            });
+            this.appendChild(document.createElement('sp-gondole'));
+            this.fetching = false;
+        } else {  
+        }
+    }
+    render() {
+        this.innerHTML = '';
+        if (this.state && this.state.objects instanceof Array)
+        this.state.objects.map(this.createMenuItem.bind(this)).map((item) => {
+            this.appendChild(item);
+        });
+        this.gondole = document.createElement('sp-gondole');
+        this.appendChild(this.gondole);
+    }
+}
+
+document.registerElement('sp-playlistmenu', SPPlaylistMenuElement);
 
 class SPNowPlayingElement extends HTMLElement {
     attachedCallback() {
@@ -1984,9 +2072,15 @@ class SPLinkElement extends HTMLAnchorElement {
     onClick(e) {
         e.preventDefault();
         GlobalViewStack.navigate(this.getAttribute('uri'));
+        
     }
     attachedCallback() {
+        this.setAttribute('draggable', true);
         this.addEventListener('click', this.onClick);
+        this.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData("text/uri-list", e.target.getAttribute('uri'));
+            e.dataTransfer.setData("text/plain", e.target.getAttribute('uri'));
+        })
     }
     disconnectedCallback() {
         this.removeEventListener('click', this.onClick);

@@ -60,6 +60,7 @@ h1, h2, h3, h4 {
     
 }
 sp-menuitem.active, .sp-track-selected {
+    box-shadow: none;
     background-color: var(--brand-primary);
     color: rgba(0, 0, 0, .7);
     text-shadow: none;
