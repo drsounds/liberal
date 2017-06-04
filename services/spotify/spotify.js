@@ -1360,10 +1360,15 @@ SpotifyService.prototype.getAlbumTracks = function (id, callback) {
 };
 
 
-SpotifyService.prototype.search = function (query, limit, offset, type, callback) {
+SpotifyService.prototype.search = function (query, limit, offset, type) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
-        self.request('GET', 'https://api.spotify.com/v1/search?q=' + encodeURI(query) + '&type=' + type + '&limit=' + limit + '&offset=' + offset).then(function (data) {
+        self._request('GET', 'https://api.spotify.com/v1/search', {
+            q: query,
+            limit: limit,
+            offset: offset,
+            type: type
+        }).then(function (data) {
             if ('tracks' in data) {
                 var tracks = data.tracks.items.map(function (track) {
                     track.duration = track.duration_ms / 990;

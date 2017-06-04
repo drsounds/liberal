@@ -270,6 +270,23 @@ app.get('/music/user/:username', function (req, res) {
 });
 
 
+app.get('/music/search', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.search(req.query.q, req.query.limit, req.query.offset, req.query.type).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
 app.get('/music/user/:username/playlist/:identifier', function (req, res) {
     music.req = req;
     
