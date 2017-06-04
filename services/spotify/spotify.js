@@ -3,6 +3,8 @@ var os = require('os');
 var request = require('request');
 var assign = require('object-assign');
 var Promise = require("es6-promise").Promise;
+var queryString = require('query-string');
+
 var SpotifyService = function (session) {
     var self = this;
     this.cache = {};
@@ -48,10 +50,30 @@ SpotifyService.prototype.authenticate = function (req) {
                 return;
             }
             self.setAccessToken(req, body);
-            resolve(body);
+            self.getCurrentUser().then(function (result) {
+                self.setMe(result);
+                resolve(result, body);
+            });
         });
     });
     
+}
+
+SpotifyService.prototype.setMe = function (me) {
+    this.req.session.me = me;
+}
+
+SpotifyService.prototype.getMe = function (me) {
+    return this.req.session.me;
+}
+
+SpotifyService.prototype.getCurrentUser = function () {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('GET', '/me').then(function (result) {
+            resolve(result);
+        });
+    })
 }
 
 SpotifyService.prototype.getAccessToken = function () {
@@ -68,6 +90,7 @@ SpotifyService.prototype.setAccessToken = function (req, accessToken) {
     console.log(accessToken);
     //fs.writeFileSync(os.homedir() + '/.bungalow/spotify_access_token.json', JSON.stringify(accessToken));
     req.session.spotifyAccessToken = accessToken;
+    
 }
 
 SpotifyService.prototype.isAccessTokenValid = function () {
@@ -110,6 +133,8 @@ SpotifyService.prototype.getMe = function () {
     return JSON.parse(localStorage.getItem("me"));
 }
 
+
+
 var service = {
     id: 'spotify',
     uri: 'bungalow:service:spotify',
@@ -117,15 +142,41 @@ var service = {
     name: 'Spotify',
     description: 'Music service'
 };
-SpotifyService.prototype._request = function (method, url, payload, postData) {
+
+
+SpotifyService.prototype.searchFor = function (q, type, offset, limit) {
+    var self = this;
     return new Promise(function (resolve, fail) {
+        self._request('GET', '/search', {
+            q: q,
+            type: type,
+            offset: offset,
+            limit: limit
+        }).then(function (result) {
+            resolve(result);
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+
+SpotifyService.prototype._request = function (method, path, payload, postData) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        if (!payload) payload = {};
         if (!payload.offset) payload.offset = 0;
         if (!isNaN(payload.offset)) payload.offset = parseInt(payload.offset);
         if (!payload.type) payload.type = 'track';
         if (!isNaN(payload.limit)) payload.limit = parseInt(payload.limit);
         if (!payload.limit) payload.limit = 30;
         
+        
         var token = self.getAccessToken();
+        if (!token) {
+            fail(401);
+            return;
+        }
         var headers = {};
         headers["Authorization"] = "Bearer " + token.access_token;
         if (payload instanceof Object) {
@@ -134,25 +185,64 @@ SpotifyService.prototype._request = function (method, url, payload, postData) {
         } else {
             headers["Content-type"] = ("application/x-www-form-urlencoded");
         }
-        url = 'https://api.spotify.com/v1' + url;
+        var url = 'https://api.spotify.com/v1' + path;
         request({
                 url: url,
-                headers: headers
+                headers: headers,
+                qs: payload
             },
             function (error, response, body) {
-            
-                
+                                
+                function formatObject (obj, i) {
+                   obj.position = payload.offset + i; 
+                   obj.service = service;
+                   obj.version = '';
+                   if ('track' in obj) {
+                       obj = assign(obj, obj.track);
+                   }
+                   if ('artists' in obj) {
+                       obj.artists = obj.artists.map(formatObject);
+                   }
+                   if ('album' in obj) {
+                       obj.album = formatObject(obj.album, 0);
+                   }
+                   if ('display_name' in obj) {
+                       obj.name = obj.display_name;
+                   }
+                   return obj;
+                }
                 try {
                     var data = JSON.parse(body);
-                    data.service = {
+                    var result = data;
+                    if ('error' in data) {
+                        fail(500);
+                        return;
+                    }
+                    result.service = {
                         name: 'Spotify',
                         id: 'spotify',
                         type: 'service',
                         description: ''
                     }
-                    resolve(data);
+                    if ('items' in data) {
+                        result.objects = data.items;
+                    }
+                    if ('tracks' in data) {
+                        result.objects = data.tracks.items;
+                    }
+                    if ('albums' in data) {
+                        result.objects = data.albums.items;
+                    }
+                    if ('artists' in data) {
+                        result.objects = data.artists.items;
+                    }
+                    if ('objects' in result)
+                        result.objects = result.objects.map(formatObject);
+                    else 
+                        result = formatObject(result, 0);
+                    resolve(result);
                 } catch (e) {
-                    fail(e);
+                    fail(500);
                 }
             }
         );
@@ -163,11 +253,141 @@ SpotifyService.prototype._request = function (method, url, payload, postData) {
 /**
  * Returns user by id
  **/
-SpotifyService.prototype.getUserById = function (id) {
+SpotifyService.prototype.getUser = function (id) {
     var self = this;
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve, fail) {
         self._request('GET', '/users/' + id).then(function (result) {
            resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+/**
+ * Returns user by id
+ **/
+SpotifyService.prototype.getArtist = function (id) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('GET', '/artists/' + id).then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+/**
+ * Returns user by id
+ **/
+SpotifyService.prototype.getAlbumsByArtist = function (id) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('GET', '/artists/' + id + '/albums').then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+
+
+/**
+ * Returns user by id
+ **/
+SpotifyService.prototype.getTracksInAlbum = function (id, offset, limit) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('GET', '/albums/' + id + '/tracks', {offset: offset, limit: limit}).then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+/**
+ * Returns user by id
+ **/
+SpotifyService.prototype.getPlaylist = function (username, identifier) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('GET', '/users/' + username + '/playlists/' + identifier).then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+/**
+ * Returns user by id
+ **/
+SpotifyService.prototype.getTracksInPlaylist = function (username, identifier, offset, limit) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('GET', '/users/' + username + '/playlists/' + identifier + '/tracks', {
+            offset: offset,
+            limit: limit
+        }).then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+
+/**
+ * Returns user by id
+ **/
+SpotifyService.prototype.getTracksInAlbum = function (identifier, offset, limit) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('GET', '/albums/' + identifier + '/tracks', {
+            offset: offset,
+            limit: limit
+        }).then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+
+
+/**
+ * Returns user by id
+ **/
+SpotifyService.prototype.getPlaylistsByUser = function (username, offset, limit) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('GET', '/users/' + username + '/playlists', {
+            limit: limit,
+            offset: offset
+        }).then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+
+
+/**
+ * Returns user by id
+ **/
+SpotifyService.prototype.getTrack = function (identifier) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('GET', '/tracks/' + identifier).then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
         });
     });
 }
@@ -1158,7 +1378,7 @@ SpotifyService.prototype.getPlaylistsForUser = function (id) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
 
-        self.request("GET", "/users/" + id + '/playlists').then(function (data) {
+        self._request("GET", "/users/" + id + '/playlists').then(function (data) {
             resolve({
                 'objects': data.items
             });
@@ -1171,7 +1391,7 @@ SpotifyService.prototype.getArtistById = function (id, callback) {
     var self = this;
 
     var promise = new Promies(function (resolve, fail) {
-        self.request("GET", "/artists/" + id).then(function (data) {
+        self._request("GET", "/artists/" + id).then(function (data) {
             resolve(data);
         });
     });
@@ -1181,7 +1401,7 @@ SpotifyService.prototype.getArtistById = function (id, callback) {
 SpotifyService.prototype.getAlbum = function (id) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
-        self.request('https://api.spotify.com/v1/albums/' + id).then(function (album) {
+        self._request('https://api.spotify.com/v1/albums/' + id).then(function (album) {
             album.image = album.images[0].url;
             album.tracks = [];
             this.request('GET', '/albums/' + uri.id + '/tracks').then(function (data) {
@@ -1201,7 +1421,7 @@ SpotifyService.prototype.resolveTracks = function (uris, callback) {
 SpotifyService.prototype.getPlaylistTracks = function (user, playlist_id, page, callback) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
-         self.request('GET', '/users/' + user + '/playlists/' + playlist_id).then(function (data) {
+         self._request('GET', '/users/' + user + '/playlists/' + playlist_id).then(function (data) {
              resolve({
                  'objects': data.tracks.items
              });
