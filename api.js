@@ -235,48 +235,147 @@ app.get('/social/*', function (req, res) {
     });
 });
 
-app.get('/music/*', function (req, res) {
+
+app.get('/music/user/:username/playlist', function (req, res) {
+    
+    music.req = req;
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.getPlaylistsForUser(req.params.username, req.query.offset, req.query.limit).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.get('/music/user/:username', function (req, res) {
+    music.req = req;
     
     music.session = req.session;
     var body = {};
     if (request.body) {
         body = (request.body);
     }
-    music.request("GET", req.params[0], req.query, body, req).then(function (result) {
-
+    music.getUser(req.params.username).then(function (result) {
+    
         res.json(result);
     }, function (reject) {
         res.json(reject);
     });
 });
 
-app.put('/music/*', function (req, res) {
+
+
+app.get('/music/user/:username/playlist/:identifier', function (req, res) {
+    music.req = req;
+    
     music.session = req.session;
     var body = {};
-    if (req.body) {
-        body = (req.body);
+    if (request.body) {
+        body = (request.body);
     }
-    music.request("PUT", req.params[0], req.query, body, req).then( function (result) {
-
+    music.getPlaylist(req.params.username, req.params.identifier).then(function (result) {
         res.json(result);
     }, function (reject) {
         res.json(reject);
     });
 });
 
-app.post('/music/*', function (req, res) {
+
+app.get('/music/user/:username/playlist/:identifier/track', function (req, res) {
+    music.req = req;
+    
     music.session = req.session;
-
-    music.request("POST", req.params[0], req.query, req.body, req).then( function (result) {
-
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.getTracksInPlaylist(req.params.username, req.params.identifier, req.query.offset,req.query.limit).then(function (result) {
         res.json(result);
     }, function (reject) {
         res.json(reject);
     });
 });
+
+
+app.get('/music/artist/:identifier', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.getArtist(req.params.identifier).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+app.get('/music/artist/:identifier/release', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    
+    music.getAlbumsByArtist(req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+app.get('/music/album/:identifier', function (req, res) {
+    music.req = req;
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    
+    music.getAlbum(req.params.identifier).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+app.get('/music/album/:identifier/track', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    
+    music.getTracksInAlbum(req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.get('/music/track/:identifier', function (req, res) {
+    music.req = req;
+    music.getTrack(req.params.identifier).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+})
 
 app.get('/player/play', function (req, res) {
-    var id = req.params.id;
+    var id = req.params.identifier;
     music.getAlbumTracks(id).then(function (artist) {
         var data = JSON.stringify(artist);
         res.json(artist);
