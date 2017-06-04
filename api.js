@@ -270,7 +270,6 @@ app.get('/music/user/:username', function (req, res) {
 });
 
 
-
 app.get('/music/user/:username/playlist/:identifier', function (req, res) {
     music.req = req;
     
@@ -295,7 +294,39 @@ app.get('/music/user/:username/playlist/:identifier/track', function (req, res) 
     if (request.body) {
         body = (request.body);
     }
-    music.getTracksInPlaylist(req.params.username, req.params.identifier, req.query.offset,req.query.limit).then(function (result) {
+    music.getTracksInPlaylist(req.params.username, req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.post('/music/user/:username/playlist/:identifier/track', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.addTracksInPlaylist(req.params.username, req.params.identifier, body.tracks, body.position).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.put('/music/user/:username/playlist/:identifier/track', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.reorderTracksInPlaylist(req.params.username, req.params.identifier, body.start_index, body.range_start, body.range_length, body.range_end).then(function (result) {
         res.json(result);
     }, function (reject) {
         res.json(reject);

@@ -322,6 +322,52 @@ SpotifyService.prototype.getPlaylist = function (username, identifier) {
     });
 }
 
+
+SpotifyService.prototype.reorderTracksInPlaylist = function (username, identifier, range_start, range_length, insert_before) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('PUT', '/users/' + username + '/playlists/' + identifier + '/tracks', {
+            range_start: range_start,
+            range_length: range_length,
+            insert_before: insert_before
+        }).then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+
+SpotifyService.prototype.addTracksToPlaylist = function (username, identifier, uris, position) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('POST', '/users/' + username + '/playlists/' + identifier + '/tracks', {
+            position: position,
+            uris: uris
+        }).then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+
+SpotifyService.prototype.deleteTracksFromPlaylist = function (username, identifier, tracks) {
+    var self = this;
+    return new Promise(function (resolve, fail) {
+        self._request('DELETE', '/users/' + username + '/playlists/' + identifier + '/tracks', {
+           tracks: tracks
+        }).then(function (result) {
+           resolve(result); 
+        }, function (err) {
+            fail(err);
+        });
+    });
+}
+
+
 /**
  * Returns user by id
  **/
