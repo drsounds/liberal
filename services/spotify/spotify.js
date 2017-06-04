@@ -73,7 +73,7 @@ SpotifyBrowseAPI.prototype.setAccessToken = function (req, accessToken) {
 SpotifyBrowseAPI.prototype.isAccessTokenValid = function () {
     var access_token = this.getAccessToken();
     if (!access_token) return false;
-    return new Date() < new Date(access_token.time) + access_token.expires_in;
+    return new Date().getTime() < access_token.time + access_token.expires_in;
 }
 
 SpotifyBrowseAPI.prototype.refreshAccessToken = function (req) {
@@ -924,6 +924,7 @@ SpotifyBrowseAPI.prototype.requestAccessToken = function (code) {
                     fail({'error': 'Request problem'});
                     return;
                 }
+                
                 self.nodeSpotifyBrowseAPI.setAccessToken(data);
                 self.nodeSpotifyBrowseAPI.getMe().then(function (data) {
                     localStorage.setItem("me", JSON.stringify(data.body));

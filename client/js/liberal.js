@@ -188,7 +188,9 @@ class Store extends EventEmitter {
         this.saturation = this.saturation;
         this.flavor = this.flavor;
         this.stylesheet = this.stylesheet;
-        this.discoveredTracks = JSON.parse(localStorage.getItem('discoveredTracks'));
+        this.discoveredTracks = {
+            objects: []
+        }; //JSON.parse(localStorage.getItem('discoveredTracks'));
     }
     
     getDiscoveredTracks(track, playlist=null) {
@@ -427,28 +429,27 @@ class SPThemeEditorElement extends HTMLElement {
         if (!this.created) {
             this.colorChooser = document.createElement('input');
             this.colorChooser.setAttribute('type', 'range');
-            this.innerHTML += '<label>' + _('Accent color') + '</label>';
-            this.appendChild(this.colorChooser);
-            this.colorChooser.setAttribute('max', 360);
-            this.colorChooser.addEventListener('change', this.colorSlider);
-            this.colorChooser.addEventListener('mousemove', this.colorSlider);
+             this.appendChild(this.colorChooser);
             this.saturationChooser = document.createElement('input');
             this.saturationChooser.setAttribute('type', 'range');
-            this.innerHTML += '<label>' + _('Saturation') + '</label>';
-            this.appendChild(this.saturationChooser);
+             this.appendChild(this.saturationChooser);
             this.saturationChooser.setAttribute('max', 360);
-            this.saturationChooser.addEventListener('change', this.saturationSlider);
-            this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
             this.saturationChooser.value = store.saturation;
             this.styleselect = document.createElement('select');
-            this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="maestro">Maestro</option><option value="obama">Obama</option><option value="chromify">Chromify</option>';
+            this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_9">Windows Media Player 9</option><option value="wmp_11_beta">Windows Media Player 11 (Beta)</option><option value="wmp_11">Windows Media Player 11</option><option value="maestro">Maestro</option><option value="obama">Obama</option><option value="chromify">Chromify</option>';
             this.appendChild(this.styleselect);
             this.flavorselect = document.createElement('select');
             this.flavorselect.innerHTML += '<option value="dark">' + _('Dark') + '</option><option value="light">' + _('Light') + '</option>';
             this.appendChild(this.flavorselect);
+            this.colorChooser.setAttribute('max', 360);
+            this.colorChooser.addEventListener('change', this.colorSlider.bind(this));
+            this.colorChooser.addEventListener('mousemove', this.colorSlider.bind(this));
+            this.saturationChooser.addEventListener('change', this.saturationSlider);
+            this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
             this.flavorselect.addEventListener('change', (e) => {
                 store.flavor = e.target.options[e.target.selectedIndex].value;
             });
+           
              this.styleselect.addEventListener('change', (e) => {
                 store.stylesheet = e.target.options[e.target.selectedIndex].value;
             });
@@ -1274,7 +1275,7 @@ class SPPlaylistElement extends SPResourceElement {
         
         '</div>';
         this.object = obj;
-        if (this.view != null) {
+        if (this.view != null && localStorage.getItem('vibrantColor')) {
             this.vibrance();
         }
     }
