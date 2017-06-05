@@ -224,43 +224,49 @@ SpotifyService.prototype._request = function (method, path, payload, postData) {
                 }
                 try {
                     var data = JSON.parse(body);
-                    var result = data;
-                    if ('error' in data) {
+                    if (!data) {
+                        fail(500);
+                    }
+                    if ('error' in data || !data) {
                         fail(500);
                         return;
                     }
-                    result.service = {
+                    data.service = {
                         name: 'Spotify',
                         id: 'spotify',
                         type: 'service',
                         description: ''
                     }
                     if ('items' in data) {
-                        result.objects = data.items;
+                        data.objects = data.items;
                         delete data.items;
                     }
                     if ('tracks' in data) {
-                        result.objects = data.tracks.items;
+                        if (data.tracks instanceof Array) {
+                            data.objects = data.tracks;
+                        } else {
+                            data.objects = data.tracks.items;
+                        }
                         delete data.tracks;
                     }
                     if ('albums' in data) {
-                        result.objects = data.albums.items;
+                        data.objects = data.albums.items;
                         delete data.albums;
                     }
                     if ('artists' in data) {
-                        result.objects = data.artists.items;
+                        data.objects = data.artists.items;
                         delete data.artists;
                     }
-                    if ('objects' in result && result.objects) {
-                        result.objects = result.objects.map(formatObject);
+                    if ('objects' in data && data.objects) {
+                        data.objects = data.objects.map(formatObject);
                        
                     } else { 
-                        result = formatObject(result, 0);
+                        data = formatObject(data, 0);
                     }
-                    resolve(result);
+                    resolve(data);
                 } catch (e) {
                     
-                    fail(500);
+                    fail(e);
                 }
             }
         );
@@ -299,10 +305,13 @@ SpotifyService.prototype.getArtist = function (id) {
 /**
  * Returns user by id
  **/
-SpotifyService.prototype.getAlbumsByArtist = function (id) {
+SpotifyService.prototype.getAlbumsByArtist = function (id, offset, limit) {
     var self = this;
     return new Promise(function (resolve, fail) {
-        self._request('GET', '/artists/' + id + '/albums').then(function (result) {
+        self._request('GET', '/artists/' + id + '/albums', {
+            offset: offset,
+            limit: limit
+        }).then(function (result) {
         
             Promise.all(result.objects.map(function (album) {
                 return self.getTracksInAlbum(album.id);
@@ -1565,6 +1574,8 @@ SpotifyService.prototype.addTracksToPlaylist = function (user, playlist_id, uris
                 "uris": uris, position: position
         }).then(function () {
             resolve();
+        }, function (err) {
+            fail(err);
         });
 
     });
@@ -1578,7 +1589,9 @@ SpotifyService.prototype.getAlbumTracks = function (id) {
     var promise = new Promise(function (resolve, fail) {
         self._request("GET", "/albums/" + id + "/tracks").then(function (data) {
             resolve(data);
-        })
+        }, function (err) {
+            fail(err);
+        });
     });
     return promise;
     
@@ -1603,6 +1616,8 @@ SpotifyService.prototype.search = function (query, limit, offset, type) {
             } else {
                 resolve(data[type + 's'].items);
             }
+        }, function (err) {
+            fail(err);
         });
     });
     return promise;
@@ -1615,6 +1630,8 @@ SpotifyService.prototype.loadPlaylist = function (user, id, callback) {
                 playlist.tracks = tracklist.tracks.items;
                 resolve(playlist);
             });
+        }, function (err) {
+            fail(err);
         });
     });
     return promise;
@@ -1627,6 +1644,8 @@ SpotifyService.prototype.createPlaylist = function (title) {
         var me = self.getMe();
         self.request("POST", "/users/" + me.id + "/playlists", {name: title}).then(function (object) {
             resolve(object);
+        }, function (err) {
+            fail(err);
         });
     });
     return promise;
@@ -1644,6 +1663,8 @@ SpotifyService.prototype.getUserPlaylists = function () {
             resolve({
                 'objects': data.items
             });
+        }, function (err) {
+            fail(err);
         });
     });
     return promise;
@@ -1658,6 +1679,8 @@ SpotifyService.prototype.getPlaylistsForUser = function (id) {
             resolve({
                 'objects': data.items
             });
+        }, function (err) {
+            fail(err);
         });
     });
     return promise;
@@ -1665,12 +1688,18 @@ SpotifyService.prototype.getPlaylistsForUser = function (id) {
 
 
 
-SpotifyService.prototype.getArtistTopTracks = function (id, offset, limit) {
+SpotifyService.prototype.getTopTracksForArtist = function (id, country, offset, limit) {
     var self = this;
 
     var promise = new Promise(function (resolve, fail) {
-        self._request("GET", "/artists/" + id + '/top/tracks').then(function (data) {
+        self._request("GET", "/artists/" + id + '/top-tracks', {
+            country: country
+        }).then(function (data) {
             resolve(data);
+        }, function (err) {
+            fail(err);
+        }, function (err) {
+            fail(err);
         });
     });
     return promise;
@@ -1687,6 +1716,8 @@ SpotifyService.prototype.getAlbum = function (id) {
                 resolve(album);
 
             });
+        }, function (err) {
+            fail(err);
         });
     });
     return promise;
@@ -1703,7 +1734,9 @@ SpotifyService.prototype.getPlaylistTracks = function (user, playlist_id, page, 
              resolve({
                  'objects': data.tracks.items
              });
-         });
+         }, function (err) {
+            fail(err);
+        });
     });
     return promise;
 }

@@ -534,15 +534,24 @@ app.get('/music/artist/:identifier/top/:count', function (req, res) {
         body = (request.body);
     }
     music.getArtist(req.params.identifier).then(function (result) {
-        res.json({
-            name: 'Top Tracks',
-            type: 'toplist',
-            id: 'toplist',
-            uri: result.uri + ':top:' + req.params.count,
-            description: ''
+        music.getTopTracksForArtist(result.id, 'se').then(function (toplist) {
+            res.json({
+                name: 'Top Tracks',
+                type: 'toplist',
+                id: 'toplist',
+                uri: result.uri + ':top:' + req.params.count,
+                description: 'Top ' + req.params.count + ' tracks for <sp-link uri="' + result.uri + '">' + result.name + '</sp-link>',
+                tracks: toplist
+            });
+        }, function (err) {
+            res.statusCode = 500;
+            res.json(err);
         });
     }, function (reject) {
         res.json(reject);
+    }, function (err) {
+        res.statusCode = 500;
+        res.json(err);
     });
 });
 
