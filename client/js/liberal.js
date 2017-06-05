@@ -163,6 +163,7 @@ class SpotifyMusicService extends MusicService {
          
             return result;
         } catch (e) {
+            debugger;
             alert("An error occured");
         }
     }
@@ -378,12 +379,13 @@ class Store extends EventEmitter {
             }
             if (uri in this.state)
                 return this.state[uri];
-            
+        
             let result = await fetch(url, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
             this.setState(uri, result);
          
             return result;
         } catch (e) {
+            debugger;
             alert("An error occured");
         }
     }
@@ -520,7 +522,7 @@ document.registerElement('sp-appheader', SPAppHeaderElement);
 
 window.addEventListener('error', (e) => {
     
-    alert(e);
+    debugger;
 })
 
 class SPAppFooterElement extends HTMLElement {
@@ -619,7 +621,7 @@ window.alert = function (message) {
         name: message,
         uri: 'bungalow:error:0x00'
     });
-    let x = 0;
+    let x = 0;/*
     var i = setInterval(() => {
         x++;
         $('sp-infobar').animate({
@@ -631,7 +633,7 @@ window.alert = function (message) {
         });
         clearInterval(i);
         
-    }, 100);
+    }, 100);*/
 }
 
 
@@ -673,6 +675,7 @@ document.registerElement('sp-chrome', SPChromeElement);
 
 class SPResourceElement extends HTMLElement {
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName === 'uri') {
             let data = await store.request('GET', newVal);
             this.setState(data);
@@ -865,6 +868,7 @@ class SPImageElement extends HTMLElement {
         });
     }
     attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName === 'src') {
             this.setState(newVal);
         }
@@ -1068,6 +1072,7 @@ class SPArtistViewElement extends SPViewElement {
         });
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName == 'uri') {
             
             let result = await store.request('GET', newVal);
@@ -1126,6 +1131,7 @@ class SPUserViewElement extends SPViewElement {
         });
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName == 'uri') {
             
           this.state = await store.request('GET', newVal);
@@ -1172,6 +1178,7 @@ class SPGenreViewElement extends SPViewElement {
             
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName == 'uri') {
             
           let result = await store.request('GET', newVal);
@@ -1238,6 +1245,7 @@ class SPPlaylistElement extends SPResourceElement {
     attachedCallback() {
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName == 'uri') {
             
           let result = await store.request('GET', newVal);
@@ -1340,6 +1348,7 @@ class SPCountryViewElement extends SPViewElement {
         }
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName == 'uri') {
             
             let result = await store.request('GET', newVal);
@@ -1481,6 +1490,7 @@ class SPTrackContextElement extends SPResourceElement {
     }
     
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         
         if (attrName == 'uri') {
           let result = await store.request('GET', newVal + '?q=' + this.query);
@@ -1675,6 +1685,7 @@ document.registerElement('sp-gondole', SPGondoleElement);
 
 class SPPlaylistContextElement extends SPResourceElement {
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName == 'uri') {
             this.limit = 30;
             this.offset = 0;
@@ -2083,6 +2094,7 @@ class SPAlbumViewElement extends SPViewElement {
         
     }
     attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName === 'uri') {
             this.innerHTML = '';
             this.albumView = document.createElement('sp-playlist');
@@ -2137,6 +2149,7 @@ class SPPlaylistViewElement extends SPViewElement {
     navigate(uri) {
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName === 'uri') {
             this.trackcontext.setAttribute('uri', newVal + ':track');
             let result = await store.request('GET', newVal);
@@ -2172,6 +2185,7 @@ class SPPlayqueueViewElement extends SPViewElement {
         
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName === 'uri') {
             this.trackcontext.setAttribute('uri', newVal + ':track');
             let result = await store.request('GET', newVal);
@@ -2219,6 +2233,7 @@ class SPSearchViewElement extends SPViewElement {
         
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
         if (attrName === 'uri') {
             let query = newVal.substr('bungalow:search:'.length);
             this.trackcontext.query = query;
