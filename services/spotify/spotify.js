@@ -105,7 +105,7 @@ SpotifyService.prototype.setAccessToken = function (req, accessToken) {
 SpotifyService.prototype.isAccessTokenValid = function () {
     var access_token = this.getAccessToken();
     if (!access_token) return false;
-    return new Date() < new Date(access_token.time) + access_token.expires_in;
+    return new Date() < new Date(access_token.time) + access_token.expires_in * 1000;
 }
 
 SpotifyService.prototype.refreshAccessToken = function () {
@@ -226,12 +226,16 @@ SpotifyService.prototype._request = function (method, path, payload, postData) {
                    return obj;
                 }
                 try {
+                    if (response.statusCode < 200 ||response.statusCode > 299) {
+                        fail(response.statusCode);
+                        return;
+                    }
                     var data = JSON.parse(body);
                     if (!data) {
-                        fail(500);
+                        fail(response.statusCode);
                     }
                     if ('error' in data || !data) {
-                        fail(500);
+                        fail(response.statusCode);
                         return;
                     }
                     data.service = {
@@ -1606,10 +1610,10 @@ SpotifyService.prototype.getAlbumTracks = function (id) {
 };
 
 
-SpotifyService.prototype.search = function (query, limit, offset, type) {
+SpotifyService.prototype.search = function (query, offset, limit, type) {
     var self = this;
     var promise = new Promise(function (resolve, fail) {
-        self._request('GET', 'https://api.spotify.com/v1/search', {
+        self._request('GET', '/search', {
             q: query,
             limit: limit,
             offset: offset,
@@ -1622,7 +1626,9 @@ SpotifyService.prototype.search = function (query, limit, offset, type) {
                 });
                 resolve(data.tracks.items);
             } else {
-                resolve(data[type + 's'].items);
+                resolve({
+                    objects: data[type + 's'].items
+                    });
             }
         }, function (err) {
             fail(err);
@@ -1632,7 +1638,7 @@ SpotifyService.prototype.search = function (query, limit, offset, type) {
 };
 SpotifyService.prototype.loadPlaylist = function (user, id, callback) {
     var self = this;
-    var promise = new Promies(function (resolve, fail) {
+    var promise = new Promise(function (resolve, fail) {
         self.request("GET", "/users/" + user + "/playlists/" + id + "/tracks").then(function (tracklist) {
             self.request("GET", "/users/" + uri.user + "/playlists/" + uri).then(function (playlist) {
                 playlist.tracks = tracklist.tracks.items;

@@ -3,6 +3,7 @@ var fs = require('fs');
 var async = require('async');
 var MusicService = require('./services/spotify/spotify.js');
 var SocialService = require('./services/mock/mock.js');
+var WikiService = require('./services/wikipedia/wikipedia.js');
 var social = new SocialService();
 var less = require('less');
 var request = require('request');
@@ -13,6 +14,7 @@ var utils = require('./utils.js');
 var express =require('express');
 var app = express();
 var music = new MusicService();
+var wiki = new WikiService();
 
 app.get('/music/login', function (req, res) {
     res.redirect(music.getLoginUrl());
@@ -338,7 +340,7 @@ app.put('/music/me/player/play', function (req, res) {
             
         });
     }, function (reject) {
-        res.statusCode = 500;
+        res.statusCode = reject;
         res.json(reject);
     });
 });
@@ -367,13 +369,14 @@ app.get('/music/internal/library/track', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getMyTracks(req.query.offset, req.query.limit).then(function (result) {
     
         res.json(result);
     }, function (reject) {
+        res.statusCode = reject;
         res.json(reject);
     });
 });
@@ -390,6 +393,7 @@ app.get('/music/category', function (req, res) {
     
         res.json(result);
     }, function (reject) {
+        res.statusCode = reject;
         res.json(reject);
     });
 });
@@ -408,6 +412,31 @@ app.get('/music/category/:identifier', function (req, res) {
         res.json(result);
     }, function (reject) {
         res.json(reject);
+    });
+});
+
+
+app.get('/music/label/:identifier', function (req, res) {
+    wiki.req = req;
+    var name = decodeURIComponent(req.params.identifier);
+    wiki.describe(name).then(function (description) {
+        res.json({
+            name: name,
+            description: description || ''
+        });
+    });
+});
+
+
+
+app.get('/music/label/:identifier/release', function (req, res) {
+       music.req = req;
+    var name = decodeURIComponent(req.params.identifier);
+    music.search('label:"' + req.params.identifier + '"', req.params.limit, req.params.offset, 'album').then(function (result) {
+        res.json(result);
+    }, function (err) {
+        res.statusCode = err;
+        res.json(err);
     });
 });
 

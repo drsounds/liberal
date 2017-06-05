@@ -726,7 +726,6 @@ class SPMainElement extends HTMLElement {
 }
 document.registerElement('sp-main', SPMainElement);
 
-
 /**
  * Viewstack element
  **/
@@ -775,7 +774,7 @@ class SPViewStackElement extends HTMLElement {
             uri = 'bungalow:' + uri.substr('spotify:'.length);
         }
         let newUri = uri;
-        if (uri === 'bungalow:internal:login') {
+        if (uri === 'bungalow:login') {
             store.login().then(() => {});
             return;
         }
@@ -797,6 +796,8 @@ class SPViewStackElement extends HTMLElement {
         } else {
             let view = null;
             
+            
+            
             if (newUri === 'bungalow:internal:settings' || newUri === 'bungalow:config') {
                 view = document.createElement('sp-settingsview');  
             } else if (/^bungalow:internal:start$/g.test(newUri)) {
@@ -804,6 +805,8 @@ class SPViewStackElement extends HTMLElement {
             } else if (/^bungalow:genre:(.*)$/g.test(newUri)) {
                 view = document.createElement('sp-genreview');
                 
+            } else if (/^bungalow:label:([a-zA-Z\ \_]+)$/.test(newUri)) {
+                view = document.createElement('sp-labelview');
             } else if (/^bungalow:artist:([a-zA-Z0-9._]+):top:([0-9]+)$/g.test(newUri)) {
                 view = document.createElement('sp-playlistview');
               
@@ -914,6 +917,7 @@ class SPTitleElement extends HTMLElement {
         
     }
     setState(object) {
+        if (!object) return;
         let title = _(object.name);
         if (VERIFIED_PROFILES.filter((o) => (object.id === o)).length > 0) {
             title += ' <i class="fa fa-check-circle new"></i>';
@@ -2338,3 +2342,38 @@ window.addEventListener('load', (e) => {
     document.querySelector('.body').appendChild(document.createElement('sp-chrome'));
 });
 
+
+
+
+class SPLabelViewElement extends SPViewElement {
+    attachedCallback() {
+        super.attachedCallback();
+        if (!this.created) {
+            this.classList.add('sp-view');
+            this.header = document.createElement('sp-header');
+            this.appendChild(this.header);
+            this.releasecontext = document.createElement('sp-playlistcontext');
+            this.attributeChangedCallback('uri', null, this.getAttribute('uri'));
+            this.divider = document.createElement('sp-divider');
+            this.divider.innerHTML = _('Releases');
+            this.appendChild(this.divider);
+            this.appendChild(this.releasecontext);
+            
+            this.created = true;
+        }
+        
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'uri') {
+            if (newVal == null) return;
+            this.releasecontext.setAttribute('uri', newVal + ':release');
+            this.obj = await store.request('GET', newVal);
+            this.setState(this.obj);
+        }
+    }
+    setState(obj) {
+        this.header.setState(obj);
+    }
+}
+
+document.registerElement('sp-labelview', SPLabelViewElement);
