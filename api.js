@@ -270,6 +270,165 @@ app.get('/music/user/:username', function (req, res) {
 });
 
 
+app.get('/music/me/playlist', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.getMyPlaylists(req.query.offset, req.query.limit).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.get('/music/me/release', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }   
+    music.getMyReleases(req.query.offset, req.query.limit).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+
+app.get('/music/internal/library', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    res.json({
+        id: 'library',
+        name: 'Library',
+        uri: 'bungalow:internal:library',
+        description: 'My Library',
+        type: 'library'
+    });
+});
+
+
+
+app.put('/music/me/player/play', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (req.body) {
+        body = (req.body);
+    }
+    music.playTrack(body).then(function (result) {
+        music.getCurrentTrack().then(function (result) {
+            res.json(result);
+            
+        });
+    }, function (reject) {
+        res.statusCode = 500;
+        res.json(reject);
+    });
+});
+
+
+app.get('/music/me/player/currently-playing', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (req.body) {
+        body = (req.body);
+    }
+    music.getCurrentTrack(body).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+
+app.get('/music/internal/library/track', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.getMyTracks(req.query.offset, req.query.limit).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+app.get('/music/category', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.getCategories(req.query.offset, req.query.limit).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.get('/music/category/:identifier', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.getCategory(req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.get('/music/category/:identifier/playlist', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.getPlaylistInCategory(req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
 app.get('/music/search', function (req, res) {
     music.req = req;
     
@@ -365,6 +524,43 @@ app.get('/music/artist/:identifier', function (req, res) {
         res.json(reject);
     });
 });
+
+app.get('/music/artist/:identifier/top/:count', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    music.getArtist(req.params.identifier).then(function (result) {
+        res.json({
+            name: 'Top Tracks',
+            type: 'toplist',
+            id: 'toplist',
+            uri: result.uri + ':top:' + req.params.count,
+            description: ''
+        });
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.get('/music/artist/:identifier/top/:count/track', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (req.body) {
+        body = (req.body);
+    }
+    music.getArtistTopTracks(req.params.identifier, req.params.offset, req.params.limit).then(function (result) {
+       
+    }, function (reject) {
+        res.json(reject);
+    });
+});
 app.get('/music/artist/:identifier/release', function (req, res) {
     music.req = req;
     
@@ -413,6 +609,22 @@ app.get('/music/album/:identifier/track', function (req, res) {
 });
 
 
+app.get('/music/featured/playlist', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }   
+    music.getFeaturedPlaylists(req.query.offset, req.query.limit).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
 app.get('/music/track/:identifier', function (req, res) {
     music.req = req;
     music.getTrack(req.params.identifier).then(function (result) {
@@ -421,14 +633,6 @@ app.get('/music/track/:identifier', function (req, res) {
         res.json(reject);
     });
 })
-
-app.get('/player/play', function (req, res) {
-    var id = req.params.identifier;
-    music.getAlbumTracks(id).then(function (artist) {
-        var data = JSON.stringify(artist);
-        res.json(artist);
-    });
-});
 
 
 module.exports = {
