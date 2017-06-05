@@ -674,15 +674,36 @@ class SPResourceElement extends HTMLElement {
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (!newVal) return;
         if (attrName === 'uri') {
+            let state = null;
             if (newVal in store.state) {
-                this.setState(store.state[newVal]);
+                state = store.state[newVal];
+                this.setState(state);
                 return;
             }
-            let data = await store.request('GET', newVal);
-            this.setState(data);
+            state = await store.request('GET', newVal);
+            this.setState(state);
+        }
+    }
+    vibrance() {
+        let img = document.createElement('img');
+        img.crossOrigin = '';
+        img.src = this.object.images[0].url;
+        img.onload = () => {
+        
+            var vibrant = new Vibrant(img);
+            let color = vibrant.swatches()['Vibrant'];
+            let light = vibrant.swatches()['LightVibrant'];
+            let muted = vibrant.swatches()['Muted'];
+            
+            let bgColor = swatchToColor(color);
+            
+        //    this.view.style.backgroundColor = bgColor;
+            let background = 'linear-gradient(-90deg, ' + swatchToColor(color) + ', ' + swatchToColor(muted) + ')';
+            this.view.style.background = background;
         }
     }
     setState(obj) {
+        this.obj = obj;
         this.innerHTML = '<sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link>';
     }
 }
@@ -950,6 +971,7 @@ class SPHeaderElement extends SPResourceElement {
            
         } */
         this.object = object;
+     
         this.vibrant();
     }
     vibrant() {
@@ -1289,7 +1311,7 @@ class SPPlaylistElement extends SPResourceElement {
         
         '</div>';
         this.object = obj;
-        if (this.view != null) {
+        if (this.view != null && localStorage.getItem('stylesheet') == 'maestro') {
             this.vibrance();
         }
     }
@@ -1301,10 +1323,20 @@ class SPPlaylistElement extends SPResourceElement {
         
             var vibrant = new Vibrant(img);
             let color = vibrant.swatches()['Vibrant'];
-            let bgColor = 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.03)';
-            this.view.style.backgroundColor = bgColor;
+            let light = vibrant.swatches()['LightVibrant'];
+            let muted = vibrant.swatches()['Muted'];
+            
+            let bgColor = swatchToColor(color);
+            
+        //    this.view.style.backgroundColor = bgColor;
+            let background = 'linear-gradient(-90deg, ' + swatchToColor(color) + ', ' + swatchToColor(muted) + ')';
+            this.view.style.background = background;
         }
     }
+}
+
+function swatchToColor(color) {
+    return 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.3)';
 }
 
 document.registerElement('sp-playlist', SPPlaylistElement);
@@ -1711,7 +1743,6 @@ class SPPlaylistContextElement extends SPResourceElement {
         let elm = document.createElement('sp-playlist');
         store.state[playlist.uri] = playlist;
         store.state[playlist.uri + ':track'] = playlist.tracks; 
-        debugger;
         elm.setAttribute('uri', playlist.uri);
         return elm;
     }

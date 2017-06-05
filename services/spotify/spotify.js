@@ -208,6 +208,9 @@ SpotifyService.prototype._request = function (method, path, payload, postData) {
                    obj.position = payload.offset + i; 
                    obj.service = service;
                    obj.version = '';
+                   if (obj.type === 'user') {
+                       obj.name = obj.id;
+                   }
                    if ('track' in obj) {
                        obj = assign(obj, obj.track);
                    }
@@ -249,8 +252,13 @@ SpotifyService.prototype._request = function (method, path, payload, postData) {
                         }
                         delete data.tracks;
                     }
-                    if ('albums' in data) {
-                        data.objects = data.albums.items;
+                    if ('album' in data) {
+                        data.album = formatObject(data.album);
+                        delete data.albums;
+                    }
+                    
+                    if ('owner' in data) {
+                        data.owner = formatObject(data.owner);
                         delete data.albums;
                     }
                     if ('artists' in data) {
@@ -260,9 +268,9 @@ SpotifyService.prototype._request = function (method, path, payload, postData) {
                     if ('objects' in data && data.objects) {
                         data.objects = data.objects.map(formatObject);
                        
-                    } else { 
-                        data = formatObject(data, 0);
                     }
+                    data = formatObject(data, 0);
+                
                     resolve(data);
                 } catch (e) {
                     
