@@ -87,7 +87,7 @@ class SpotifyMusicService extends MusicService {
         this.emit('change');
     }
     async playTrack(track, context) {
-        await this._request('PUT', 'spotify:me:player:play', {
+        await this._request('PUT', 'spotify:me:player:play', {}, {
             context_uri: context.uri,
             position: {
                 uri: track.uri
@@ -95,7 +95,7 @@ class SpotifyMusicService extends MusicService {
         });
     }
     async playTrackAtPosition(position, context) {
-        await this._request('PUT', 'spotify:me:player:play', {
+        await this._request('PUT', 'spotify:me:player:play', {}, {
             context_uri: context.uri,
             position: {
                 offset: position
@@ -103,10 +103,9 @@ class SpotifyMusicService extends MusicService {
         });
     }
     async lookupTrack(name, version, artist, album) {
-         q
     }
     async getCurrentTrack() {
-        let result = await this._request('GET', 'spotify:me:player:currently-playing', null, false);
+        let result = await this._request('GET', 'spotify:me:player:currently-playing', null, null, false);
         
         return result;
     }
@@ -312,13 +311,13 @@ class Store extends EventEmitter {
     }
     async play(context) {
         
-        let result = await this.request('PUT', 'spotify:me:player:play', context, false);
+        let result = await this.request('PUT', 'spotify:me:player:play', {}, context, false);
         this.state.player = await this.getCurrentTrack();
         this.emit('change');
    
     }
     async playTrack(track, context) {
-        await this.request('PUT', 'spotify:me:player:play', {
+        await this.request('PUT', 'spotify:me:player:play', {}, {
             context_uri: context.uri,
             position: {
                 uri: track.uri
@@ -326,7 +325,7 @@ class Store extends EventEmitter {
         });
     }
     async playTrackAtPosition(position, context) {
-        await this.request('PUT', 'spotify:me:player:play', {
+        await this.request('PUT', 'spotify:me:player:play', {}, {
             context_uri: context.uri,
             position: {
                 offset: position
@@ -338,14 +337,19 @@ class Store extends EventEmitter {
         
         return result;
     }
-    async request(method, uri, payload, cache=true) {
+    async request(method, uri, params, payload, cache=true) {
         if (uri in this.state && method == "GET" && cache)
             return this.state[uri];
         try {
+            let esc = encodeURIComponent
+            let query = params ?  Object.keys(params)
+                         .map(k => esc(k) + '=' + esc(params[k]))
+                         .join('&') : '';   
+
             if (uri == null) return;
             var url = uri;
             if (uri.indexOf('bungalow:') == 0 || uri.indexOf('spotify:') == 0) {
-                url = '/api/music/' + url.split(':').slice(1).join('/');
+                url = '/api/music/' + url.split(':').slice(1).join('/') + '?' + query;
                  if (uri in this.state && method == "GET" && cache)
                     return this.state[uri];
                 let result
@@ -958,7 +962,7 @@ class SPHeaderElement extends SPResourceElement {
         let height = size;  
         let titleElement = document.createElement('sp-title');
         titleElement.setState(object);
-        object.image_url = object.images && object.images[0].url ? object.images[0].url : '';
+        object.image_url = object.images && object.images.length > 0 && object.images[0].url ? object.images[0].url : '';
         let strFollowers = '';
         if ('followers' in object) {
             strFollowers = numeral(object.followers.total).format('0,0') + ' followers';
@@ -1106,6 +1110,7 @@ class SPArtistViewElement extends SPViewElement {
                 this.setState(store.state[newVal]);
                 return;
             }
+            
             let result = await store.request('GET', newVal);
             this.state = result;
             
@@ -1280,6 +1285,7 @@ class SPPlaylistElement extends SPResourceElement {
         if (attrName == 'uri') {
             
           let result = await store.request('GET', newVal);
+          debugger;
             this.setState(result);
         }
     }
@@ -1523,7 +1529,7 @@ class SPTrackContextElement extends SPResourceElement {
         if (gondole)
         gondole.setAttribute('activated', 'true');
         this.offset += this.limit;
-        let result = await store.request('GET', this.uri + '?q=' + encodeURIComponent(this.query) + '&type=track&limit=' + this.limit + '&offset=' + this.offset);
+        let result = await store.request('GET', this.uri,{q: encodeURIComponent(this.q), type: 'track', limit: this.limit, offset: this.offset});
         if (result && result.objects instanceof Array && result.objects.length > 0) {
             result.objects.map(this.createTrack.bind(this)).map((tr) => {
                 this.tbody.appendChild(tr);
@@ -1539,10 +1545,8 @@ class SPTrackContextElement extends SPResourceElement {
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (!newVal) return;
         let uri = newVal;
-        if (this.q) uri += '?q=' + uri;
         if (attrName == 'uri') {
-          
-            let result = await store.request('GET', uri);
+            let result = await store.request('GET', uri, {q: this.query, limit: this.limit, offset: this.offset});
                 this.setState(result);
         }
     }
@@ -2303,7 +2307,6 @@ class SPSearchViewElement extends SPViewElement {
             let query = newVal.substr('bungalow:search:'.length);
             this.trackcontext.query = query;
             this.trackcontext.setAttribute('uri', 'bungalow:search');
-            let result = await store.request('GET', newVal);
             this.header.setState({
                 name: query,
                 id: query,

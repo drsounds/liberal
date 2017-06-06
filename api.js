@@ -567,6 +567,9 @@ app.get('/music/artist/:identifier/top/:count', function (req, res) {
             res.json({
                 name: 'Top Tracks',
                 type: 'toplist',
+                images: [{
+                    url: '/images/toplist.svg'
+                }],
                 id: 'toplist',
                 uri: result.uri + ':top:' + req.params.count,
                 description: 'Top ' + req.params.count + ' tracks for <sp-link uri="' + result.uri + '">' + result.name + '</sp-link>',
@@ -594,7 +597,7 @@ app.get('/music/artist/:identifier/top/:count/track', function (req, res) {
         body = (req.body);
     }
     music.getArtistTopTracks(req.params.identifier, req.params.offset, req.params.limit).then(function (result) {
-       
+       res.json(result);
     }, function (reject) {
         res.json(reject);
     });

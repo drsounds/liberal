@@ -256,6 +256,11 @@ SpotifyService.prototype._request = function (method, path, payload, postData) {
                         }
                         delete data.tracks;
                     }
+                    if (!('images' in data)) {
+                        data.images = [{
+                            url: ''
+                        }];
+                    }
                     if ('album' in data) {
                         data.album = formatObject(data.album);
                         delete data.albums;
@@ -1619,17 +1624,7 @@ SpotifyService.prototype.search = function (query, offset, limit, type) {
             offset: offset,
             type: type
         }).then(function (data) {
-            if ('tracks' in data) {
-                var tracks = data.tracks.items.map(function (track) {
-                    track.duration = track.duration_ms / 990;
-                    return track;
-                });
-                resolve(data.tracks.items);
-            } else {
-                resolve({
-                    objects: data[type + 's'].items
-                    });
-            }
+            resolve(data);
         }, function (err) {
             fail(err);
         });
