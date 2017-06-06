@@ -206,8 +206,12 @@ SpotifyService.prototype._request = function (method, path, payload, postData) {
                                 
                 function formatObject (obj, i) {
                    obj.position = payload.offset + i; 
+                   obj.p = payload.offset + i + 1; 
                    obj.service = service;
                    obj.version = '';
+                   if ('duration_ms' in obj) {
+                       obj.duration = obj.duration_ms / 1000;
+                   }
                    if (obj.type === 'user') {
                        obj.name = obj.id;
                    }

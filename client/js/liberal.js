@@ -1073,6 +1073,7 @@ class SPArtistViewElement extends SPViewElement {
          
             this.topTracksDivider = document.createElement('sp-divider');
             this.topTracksDivider.innerHTML = _('Top Tracks');
+        
             this.appendChild(this.topTracksDivider);
             this.toplist = document.createElement('sp-playlist');
             this.appendChild(this.toplist);
@@ -1087,6 +1088,7 @@ class SPArtistViewElement extends SPViewElement {
         this.appendChild(singlesDivider);
         
         let releaseList = document.createElement('sp-playlistcontext');
+        releaseList.setAttribute('fields', 'p,name,duration,artists');
         releaseList.setAttribute('data-context-artist-uri', uri);
 
         this.appendChild(releaseList);
@@ -1109,6 +1111,8 @@ class SPArtistViewElement extends SPViewElement {
         if (!newVal) return;
         if (attrName == 'uri') {
             
+            this.toplist.setAttribute('data-context-artist-uri', newVal);
+            this.toplist.setAttribute('fields', 'p,name,duration,artists');
             if (newVal in store.state) {
                 this.setState(store.state[newVal]);
                 return;
@@ -1318,10 +1322,10 @@ class SPPlaylistElement extends SPResourceElement {
             '<sp-image src="' + obj.images[0].url + '" width="128" height="128"></sp-image>' + 
         '</div>' +
         '<div style="flex: 2">' +
-            '<h3>' +  titleElement.innerHTML + ' '+  strReleaseDate + ' </h3>' +
+            '<h3>' +  titleElement.innerHTML + (strReleaseDate != '' ? ' <span>('+  strReleaseDate + ')' : '') + '</h3>' +
             
             (obj.description ? '<p>' + obj.description + '</p>' : '') +
-            '<sp-trackcontext fields="name,artists,album,user,added_at" data-context-artist-uri="' + this.getAttribute('data-context-artist-uri') + '" uri="' + obj.uri + ':track"></sp-trackcontext>' +
+            '<sp-trackcontext fields="' + (this.getAttribute('fields') || 'name,artists,album,user,added_at') + '" data-context-artist-uri="' + this.getAttribute('data-context-artist-uri') + '" uri="' + obj.uri + ':track"></sp-trackcontext>' +
             (copyrights ? copyrights : '') +
         
         '</div>';
@@ -1353,6 +1357,71 @@ class SPPlaylistElement extends SPResourceElement {
 function swatchToColor(color) {
     return 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.3)';
 }
+
+
+function rgbToRgba(rgb, alpha) {
+    let str = 'rgba';
+    let tf = rgb.split('(')[1].split(')')[0].split(',');
+    str += '(' + tf + ',' + alpha + ')';
+    return str;
+
+}
+
+/**
+ * Popularity bar
+ */
+class SPPopularityBarElement extends HTMLElement {
+    createdCallback() {
+        
+    }
+    attachedCallback() {
+        this.canvas = document.createElement('canvas');
+        this.appendChild(this.canvas);
+        this.node = this.canvas;
+        this.BAR_WIDTH = 2 * 5;
+        this.BAR_HEIGHT = 2 * 109;
+        this.SPACE = 8;
+        this.popularity = 0.0;
+        this.height = 7;
+        this.width = 3;
+        
+        this.node.style.width = '60px';
+        this.node.style.height = '7px';
+        this.style.padding = '0px';
+        this.attributeChangedCallback('value', 0, !isNaN(this.getAttribute('value')) || 0);
+    }
+    attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName === 'value') {
+            this.setState(newVal);
+        }
+    }
+    setState(value) {
+
+        this.style.backgroundColor = 'transparent';
+        var ctx = this.node.getContext('2d');
+        // draw dark bars
+        ctx.fillStyle = this.style.backgroundColor;
+        ctx.fillRect(0, 0, this.node.width, this.node.height);
+        let fillStyle = rgbToRgba(window.getComputedStyle(this).getPropertyValue('color'), 0.5);
+        ctx.fillStyle = fillStyle;
+        var totalPigs = 0
+        for (var i = 0; i < this.node.width; i+= this.BAR_WIDTH + this.SPACE) {
+            ctx.fillRect(i, 0, this.BAR_WIDTH, this.BAR_HEIGHT);
+            totalPigs++;
+        }
+        ctx.fillStyle = window.getComputedStyle(this.parentNode).color;
+        var lightPigs = value * totalPigs;
+        var left = 0;
+        for (var i = 0; i < lightPigs; i++) {
+            ctx.fillRect(left, 0, this.BAR_WIDTH, this.BAR_HEIGHT);
+            left += this.BAR_WIDTH + this.SPACE;
+        }
+    }
+
+}
+
+document.currentScript.ownerDocument.registerElement('sp-popularitybar', SPPopularityBarElement);
+
 
 document.registerElement('sp-playlist', SPPlaylistElement);
 
@@ -1422,6 +1491,19 @@ class SPCountryViewElement extends SPViewElement {
 document.registerElement('sp-countryview', SPCountryViewElement);
 
 
+String.prototype.toHHMMSS = function () {
+    var sec_num = parseInt(this, 10); // don't forget the second param
+    var hours   = Math.floor(sec_num / 3600);
+    var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+    var seconds = sec_num - (hours * 3600) - (minutes * 60);
+    var strHours = hours, strMinutes = minutes, strSeconds = seconds;
+    if (hours   < 10) {strHours   = "0"+hours;}
+    if (minutes < 10) {strMinutes = "0"+minutes;}
+    if (seconds < 10) {strSeconds = "0"+seconds;}
+    return (hours > 0 ? strHours+':' : '') + strMinutes + ':' + strSeconds;
+}
+
+
 class SPTrackContextElement extends SPResourceElement {
     constructor() {
         super();
@@ -1431,7 +1513,7 @@ class SPTrackContextElement extends SPResourceElement {
         console.log("T");
         if (!this.created) {
             if (!this.hasAttribute('fields'))
-            this.setAttribute('fields', 'name,artists,album,user');
+            this.setAttribute('fields', 'name,duration,artists,album,user');
     
             this.table = document.createElement('table');
             this.appendChild(this.table);
@@ -1626,8 +1708,18 @@ class SPTrackContextElement extends SPResourceElement {
         this.fields.map((field, i) => {
           var td = document.createElement('td');
           let val = track[field];
-          
-          if (field === 'discovered') {
+          if (field === 'p' || field === 'position') {
+              td.width = '1pt';
+              if (parseInt(val) < 10) {
+                  val = '0' + val;
+              }
+              td.innerHTML = '<span style="text-align: right; opacity: 0.5">' + val + '</span>';
+          } else if (field === 'duration') {
+              td.innerHTML = '<span style="opacity: 0.5">' + (val + '') .toHHMMSS() + '</span>';
+              td.width = '10pt';
+          } else if (field === 'popularity') {
+              td.innerHTML = '<sp-popularitybar value="' + (track.popularity || 0) + '"></sp-popularitybar>';
+          } else if (field === 'discovered') {
               let discoverLevel = 0;
               td.width = "10pt";
               td.classList.add('discovered');
@@ -1775,6 +1867,8 @@ class SPPlaylistContextElement extends SPResourceElement {
     }
     createPlaylist (playlist) {
         let elm = document.createElement('sp-playlist');
+        if (this.hasAttribute('fields'))
+            elm.setAttribute('fields', this.getAttribute('fields'));
         if (this.hasAttribute('data-context-artist-uri')) {
             debugger;
             elm.setAttribute('data-context-artist-uri', this.getAttribute('data-context-artist-uri'));
@@ -1791,6 +1885,8 @@ class SPPlaylistContextElement extends SPResourceElement {
                 if (this.hasAttribute('data-context-artist-uri')) {
                    a.setAttribute('data-context-artist-uri', this.getAttribute('data-context-artist-uri'));
                 }
+                if (this.hasAttribute('fields'))
+                    a.setAttribute('fields', this.getAttribute('fields'));
                a.setState(item);
                store.state[item.uri + ':track'] = item.tracks;
                store.state[item.uri] = item;

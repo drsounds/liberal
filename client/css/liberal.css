@@ -121,8 +121,8 @@ sp-viewstack, sp-view, .sp-view {
 }
 
 sp-album table, sp-playlist table, sp-toptracks table {
-    margin-top: 23pt;
-    margin-bottom: 23pt;
+    margin-top: 1pt;
+    margin-bottom: 1pt;
 }
 
 tr.sp-track:active {

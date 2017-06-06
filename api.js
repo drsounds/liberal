@@ -597,6 +597,7 @@ app.get('/music/artist/:identifier/top/:count/track', function (req, res) {
         body = (req.body);
     }
     music.getArtistTopTracks(req.params.identifier, req.params.offset, req.params.limit).then(function (result) {
+       result.objects = result.objects.slice(0, req.params.count);
        res.json(result);
     }, function (reject) {
         res.json(reject);
