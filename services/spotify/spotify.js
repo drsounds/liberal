@@ -374,7 +374,10 @@ SpotifyService.prototype.getPlaylist = function (username, identifier) {
     var self = this;
     return new Promise(function (resolve, fail) {
         self._request('GET', '/users/' + username + '/playlists/' + identifier).then(function (result) {
-           resolve(result); 
+           self._request('GET', '/users/' + username + '/playlists/' + identifier + '/tracks').then(function (result2) {
+            result.tracks = result2;
+            resolve(result); 
+           });
         }, function (err) {
             fail(err);
         });
@@ -474,13 +477,15 @@ SpotifyService.prototype.getPlaylistsByUser = function (username, offset, limit)
             limit: limit,
             offset: offset
         }).then(function (result) {
-            var i = 0;
-           Promise.all(result.objects.map(function (album) {
-                return self.getTracksInPlaylist(album.id);
+           Promise.all(result.objects.map(function (playlist) {
+                return self.getTracksInPlaylist(playlist.owner.id, playlist.id);
             })).then(function (tracklists) {
-                result.objects[i].tracks = tracklists[i];
-                i++;
+                for (var i = 0; i < tracklists.length; i++) {
+                    result.objects[i].tracks = tracklists[i];
+                }
                 resolve(result); 
+            }, function (err) {
+                fail(err);
             });
         }, function (err) {
             fail(err);
@@ -1684,23 +1689,6 @@ SpotifyService.prototype.getUserPlaylists = function () {
     });
     return promise;
 }
-
-
-SpotifyService.prototype.getPlaylistsForUser = function (id) {
-    var self = this;
-    var promise = new Promise(function (resolve, fail) {
-
-        self._request("GET", "/users/" + id + '/playlists').then(function (data) {
-            resolve({
-                'objects': data.items
-            });
-        }, function (err) {
-            fail(err);
-        });
-    });
-    return promise;
-}
-
 
 
 SpotifyService.prototype.getTopTracksForArtist = function (id, country, offset, limit) {

@@ -246,7 +246,7 @@ app.get('/music/user/:username/playlist', function (req, res) {
     if (request.body) {
         body = (request.body);
     }
-    music.getPlaylistsForUser(req.params.username, req.query.offset, req.query.limit).then(function (result) {
+    music.getPlaylistsByUser(req.params.username, req.query.offset, req.query.limit).then(function (result) {
     
         res.json(result);
     }, function (reject) {
@@ -484,6 +484,7 @@ app.get('/music/user/:username/playlist/:identifier', function (req, res) {
         body = (request.body);
     }
     music.getPlaylist(req.params.username, req.params.identifier).then(function (result) {
+        
         res.json(result);
     }, function (reject) {
         res.json(reject);
@@ -564,7 +565,7 @@ app.get('/music/artist/:identifier/top/:count', function (req, res) {
     }
     music.getArtist(req.params.identifier).then(function (result) {
         music.getTopTracksForArtist(result.id, 'se').then(function (toplist) {
-            toplist.objects = toplist.objects.slice(0, req.params.count);
+            toplist.objects = toplist.  objects.slice(0, req.params.count);
             res.json({
                 name: 'Top Tracks',
                 type: 'toplist',

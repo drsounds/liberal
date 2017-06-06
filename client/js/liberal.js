@@ -1157,6 +1157,7 @@ class SPUserViewElement extends SPViewElement {
         }
         if (!this.albumList) {
             this.albumList = document.createElement('sp-playlistcontext');
+            this.albumList.setAttribute('fields', 'name,duration,artists,added_at,added_by');
             this.appendChild(this.albumList);
         }
     }
