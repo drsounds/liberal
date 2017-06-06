@@ -564,6 +564,7 @@ app.get('/music/artist/:identifier/top/:count', function (req, res) {
     }
     music.getArtist(req.params.identifier).then(function (result) {
         music.getTopTracksForArtist(result.id, 'se').then(function (toplist) {
+            toplist.objects = toplist.objects.slice(0, req.params.count);
             res.json({
                 name: 'Top Tracks',
                 type: 'toplist',

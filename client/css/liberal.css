@@ -152,10 +152,10 @@ sp-toolbar {
 sp-header, sp-album, sp-playlist {
     display: flex;
     flex-direction: row;
-    padding: 10pt;
+    padding-left: 10pt;
     padding-right: -20pt;
 }
-sp-header > div:first-child, sp-album > div, sp-playlist > div {
+sp-header > div:first-child, sp-album > div, sp-playlist > div:first-child {
     padding-right: 12pt;
 }
 sp-header table td {
