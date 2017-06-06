@@ -319,15 +319,18 @@ SpotifyService.prototype.getArtist = function (id) {
     });
 }
 
+
 /**
  * Returns user by id
  **/
-SpotifyService.prototype.getAlbumsByArtist = function (id, offset, limit) {
+SpotifyService.prototype.getReleasesByArtist = function (id, release_type, offset, limit) {
     var self = this;
+    if (!release_type) release_type = 'album';
     return new Promise(function (resolve, fail) {
         self._request('GET', '/artists/' + id + '/albums', {
             offset: offset,
-            limit: limit
+            limit: limit,
+            album_type: release_type
         }).then(function (result) {
         
             Promise.all(result.objects.map(function (album) {
@@ -344,7 +347,6 @@ SpotifyService.prototype.getAlbumsByArtist = function (id, offset, limit) {
         });
     });
 }
-
 
 
 /**

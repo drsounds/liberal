@@ -1074,20 +1074,23 @@ class SPArtistViewElement extends SPViewElement {
             this.topTracksDivider = document.createElement('sp-divider');
             this.topTracksDivider.innerHTML = _('Top Tracks');
             this.appendChild(this.topTracksDivider);
-        
-            this.topTracks = document.createElement('sp-playlist');
-            this.appendChild(this.topTracks);
-           
-            this.albumsDivider = document.createElement('sp-divider');
-            this.albumsDivider.innerHTML = _('Albums');
-            this.appendChild(this.albumsDivider);
-        
-      
-            this.albumList = document.createElement('sp-playlistcontext');
-            this.appendChild(this.albumList);
-            this.albumList.view = this;
+            this.toplist = document.createElement('sp-playlist');
+            this.appendChild(this.toplist);
+            
             this.loaded = true;
         }
+    }
+    async createReleaseSection(name, uri, release_type) {
+        
+        let singlesDivider = document.createElement('sp-divider');
+        singlesDivider.innerHTML = name;
+        this.appendChild(singlesDivider);
+        
+        let releaseList = document.createElement('sp-playlistcontext');
+        releaseList.setAttribute('data-context-artist-uri', uri);
+
+        this.appendChild(releaseList);
+        releaseList.setAttribute('uri', uri + ':' + release_type);
     }
     acceptsUri(uri) {
         return new RegExp(/^bungalow:artist:(.*)$/g).test(uri);
@@ -1112,11 +1115,14 @@ class SPArtistViewElement extends SPViewElement {
             }
             
             let result = await store.request('GET', newVal);
+            this.toplist.setAttribute('uri', newVal + ':top:5');
             this.state = result;
             
-            this.setState(this.state);    
-            this.albumList.setAttribute('uri', newVal + ':release');
-            this.topTracks.setAttribute('uri', newVal + ':top:5');
+            this.createReleaseSection(_('Albums'), newVal, 'album');
+            this.createReleaseSection(_('Singles'), newVal, 'single');
+            this.createReleaseSection(_('Appears on'), newVal, 'appears_on');
+            this.createReleaseSection(_('Compilations'), newVal, 'compilation');
+            
             this.setState(this.state);
             this.activate();
         }
@@ -1285,7 +1291,6 @@ class SPPlaylistElement extends SPResourceElement {
         if (attrName == 'uri') {
             
           let result = await store.request('GET', newVal);
-          debugger;
             this.setState(result);
         }
     }
@@ -1316,7 +1321,7 @@ class SPPlaylistElement extends SPResourceElement {
             '<h3>' +  titleElement.innerHTML + ' '+  strReleaseDate + ' </h3>' +
             
             (obj.description ? '<p>' + obj.description + '</p>' : '') +
-            '<sp-trackcontext fields="name,artists,album,user,added_at" uri="' + obj.uri + ':track"></sp-trackcontext>' +
+            '<sp-trackcontext fields="name,artists,album,user,added_at" data-context-artist-uri="' + this.getAttribute('data-context-artist-uri') + '" uri="' + obj.uri + ':track"></sp-trackcontext>' +
             (copyrights ? copyrights : '') +
         
         '</div>';
@@ -1432,11 +1437,16 @@ class SPTrackContextElement extends SPResourceElement {
             this.appendChild(this.table);
             this.table.style.width = '100%';
             this.attributeChangedCallback('uri', null, this.getAttribute('uri'));
+            
             this.style.display = 'block';
             this.thead = this.querySelector('thead');
             this.created = true;
         }
     }   
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        this.obj = await store.request('GET', newVal);
+        
+    }
     activate() {
         // this.checkState();
     }
@@ -1567,7 +1577,16 @@ class SPTrackContextElement extends SPResourceElement {
         console.log(track.position);
         tr.setAttribute('data-position', track.position);
         if (isNaN(track.position)) throw "Error";
+        
         tr.setAttribute('data-index', i);
+        if (this.hasAttribute('data-context-artist-uri')) {
+            let contextArtistUri = this.getAttribute('data-context-artist-uri').replace(
+                'bungalow', 'spotify'    
+            );
+            if (track.artists.filter( a => a.uri == contextArtistUri).length < 1) {
+                tr.style.opacity = 0.6;
+            }
+        }
         tr.addEventListener('dblclick', (e) => {
             let tr = e.target.parentNode;
             while (tr.localName != 'tr') {
@@ -1640,8 +1659,15 @@ class SPTrackContextElement extends SPResourceElement {
           } else if (typeof(val) === 'string') {
             td.innerHTML = '<span>' + val + '</span>';
           } else if (val instanceof Array) {
-             td.innerHTML = val.map((v, i) => {
-              
+             td.innerHTML = val.filter(o => {
+                if (!this.hasAttribute('data-context-artist-uri'))
+                    return true;
+                return o.uri != this.getAttribute('data-context-artist-uri').replace(
+                    'bungalow', 'spotify'    
+                );
+                 
+             }).map((v, i) => {
+                
                  return '<sp-link uri="' + v.uri + '">' + v.name + '</sp-link>'
             }).join(', '); 
           } else if (val instanceof Object) {
@@ -1749,6 +1775,10 @@ class SPPlaylistContextElement extends SPResourceElement {
     }
     createPlaylist (playlist) {
         let elm = document.createElement('sp-playlist');
+        if (this.hasAttribute('data-context-artist-uri')) {
+            debugger;
+            elm.setAttribute('data-context-artist-uri', this.getAttribute('data-context-artist-uri'));
+        }
         store.state[playlist.uri] = playlist;
         store.state[playlist.uri + ':track'] = playlist.tracks; 
         elm.setAttribute('uri', playlist.uri);
@@ -1758,6 +1788,9 @@ class SPPlaylistContextElement extends SPResourceElement {
         if (obj && obj.objects instanceof Array) {
             let albums = obj.objects.map((item) => {
                var a = document.createElement('sp-playlist');
+                if (this.hasAttribute('data-context-artist-uri')) {
+                   a.setAttribute('data-context-artist-uri', this.getAttribute('data-context-artist-uri'));
+                }
                a.setState(item);
                store.state[item.uri + ':track'] = item.tracks;
                store.state[item.uri] = item;

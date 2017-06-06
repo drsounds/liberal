@@ -602,6 +602,7 @@ app.get('/music/artist/:identifier/top/:count/track', function (req, res) {
         res.json(reject);
     });
 });
+
 app.get('/music/artist/:identifier/release', function (req, res) {
     music.req = req;
     
@@ -611,12 +612,82 @@ app.get('/music/artist/:identifier/release', function (req, res) {
         body = (request.body);
     }
     
-    music.getAlbumsByArtist(req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
+    music.getReleasesByArtist(req.params.identifier, 'album', req.query.offset, req.query.limit).then(function (result) {
         res.json(result);
     }, function (reject) {
         res.json(reject);
     });
 });
+
+
+app.get('/music/artist/:identifier/album', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    
+    music.getReleasesByArtist(req.params.identifier, 'album', req.query.offset, req.query.limit).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+
+app.get('/music/artist/:identifier/single', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    
+    music.getReleasesByArtist(req.params.identifier, 'single', req.query.offset, req.query.limit).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.get('/music/artist/:identifier/appears_on', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    
+    music.getReleasesByArtist(req.params.identifier, 'appears_on', req.query.offset, req.query.limit).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.get('/music/artist/:identifier/compilation', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (req.body) {
+        body = (req.body);
+    }
+    
+    music.getReleasesByArtist(req.params.identifier, 'compilation', req.query.offset, req.query.limit).then(function (result) {
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
 
 app.get('/music/album/:identifier', function (req, res) {
     music.req = req;

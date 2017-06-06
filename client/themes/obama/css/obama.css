@@ -150,6 +150,10 @@ body {
 	font-style: italic;
 }
 
+sp-playlist {
+    margin-top: 30pt;
+    margin-bottom: 30pt;
+}
 .loading-bg {
     position: absolute;
     left: -46px;
