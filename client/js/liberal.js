@@ -333,7 +333,7 @@ class Store extends EventEmitter {
         });
     }
     async getCurrentTrack() {
-        let result = await this.request('GET', 'spotify:me:player:currently-playing', null, false);
+        let result = await this.request('GET', 'spotify:me:player:currently-playing', null, null, false);
         
         return result;
     }
@@ -1312,6 +1312,7 @@ class SPPlaylistElement extends SPResourceElement {
         let titleElement = document.createElement('sp-title');
         titleElement.setState(obj);
         let copyrights = null;
+        let dataContextUri = this.getAttribute('data-context-artist-uri') || null;
         if (this.showCopyrights) {
             copyrights = obj.copyrights.map((c) => {
                 return '<span style="opacity: 0.5">' + '(' + c.type + ') ' +  c.text + '</span>';
@@ -1325,7 +1326,7 @@ class SPPlaylistElement extends SPResourceElement {
             '<h3>' +  titleElement.innerHTML + (strReleaseDate != '' ? ' <span>('+  strReleaseDate + ')' : '') + '</h3>' +
             
             (obj.description ? '<p>' + obj.description + '</p>' : '') +
-            '<sp-trackcontext fields="' + (this.getAttribute('fields') || 'name,artists,album,user,added_at') + '" data-context-artist-uri="' + this.getAttribute('data-context-artist-uri') + '" uri="' + obj.uri + ':track"></sp-trackcontext>' +
+            '<sp-trackcontext fields="' + (this.getAttribute('fields') || 'name,artists,album,user,added_at') + '" ' + (dataContextUri ? 'data-context-artist-uri="' + dataContextUri + '" ' : '') + ' uri="' + obj.uri + ':track"></sp-trackcontext>' +
             (copyrights ? copyrights : '') +
         
         '</div>';
@@ -2281,9 +2282,10 @@ class SPAlbumViewElement extends SPViewElement {
     navigate() {
         
     }
-    attributeChangedCallback(attrName, oldVal, newVal) {
+    async attributeChangedCallback(attrName, oldVal, newVal) {
         if (!newVal) return;
         if (attrName === 'uri') {
+            this.obj = await store.request('GET', newVal);
             this.innerHTML = '';
             this.albumView = document.createElement('sp-playlist');
             this.appendChild(this.albumView);
