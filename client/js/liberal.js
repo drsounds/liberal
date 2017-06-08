@@ -1217,10 +1217,7 @@ class SPUserViewElement extends SPViewElement {
         super.activate();
         GlobalTabBar.setState({
             object: this.state,
-            objects: [{
-                id: 'overview',
-                name: 'Overview'
-            }]
+            objects: []
         });
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
