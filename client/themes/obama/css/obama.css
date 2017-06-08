@@ -254,3 +254,14 @@ sp-tab {
     -webkit-transform: translate(0pt, -2pt);
     padding-top: 3pt;
 }
+.sp-current-track {
+    background-color: rgba(44, 44, 44, 1);
+    box-shadow:inset 0pt 1.5pt 25pt rgba(5, 5, 5, 1);
+    color: #88ff88;
+    box-shadow: none !important;
+}
+
+.sp-current-track sp-link {
+    color: #88ff88;
+    
+}

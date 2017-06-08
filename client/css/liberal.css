@@ -125,10 +125,6 @@ sp-album table, sp-playlist table, sp-toptracks table {
     margin-bottom: 1pt;
 }
 
-tr.sp-track:active {
-    opacity: 0.8;
-}
-
 sp-main {
     display: flex;
     flex-direction: column;

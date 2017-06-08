@@ -49,16 +49,6 @@ h1, h2, h3, h4 {
     margin: 0pt;
     margin-bottom: 6pt;
 }
-.sp-current-track {
-    background-color: rgba(44, 44, 44, 1);
-    box-shadow:inset 0pt 1.5pt 25pt rgba(5, 5, 5, 1);
-    color: #88ff88;
-}
-
-.sp-current-track sp-link {
-    color: #88ff88;
-    
-}
 sp-menuitem.active, .sp-track-selected {
     background-color: var(--brand-primary);
     color: rgba(0, 0, 0, .7);

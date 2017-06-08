@@ -2166,7 +2166,7 @@ class SPTabBarElement extends HTMLElement {
                 
             }
         }
-        if (state && state.objects instanceof Array)
+        if (state && state.objects instanceof Array && state.objects.length > 0)
         for (let i = 0; i < state.objects.length; i++) {
             let obj = state.objects[i];
             let tab = document.createElement('sp-tab');
@@ -2177,6 +2177,9 @@ class SPTabBarElement extends HTMLElement {
                 window.location.hash = '#' + e.data;
             });
             this.appendChild(tab);
+            this.style.display = 'flex';
+        } else {
+            this.style.display = 'none';
         }
         this.rightTitleBar = document.createElement('div');
         this.rightTitleBar.innerHTML = '&nbsp;';
