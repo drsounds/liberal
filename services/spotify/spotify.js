@@ -276,11 +276,13 @@ SpotifyService.prototype._request = function (method, path, payload, postData) {
                     }
                     if ('artists' in data) {
                         data.objects = data.artists.items;
-                        delete data.artists;
                     }
                     if ('objects' in data && data.objects) {
                         data.objects = data.objects.map(formatObject);
                        
+                    }
+                    if ('artists' in data && data.type == 'album') {
+                       data.artists = data.artists.map(formatObject);
                     }
                     data = formatObject(data, 0);
                 

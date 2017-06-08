@@ -148,7 +148,9 @@ sp-toolbar {
     width: 100%;
     padding: 6pt;
 }
-
+sp-tabcontent {
+    display: block;
+}
 sp-header, sp-album, sp-playlist {
     display: flex;
     flex-direction: row;
@@ -165,14 +167,15 @@ sp-tabcontent {
     display: none;
 }
 sp-tabbar {
-    padding-left: 16pt;
     display: flex;
-    flex: 0 0 28pt;
-    box-sizing: border-box;
-    height: 28pt;
-    padding-top: 6pt;
-    justify-content: space-between;
-
+    flex: 0 0 auto;
+    padding: 3pt;
+    justify-content: center;
+ align-items: flex-start;
+}
+sp-tabbar sp-tab {
+    padding-left: 10pt;
+    padding-right: 10pt;
 }
 sp-main {
     flex-grow: 2;

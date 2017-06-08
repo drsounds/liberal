@@ -97,15 +97,6 @@ img {
     
 }
 
-sp-tabbar {
-    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#7a7a7a+0,1c1c1c+100 */
-    background: rgb(122,122,122); /* Old browsers */
-    background: -moz-linear-gradient(top,  rgba(122,122,122,1) 0%, rgba(28,28,28,1) 100%); /* FF3.6-15 */
-    background: -webkit-linear-gradient(top,  rgba(122,122,122,1) 0%,rgba(28,28,28,1) 100%); /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(to bottom,  rgba(122,122,122,1) 0%,rgba(28,28,28,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7a7a7a', endColorstr='#1c1c1c',GradientType=0 ); /* IE6-9 */
-}
-
 sp-appheader {/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#d8d8d8+1,c4c4c4+100 */
 background: #d8d8d8; /* Old browsers */
 background: -moz-linear-gradient(top,  #d8d8d8 1%, #c4c4c4 100%); /* FF3.6-15 */
@@ -124,8 +115,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#999999', end
 
 }
 
-sp-tabbar {
-}
+
 
 
 sp-sidebarmenu label {

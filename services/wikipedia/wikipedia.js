@@ -13,7 +13,7 @@ WikipediaService.prototype.describe = function (query, lang) {
         var options = {query: query, format: "html", summaryOnly: true, lang: lang};
         wikipedia.searchArticle(options, function(err, htmlWikiText){
             if(err){
-              fail(err);
+              reject(err);
               return;
             }
             resolve(htmlWikiText);

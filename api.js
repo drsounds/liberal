@@ -549,7 +549,84 @@ app.get('/music/artist/:identifier', function (req, res) {
         body = (request.body);
     }
     music.getArtist(req.params.identifier).then(function (result) {
-        res.json(result);
+        wiki.describe(result.name).then(function (description) {
+            if (description == null) {
+                wiki.describe(result.name + ' (Music artist)').then(function (description) {
+                    if (result.description != null) {   
+                        result.description = '<span style="opacity: 0.5">' + description.substr(0, 430) + '~ WIKIPEDIA' + '</span>';
+                    }
+                    res.json(result);
+                });
+                return;
+            }
+            result.description = '<span style="opacity: 0.5 !important">' + description.substr(0, 430) + '~ WIKIPEDIA' + '</span>';
+            res.json(result);
+        });
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.get('/music/artist/:identifier/about', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (request.body) {
+        body = (request.body);
+    }
+    
+    music.getArtist(req.params.identifier).then(function (result) {
+        var data = {
+            monthlyListners: 0,
+            weeklyListeners: 0,
+            dailyListeners: 0,
+            discoveredOn: {
+                objects: []
+            },
+            rank: 1000000,
+            biography: null
+        };
+        wiki.describe(result.name).then(function (description) {
+            if (description == null) {
+                wiki.describe(result.name + ' (Music artist)').then(function (description) {
+                    if (result.description != null) {   
+                        data.biography = {
+                            service: {
+                                id: 'wikipedia',
+                                name: 'Wikipedia',
+                                uri: 'bungalow:service:wikipedia',
+                                type: 'service',
+                                images: [{
+                                    url: ''
+                                }]
+                            },
+                            body: description
+                        };
+                    }
+                    res.json(data);
+                }, function (err) {
+                    res.json(data);
+                });
+                return;
+            }
+            data.biography = {
+                service: {
+                    id: 'wikipedia',
+                    name: 'Wikipedia',
+                    uri: 'bungalow:service:wikipedia',
+                    type: 'service',
+                    images: [{
+                        url: ''
+                    }]
+                },
+                body: description
+            };
+            res.json(data);
+        }, function (err) {
+            res.json(data);
+        });
     }, function (reject) {
         res.json(reject);
     });
