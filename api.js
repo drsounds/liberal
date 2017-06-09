@@ -16,7 +16,7 @@ var app = express();
 var music = new MusicService();
 var wiki = new WikiService();
 
-app.get('/music/login', function (req, res) {
+app.get('/login', function (req, res) {
     res.redirect(music.getLoginUrl());
 });
 app.use(cookieParser());
@@ -66,7 +66,7 @@ app.get('/apps', function (req, res) {
    }) 
 });
 
-app.get('/music/authenticate', function (req, res) {
+app.get('/authenticate', function (req, res) {
     console.log("Got authenticate request");
     console.log(req);
     music.authenticate(req).then(function (success) {
@@ -238,7 +238,7 @@ app.get('/social/*', function (req, res) {
 });
 
 
-app.get('/music/user/:username/playlist', function (req, res) {
+app.get('/user/:username/playlist', function (req, res) {
     
     music.req = req;
     music.session = req.session;
@@ -255,7 +255,7 @@ app.get('/music/user/:username/playlist', function (req, res) {
 });
 
 
-app.get('/music/user/:username', function (req, res) {
+app.get('/user/:username', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -272,7 +272,7 @@ app.get('/music/user/:username', function (req, res) {
 });
 
 
-app.get('/music/me/playlist', function (req, res) {
+app.get('/me/playlist', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -289,7 +289,7 @@ app.get('/music/me/playlist', function (req, res) {
 });
 
 
-app.get('/music/me/release', function (req, res) {
+app.get('/me/release', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -307,7 +307,7 @@ app.get('/music/me/release', function (req, res) {
 
 
 
-app.get('/music/internal/library', function (req, res) {
+app.get('/internal/library', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -326,7 +326,7 @@ app.get('/music/internal/library', function (req, res) {
 
 
 
-app.put('/music/me/player/play', function (req, res) {
+app.put('/me/player/play', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -346,7 +346,7 @@ app.put('/music/me/player/play', function (req, res) {
 });
 
 
-app.get('/music/me/player/currently-playing', function (req, res) {
+app.get('/me/player/currently-playing', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -364,7 +364,7 @@ app.get('/music/me/player/currently-playing', function (req, res) {
 
 
 
-app.get('/music/internal/library/track', function (req, res) {
+app.get('/internal/library/track', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -381,7 +381,7 @@ app.get('/music/internal/library/track', function (req, res) {
     });
 });
 
-app.get('/music/category', function (req, res) {
+app.get('/category', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -399,7 +399,7 @@ app.get('/music/category', function (req, res) {
 });
 
 
-app.get('/music/category/:identifier', function (req, res) {
+app.get('/category/:identifier', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -416,7 +416,7 @@ app.get('/music/category/:identifier', function (req, res) {
 });
 
 
-app.get('/music/label/:identifier', function (req, res) {
+app.get('/label/:identifier', function (req, res) {
     wiki.req = req;
     var name = decodeURIComponent(req.params.identifier);
     wiki.describe(name).then(function (description) {
@@ -429,7 +429,7 @@ app.get('/music/label/:identifier', function (req, res) {
 
 
 
-app.get('/music/label/:identifier/release', function (req, res) {
+app.get('/label/:identifier/release', function (req, res) {
        music.req = req;
     var name = decodeURIComponent(req.params.identifier);
     music.search('label:"' + req.params.identifier + '"', req.params.limit, req.params.offset, 'album').then(function (result) {
@@ -441,7 +441,7 @@ app.get('/music/label/:identifier/release', function (req, res) {
 });
 
 
-app.get('/music/category/:identifier/playlist', function (req, res) {
+app.get('/category/:identifier/playlist', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -458,7 +458,7 @@ app.get('/music/category/:identifier/playlist', function (req, res) {
 });
 
 
-app.get('/music/search', function (req, res) {
+app.get('/search', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -475,7 +475,7 @@ app.get('/music/search', function (req, res) {
 });
 
 
-app.get('/music/user/:username/playlist/:identifier', function (req, res) {
+app.get('/user/:username/playlist/:identifier', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -492,7 +492,7 @@ app.get('/music/user/:username/playlist/:identifier', function (req, res) {
 });
 
 
-app.get('/music/user/:username/playlist/:identifier/track', function (req, res) {
+app.get('/user/:username/playlist/:identifier/track', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -508,7 +508,7 @@ app.get('/music/user/:username/playlist/:identifier/track', function (req, res) 
 });
 
 
-app.post('/music/user/:username/playlist/:identifier/track', function (req, res) {
+app.post('/user/:username/playlist/:identifier/track', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -524,7 +524,7 @@ app.post('/music/user/:username/playlist/:identifier/track', function (req, res)
 });
 
 
-app.put('/music/user/:username/playlist/:identifier/track', function (req, res) {
+app.put('/user/:username/playlist/:identifier/track', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -540,7 +540,7 @@ app.put('/music/user/:username/playlist/:identifier/track', function (req, res) 
 });
 
 
-app.get('/music/artist/:identifier', function (req, res) {
+app.get('/artist/:identifier', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -568,7 +568,7 @@ app.get('/music/artist/:identifier', function (req, res) {
 });
 
 
-app.get('/music/artist/:identifier/about', function (req, res) {
+app.get('/artist/:identifier/about', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -632,7 +632,7 @@ app.get('/music/artist/:identifier/about', function (req, res) {
     });
 });
 
-app.get('/music/artist/:identifier/top/:count', function (req, res) {
+app.get('/artist/:identifier/top/:count', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -667,7 +667,7 @@ app.get('/music/artist/:identifier/top/:count', function (req, res) {
 });
 
 
-app.get('/music/artist/:identifier/top/:count/track', function (req, res) {
+app.get('/artist/:identifier/top/:count/track', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -683,7 +683,7 @@ app.get('/music/artist/:identifier/top/:count/track', function (req, res) {
     });
 });
 
-app.get('/music/artist/:identifier/release', function (req, res) {
+app.get('/artist/:identifier/release', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -700,7 +700,7 @@ app.get('/music/artist/:identifier/release', function (req, res) {
 });
 
 
-app.get('/music/artist/:identifier/album', function (req, res) {
+app.get('/artist/:identifier/album', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -718,7 +718,7 @@ app.get('/music/artist/:identifier/album', function (req, res) {
 
 
 
-app.get('/music/artist/:identifier/single', function (req, res) {
+app.get('/artist/:identifier/single', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -735,7 +735,7 @@ app.get('/music/artist/:identifier/single', function (req, res) {
 });
 
 
-app.get('/music/artist/:identifier/appears_on', function (req, res) {
+app.get('/artist/:identifier/appears_on', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -752,7 +752,7 @@ app.get('/music/artist/:identifier/appears_on', function (req, res) {
 });
 
 
-app.get('/music/artist/:identifier/compilation', function (req, res) {
+app.get('/artist/:identifier/compilation', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -769,7 +769,7 @@ app.get('/music/artist/:identifier/compilation', function (req, res) {
 });
 
 
-app.get('/music/album/:identifier', function (req, res) {
+app.get('/album/:identifier', function (req, res) {
     music.req = req;
     music.session = req.session;
     var body = {};
@@ -784,7 +784,7 @@ app.get('/music/album/:identifier', function (req, res) {
     });
 });
 
-app.get('/music/album/:identifier/track', function (req, res) {
+app.get('/album/:identifier/track', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -801,7 +801,7 @@ app.get('/music/album/:identifier/track', function (req, res) {
 });
 
 
-app.get('/music/featured/playlist', function (req, res) {
+app.get('/featured/playlist', function (req, res) {
     music.req = req;
     
     music.session = req.session;
@@ -817,7 +817,7 @@ app.get('/music/featured/playlist', function (req, res) {
     });
 });
 
-app.get('/music/track/:identifier', function (req, res) {
+app.get('/track/:identifier', function (req, res) {
     music.req = req;
     music.getTrack(req.params.identifier).then(function (result) {
         res.json(result);

@@ -126,7 +126,7 @@ class SpotifyMusicService extends MusicService {
                 }
                 url = uri.substr('bungalow:'.length).split(':').join('/');
                 
-                url = '/api/music/' + url;
+                url = '/api' + url;
                  if (uri in this.state && method == "GET" && cache)
                     return this.state[uri];
                 let result
@@ -350,7 +350,7 @@ class Store extends EventEmitter {
             if (uri == null) return;
             var url = uri;
             if (uri.indexOf('bungalow:') == 0 || uri.indexOf('spotify:') == 0) {
-                url = '/api/music/' + url.split(':').slice(1).join('/') + '?' + query;
+                url = '/api/' + url.split(':').slice(1).join('/') + '?' + query;
                  if (uri in this.state && method == "GET" && cache)
                     return this.state[uri];
                 let result
