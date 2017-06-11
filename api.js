@@ -16,7 +16,7 @@ var app = express();
 var music = new MusicService();
 var wiki = new WikiService();
 
-app.get('/login', function (req, res) {
+app.get('/music/login', function (req, res) {
     res.redirect(music.getLoginUrl());
 });
 app.use(cookieParser());
@@ -26,6 +26,7 @@ app.use(cookieSession({
     keys: ['key1', 'key2'],
     cookie: {secure: false}
 }));
+
 
 app.get('/settings.json', function (req, res) {
 
@@ -122,120 +123,6 @@ app.put('/settings.json', function (req, res) {
     fs.writeFileSync(process.env.PWD + '/themes/main.scss', '@import url("http://127.0.0.1:9261/themes/' + settings.theme + '/css/main.scss")');
 
 })
-/*
-app.post('/api/login', function (req, res) {
-
-});
-
-app.get('/api/albums/:id', function (req, res) {
-    var id = req.params.id;
-    music.getAlbumById(id).then(function (artist) {
-        var data = JSON.stringify(artist);
-        res.json(artist);
-    });
-});
-
-
-app.get('/api/albums/:id/tracks', function (req, res) {
-    var id = req.params.id;
-    music.getAlbumTracks(id).then(function (artist) {
-        var data = JSON.stringify(artist);
-        res.json(artist);
-    });
-});
-
-app.get('/api/playlists/:id/tracks', function (req, res) {
-    var id = req.params.id;
-    music.getPlaylistTracks(id).then(function (artist) {
-        var data = JSON.stringify(artist);
-        res.json(artist);
-    });
-});
-
-app.get('/api/search', function (req, res) {
-    var q = req.query.q;
-    var type = req.query.type;
-    var offset = req.query.offset;
-    var limit = req.query.limit;
-
-    music.search(q, type, limit, offset).then(function (data) {
-
-        res.json(data);
-    });
-});
-
-app.get('/api/artists/:id', function (req, res) {
-    var id = req.params.id;
-    music.getArtistById(id).then(function (artist) {
-       var data = JSON.stringify(artist);
-        res.json(artist);
-    });
-});
-
-app.get('/api/albums/:id', function (req, res) {
-    var id = req.params.id;
-    music.getAlbumById(id).then(function (artist) {
-        var data = JSON.stringify(artist);
-        res.json(data);
-    });
-});
-
-app.get('/api/users/:username/playlists/:id', function (req, res) {
-    var username = req.params.username;
-    var id = req.params.id;
-    music.getPlaylistById(username, id).then(function (playlist) {
-
-        res.json(playlist);
-    });
-});
-
-app.get('/api/users/:username/playlists', function (req, res) {
-    var username = req.params.username;
-    var id = req.params.id;
-    music.getPlaylistsForUser(username).then(function (data) {
-        res.json(data);
-    });
-});
-*/
-
-/*
-app.get('/api/users/:username', function (req, res) {
-    var username = req.params.username;
-    var id = req.params.id;
-    music.getUserById(username).then(function (data) {
-        res.json(data);
-    });
-});
-
-
-app.get('/api/users/:username/playlists/:id/tracks', function (req, res) {
-    var username = req.params.username;
-    var id = req.params.id;
-    music.getPlaylistTracks(username, id).then(function (playlist) {
-        var data = JSON.stringify(playlist);
-        res.json(data);
-    });
-});
-
-app.get('/chrome/*', function (req, res) {
-    var app_path = req.params[0].split('/');
-    var file = fs.readFileSync('./' + app_path.join('/'));
-    res.write(file);
-    res.end();
-});*/
-
-
-app.get('/social/*', function (req, res) {
-    music.session = req.session;
-    console.log("A");
-    console.log(social);
-    social.request("GET", req.params[0], req.query).then( function (result) {
-
-        res.json(result);
-    }, function (reject) {
-        res.json(reject);
-    });
-});
 
 
 app.get('/user/:username/playlist', function (req, res) {
@@ -243,8 +130,8 @@ app.get('/user/:username/playlist', function (req, res) {
     music.req = req;
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getPlaylistsByUser(req.params.username, req.query.offset, req.query.limit).then(function (result) {
     
@@ -260,8 +147,8 @@ app.get('/user/:username', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getUser(req.params.username).then(function (result) {
     
@@ -277,8 +164,8 @@ app.get('/me/playlist', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getMyPlaylists(req.query.offset, req.query.limit).then(function (result) {
     
@@ -294,8 +181,8 @@ app.get('/me/release', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }   
     music.getMyReleases(req.query.offset, req.query.limit).then(function (result) {
     
@@ -312,8 +199,8 @@ app.get('/internal/library', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     res.json({
         id: 'library',
@@ -386,8 +273,8 @@ app.get('/category', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getCategories(req.query.offset, req.query.limit).then(function (result) {
     
@@ -404,8 +291,8 @@ app.get('/category/:identifier', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getCategory(req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
     
@@ -446,8 +333,8 @@ app.get('/category/:identifier/playlist', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getPlaylistInCategory(req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
     
@@ -463,8 +350,8 @@ app.get('/search', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.search(req.query.q, req.query.limit, req.query.offset, req.query.type).then(function (result) {
     
@@ -480,8 +367,8 @@ app.get('/user/:username/playlist/:identifier', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getPlaylist(req.params.username, req.params.identifier).then(function (result) {
         
@@ -497,8 +384,8 @@ app.get('/user/:username/playlist/:identifier/track', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getTracksInPlaylist(req.params.username, req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
         res.json(result);
@@ -513,8 +400,8 @@ app.post('/user/:username/playlist/:identifier/track', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.addTracksInPlaylist(req.params.username, req.params.identifier, body.tracks, body.position).then(function (result) {
         res.json(result);
@@ -529,8 +416,8 @@ app.put('/user/:username/playlist/:identifier/track', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.reorderTracksInPlaylist(req.params.username, req.params.identifier, body.start_index, body.range_start, body.range_length, body.range_end).then(function (result) {
         res.json(result);
@@ -545,23 +432,11 @@ app.get('/artist/:identifier', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getArtist(req.params.identifier).then(function (result) {
-        wiki.describe(result.name).then(function (description) {
-            if (description == null) {
-                wiki.describe(result.name + ' (Music artist)').then(function (description) {
-                    if (result.description != null) {   
-                        result.description = '<span style="opacity: 0.5">' + description.substr(0, 430) + '~ WIKIPEDIA' + '</span>';
-                    }
-                    res.json(result);
-                });
-                return;
-            }
-            result.description = '<span style="opacity: 0.5 !important">' + description.substr(0, 430) + '~ WIKIPEDIA' + '</span>';
-            res.json(result);
-        });
+       res.json(result);
     }, function (reject) {
         res.json(reject);
     });
@@ -573,8 +448,8 @@ app.get('/artist/:identifier/about', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     
     music.getArtist(req.params.identifier).then(function (result) {
@@ -637,8 +512,8 @@ app.get('/artist/:identifier/top/:count', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     music.getArtist(req.params.identifier).then(function (result) {
         music.getTopTracksForArtist(result.id, 'se').then(function (toplist) {
@@ -688,8 +563,8 @@ app.get('/artist/:identifier/release', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     
     music.getReleasesByArtist(req.params.identifier, 'album', req.query.offset, req.query.limit).then(function (result) {
@@ -705,8 +580,8 @@ app.get('/artist/:identifier/album', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     
     music.getReleasesByArtist(req.params.identifier, 'album', req.query.offset, req.query.limit).then(function (result) {
@@ -723,8 +598,8 @@ app.get('/artist/:identifier/single', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     
     music.getReleasesByArtist(req.params.identifier, 'single', req.query.offset, req.query.limit).then(function (result) {
@@ -740,8 +615,8 @@ app.get('/artist/:identifier/appears_on', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     
     music.getReleasesByArtist(req.params.identifier, 'appears_on', req.query.offset, req.query.limit).then(function (result) {
@@ -773,8 +648,8 @@ app.get('/album/:identifier', function (req, res) {
     music.req = req;
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     
     music.getAlbum(req.params.identifier).then(function (result) {
@@ -789,8 +664,8 @@ app.get('/album/:identifier/track', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }
     
     music.getTracksInAlbum(req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
@@ -806,8 +681,8 @@ app.get('/featured/playlist', function (req, res) {
     
     music.session = req.session;
     var body = {};
-    if (request.body) {
-        body = (request.body);
+    if (req.body) {
+        body = (req.body);
     }   
     music.getFeaturedPlaylists(req.query.offset, req.query.limit).then(function (result) {
     

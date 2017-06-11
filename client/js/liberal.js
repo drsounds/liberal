@@ -397,13 +397,13 @@ class Store extends EventEmitter {
      **/
     async getAlbumById(id) {
         let uri = 'spotify:album:' + id;
-        let result = await fetch('/api/music/album/' + id, {credentials: 'include', mode: 'cors'}).then((e) => e.json())
+        let result = await fetch('/api/album/' + id, {credentials: 'include', mode: 'cors'}).then((e) => e.json())
         this.setState(uri, result);
         return result;
     }
     async getArtistById(id) {
         let uri = 'spotify:artist:' + id;
-        let result = await fetch('/api/music/artist/' + id, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
+        let result = await fetch('/api/artist/' + id, {credentials: 'include', mode: 'cors'}).then((e) => e.json());
         this.setState(uri, result);
         return result;
     }
@@ -434,18 +434,18 @@ class SPThemeEditorElement extends HTMLElement {
             this.innerHTML += '<label>' + _('Accent color') + '</label>';
             this.appendChild(this.colorChooser);
             this.colorChooser.setAttribute('max', 360);
-            this.colorChooser.addEventListener('change', this.colorSlider);
-            this.colorChooser.addEventListener('mousemove', this.colorSlider);
+            this.colorChooser.addEventListener('change', this.hueSlider);
+            this.colorChooser.addEventListener('mousemove', this.hueSlider);
             this.saturationChooser = document.createElement('input');
             this.saturationChooser.setAttribute('type', 'range');
-            this.innerHTML += '<label>' + _('Saturation') + '</label>';
+            this.label = document.createElement('label');
+            this.label.innerHTML = _('Saturation');
             this.appendChild(this.saturationChooser);
+            this.appendChild(this.label);
             this.saturationChooser.setAttribute('max', 360);
-            this.saturationChooser.addEventListener('change', this.saturationSlider);
-            this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
             this.saturationChooser.value = store.saturation;
             this.styleselect = document.createElement('select');
-            this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="maestro">Maestro</option><option value="obama">Obama</option><option value="chromify">Chromify</option>';
+            this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="maestro">Maestro</option><option value="obama">Obama</option><option value="chromify">Chromify</option><option value="wmp_11">Windows Media Player 11</option><option value="wmp_11_beta">Windows Media Player 11</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_9">Windows Media Player 9</option>';
             this.appendChild(this.styleselect);
             this.flavorselect = document.createElement('select');
             this.flavorselect.innerHTML += '<option value="dark">' + _('Dark') + '</option><option value="light">' + _('Light') + '</option>';
@@ -460,7 +460,7 @@ class SPThemeEditorElement extends HTMLElement {
             
         }
     }
-    colorSlider(e) {
+    hueSlider(e) {
         let value = e.target.value;
         store.hue = value;
     
@@ -1067,7 +1067,7 @@ document.registerElement('sp-view', SPViewElement);
 
 class SPAboutElement extends SPResourceElement {
     attachedCallback() {
-        super.attachedCallback();
+        
     }
     setState(obj) {
         this.innerHTML = 
@@ -1823,6 +1823,8 @@ class SPTrackContextElement extends SPResourceElement {
         });
         return tr;
     }
+    
+        
     async setState(obj) {
         if (!obj) return;
         this.obj = obj;

@@ -30,3 +30,18 @@ h3 > sp-link, td sp-image {
   -webkit-filter: hue-rotate(calc(1-var(--primary-hue))) saturate(calc(1-var(--primary-saturation)));
   
 }
+
+
+
+sp-tabbar {
+  padding-top: 6pt;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(0, 0, 0, .2);
+  background-image:  url('/themes/wmp_10/images/tabbar.png');
+
+}
+sp-rightsidebar     {
+  background: linear-gradient(to bottom, #366ab3, #55aaff);
+    -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
+    color: white;
+}

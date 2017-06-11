@@ -181,13 +181,6 @@ sp-appheader, sp-appfooter {
   background-image:  url('/themes/wmp_10/images/header.png');
     
 }
-sp-tabbar {
-  padding-top: 6pt;
-  box-sizing: border-box;
-  border-bottom: 1px solid rgba(0, 0, 0, .2);
-  background-image:  url('/themes/wmp_10/images/tabbar.png'),;
-
-}
 .sp-app {
     background-color: var(--app-bg-color);
     color: var(--app-fg-color);

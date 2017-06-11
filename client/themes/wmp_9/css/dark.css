@@ -56,13 +56,6 @@ sp-header table {
   border-bottom: 1px solid rgba(0, 0, 0, .2);
   box-shadow:inset 0pt -2pt 3pt rgba(255, 255, 255, .5), 0pt 3pt 3pt rgba(0, 0, 0, .05);
 }
-sp-divider {
-  background-color: rgba(255, 255, 255, .2);
-  border-bottom: 1px solid rgba(0, 0, 0, .2);
-  border-top: 1px solid rgba(0, 0, 0, .2);
-  box-shadow:inset 0pt -2pt 3pt rgba(255, 255, 255, .5), inset 0pt 2pt 3pt rgba(255, 255, 255, .5), 0pt 3pt 3pt rgba(0, 0, 0, .05);
-
-}
 sp-appheader {
   border-bottom: 1px solid rgba(255, 255 , 255, .1);
   background-color: var(--app-bg-color);
@@ -155,6 +148,7 @@ sp-sidebar {
   background-color: rgba(255, 255, 255, .1);
 }
 th {
+  color: black;
   /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ecebdb+74,dcd2bc+100 */
 background: rgb(236,235,219); /* Old browsers */
 background: -moz-linear-gradient(top,  rgba(236,235,219,1) 74%, rgba(220,210,188,1) 100%); /* FF3.6-15 */

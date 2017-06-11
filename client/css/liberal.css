@@ -99,7 +99,7 @@ sp-sidebar {
     width: var(--sidebar-width);
 }
 sp-rightsidebar {
-    display: none;
+    display: block;
     width: var(--sidebar-width);
 }
 sp-searchform {
@@ -317,4 +317,11 @@ td, th {
 	animation-duration: .6s;
 	animation-timing-function: linear;
 	animation-iteration-count: infinite;
+}
+
+
+
+sp-playlist {
+    margin-top: 30pt;
+    margin-bottom: 30pt;
 }

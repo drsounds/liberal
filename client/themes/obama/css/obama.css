@@ -149,11 +149,6 @@ body {
 	margin: 3%;
 	font-style: italic;
 }
-
-sp-playlist {
-    margin-top: 30pt;
-    margin-bottom: 30pt;
-}
 .sp-tab-active {
     background-color: rgba(0, 0, 0, .2);    
     box-shadow: inset 0px 0px 11px rgba(0, 0, 0, 0.8);

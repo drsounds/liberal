@@ -16,8 +16,9 @@ app.use(cookieSession({
     cookie: {secure: false}
 }));
 
-
 app.use('/api', api.server);
+
+
 
 app.use(express.static(__dirname + '/client/'));
 app.get('/*', function (req, res) {
