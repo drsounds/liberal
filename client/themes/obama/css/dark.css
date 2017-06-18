@@ -17,9 +17,6 @@ body {
     outline: none;
 }
 sp-divider {
-background: #616161;
-padding-top: 2pt;
-padding-bottom: 2pt;
 }
 sp-sidebar {
     background-color: var(--sidebar-background-color);

@@ -1128,15 +1128,19 @@ class SPArtistViewElement extends SPViewElement {
     async createReleaseSection(name, uri, release_type) {
         
         let singlesDivider = document.createElement('sp-divider');
+        singlesDivider.style.display = 'none';
+        singlesDivider.setAttribute('data-uri', uri + ':' + release_type);
         singlesDivider.innerHTML = name;
         this.overviewTab.appendChild(singlesDivider);
         
         let releaseList = document.createElement('sp-playlistcontext');
         releaseList.setAttribute('fields', 'p,name,duration,artists');
         releaseList.setAttribute('data-context-artist-uri', uri);
-
+        
+        
         this.overviewTab.appendChild(releaseList);
-        releaseList.setAttribute('uri', uri + ':' + release_type);
+        await releaseList.setAttribute('uri', uri + ':' + release_type);
+        
     }
     acceptsUri(uri) {
         return new RegExp(/^bungalow:artist:(.*)$/g).test(uri);
@@ -1509,6 +1513,14 @@ String.prototype.toQuerystring = function () {
     }
 
     return argsParsed;
+}
+
+
+
+class SPCarouselElement extends SPResourceElement {
+    attributeChangedCallback(attrName, oldVal, newVal) {
+        
+    }
 }
 
 
@@ -1960,9 +1972,14 @@ class SPPlaylistContextElement extends SPResourceElement {
         if (attrName == 'uri') {
             this.limit = 30;
             this.offset = 0;
-            
             let result = await store.request('GET', newVal + '?limit=' + this.limit + '&offset=' + this.offset);
             this.setState(result);
+            if (result != null && result.objects.length > 0) {
+                
+                let divider = this.parentNode.querySelector('sp-divider[data-uri="' + newVal + '"]');
+                if (divider != null)
+                    divider.style.display = 'block';
+            }
         }
     }
     createPlaylist (playlist) {
@@ -2428,8 +2445,6 @@ class SPAlbumViewElement extends SPViewElement {
             this.albumView.showCopyrights = true;
             this.albumView.view = this;
             this.albumView.setAttribute('uri', newVal);
-            
-            
         }
     }   
 }
@@ -2612,7 +2627,9 @@ const onHashChanged =  (e) => {
        }
    }
    if (!foundTab) {
-       document.querySelectorAll('sp-tab')[0].classList.add('sp-tab-active');
+       let tabs = document.querySelectorAll('sp-tab');
+       if (tabs.length > 0)
+        tabs[0].classList.add('sp-tab-active');
    }
    for (let tabView of view.querySelectorAll('sp-tabcontent')) {
        if (tabView.getAttribute('data-tab-id') == tabId) {
