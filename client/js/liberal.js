@@ -445,7 +445,7 @@ class SPThemeEditorElement extends HTMLElement {
             this.saturationChooser.setAttribute('max', 360);
             this.saturationChooser.value = store.saturation;
             this.styleselect = document.createElement('select');
-            this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="maestro">Maestro</option><option value="obama">Obama</option><option value="chromify">Chromify</option><option value="wmp_11">Windows Media Player 11</option><option value="wmp_11_beta">Windows Media Player 11</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_9">Windows Media Player 9</option>';
+            this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="maestro">Maestro</option><option value="obama">Obama</option><option value="obama-flat">Obama (flat)</option><option value="chromify">Chromify</option><option value="wmp_11">Windows Media Player 11</option><option value="wmp_11_beta">Windows Media Player 11</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_9">Windows Media Player 9</option>';
             this.appendChild(this.styleselect);
             this.flavorselect = document.createElement('select');
             this.flavorselect.innerHTML += '<option value="dark">' + _('Dark') + '</option><option value="light">' + _('Light') + '</option>';
@@ -525,7 +525,9 @@ document.registerElement('sp-appheader', SPAppHeaderElement);
 window.addEventListener('error', (e) => {
     
     
-})
+});
+
+
 
 class SPAppFooterElement extends HTMLElement {
     attachedCallback() {
@@ -670,7 +672,6 @@ class SPChromeElement extends HTMLElement {
 }
 
 
-
 GlobalViewStack = null;
 
 document.registerElement('sp-chrome', SPChromeElement);
@@ -812,6 +813,8 @@ class SPViewStackElement extends HTMLElement {
                 
             } else if (/^bungalow:label:([a-zA-Z\ \_]+)$/.test(newUri)) {
                 view = document.createElement('sp-labelview');
+            } else if (/^bungalow:curator:([a-zA-Z\ \_]+)$/.test(newUri)) {
+                view = document.createElement('sp-curatorview');
             } else if (/^bungalow:artist:([a-zA-Z0-9._]+):top:([0-9]+)$/g.test(newUri)) {
                 view = document.createElement('sp-playlistview');
               
@@ -954,14 +957,19 @@ document.registerElement('sp-title', SPTitleElement);
 
 class SPHeaderElement extends SPResourceElement {
     attachedCallback() {
+        if (!this.created) {
         this.classList.add('header');
-        GlobalTabBar.titleVisible  = false;
-        this.parentNode.addEventListener('scroll', (e) => {
-            let headerBounds = this.getBoundingClientRect();
-            let viewBounds = this.parentNode.getBoundingClientRect();
-            GlobalTabBar.titleVisible = (headerBounds.top < viewBounds.top - (headerBounds.height * 0.5));
-            console.log(headerBounds.top, viewBounds.top)
-        });
+            GlobalTabBar.titleVisible  = false;
+            this.parentNode.addEventListener('scroll', (e) => {
+                let headerBounds = this.getBoundingClientRect();
+                let viewBounds = this.parentNode.getBoundingClientRect();
+                GlobalTabBar.titleVisible = (headerBounds.top < viewBounds.top - (headerBounds.height * 0.5));
+                console.log(headerBounds.top, viewBounds.top)
+            });
+            this.tabBar = document.createElement('sp-tabbar');
+            this.parentNode.appendChild(this.tabBar);
+            this.created = true;
+        }
     }
     setState(object) {
         let size = this.getAttribute('size') || 128;
@@ -1055,7 +1063,7 @@ class SPViewElement extends HTMLElement {
         this.addEventListener('scroll', this._onScroll);
     }
     disconnectedCallback() {
-        this.removeEventListener('scroll', this._onScrll);
+        this.removeEventListener('scroll', this._onScroll);
     }
     attributeChangedCallback(attr, oldValue, newVal) {
         
@@ -1105,7 +1113,7 @@ class SPArtistViewElement extends SPViewElement {
             this.overviewTab.topTracksDivider = document.createElement('sp-divider');
             this.overviewTab.topTracksDivider.innerHTML = _('Top Tracks');
         
-            this.overviewTab.appendChild(this.overviewTab.topTracksDivider);
+           // this.overviewTab.appendChild(this.overviewTab.topTracksDivider);
             this.overviewTab.toplist = document.createElement('sp-playlist');
             this.overviewTab.appendChild(this.overviewTab.toplist);
             
@@ -1138,7 +1146,7 @@ class SPArtistViewElement extends SPViewElement {
     }
     activate() {
         super.activate();
-        GlobalTabBar.setState({
+        this.header.tabBar.setState({
             object: this.state,
             objects: [
                 {
@@ -1215,9 +1223,12 @@ class SPUserViewElement extends SPViewElement {
     }
     activate() {
         super.activate();
-        GlobalTabBar.setState({
+        this.header.tabBar.setState({
             object: this.state,
-            objects: []
+            objects: [{
+                id: 'overview',
+                name: 'Overview'
+            }]
         });
     }
     async attributeChangedCallback(attrName, oldVal, newVal) {
@@ -1499,6 +1510,49 @@ String.prototype.toQuerystring = function () {
 
     return argsParsed;
 }
+
+
+
+class SPCuratorViewElement extends SPViewElement {
+    attachedCallback() {
+        super.attachedCallback();
+        if (!this.created) {
+            this.classList.add('sp-view');
+            this.header = document.createElement('sp-header');
+            this.appendChild(this.header);
+            this.created = true;
+        }
+    }
+    activate() {
+        this.header.tabBar.setState({
+            object: this.state,
+            objects: [
+                {
+                    id: 'overview',
+                    name: 'Overview'
+                },
+                {
+                    id: 'playlists',
+                    name: 'Playlists'
+                }
+            ]
+        })
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
+        if (attrName == 'uri') {
+            
+            let result = await store.request('GET', newVal);
+            this.state = result;
+            this.header.setAttribute('uri', newVal);
+            this.activate();
+        }
+    }
+    
+}
+
+document.registerElement('sp-curatorview', SPCuratorViewElement);
+
 
 class SPCountryViewElement extends SPViewElement {
     attachedCallback() {
@@ -2130,8 +2184,36 @@ class SPTabBarElement extends HTMLElement {
             this.titleBar.style.visibility = 'hidden';
             this.appendChild(this.titleBar);
             this.created = true;
+            this.addEventListener('scroll', this._onScroll.bind(this));
+            this.style.display = 'none';
         }
     }
+    
+    _onScroll(e) {
+        let view = this.parentNode;
+        let viewBounds = view.getBoundingClientRect();
+        let bounds = this.getBoundingClientRect();
+        let tabBar = GlobalTabBar.getBoundingClientRect();
+        let headerHeight = 0;
+        if (this.header) {  
+            headerHeight = this.header.getBoundingClientRect().height;;
+        } 
+        console.log(bounds.top, viewBounds.top);
+        if (view.scrollTop > headerHeight ) {
+            view.style.display = 'block';
+            let transform = 'translateY(' + ( view.scrollTop - headerHeight) + 'px)';
+            this.thead.style.transform = transform; 
+        } else {
+            this.thead.style.transform = 'translateY(0px)';
+        }
+        let gondole = this.querySelector('sp-gondole');
+        if (gondole && gondole.getBoundingClientRect().top < viewBounds.top + viewBounds.height) {
+            if (!gondole.hasAttribute('activated'))
+            this.fetchNext();
+        }
+    
+    }
+    
     get titleVisible() {
         return this.titleBar.style.visibility == 'visible';
     }
@@ -2165,21 +2247,25 @@ class SPTabBarElement extends HTMLElement {
                 
             }
         }
-        if (state && state.objects instanceof Array && state.objects.length > 0)
-        for (let i = 0; i < state.objects.length; i++) {
-            let obj = state.objects[i];
-            let tab = document.createElement('sp-tab');
-            tab.setAttribute('data-tab-id', obj.id);
-            
-            tab.innerHTML = obj.name;
-            tab.addEventListener('tabselected', (e) => {
-                window.location.hash = '#' + e.data;
-            });
-            this.appendChild(tab);
-            this.style.display = 'flex';
+        if (state && state.objects instanceof Array && state.objects.length > 0) {
+            for (let i = 0; i < state.objects.length; i++) {
+                let obj = state.objects[i];
+                let tab = document.createElement('sp-tab');
+                tab.setAttribute('data-tab-id', obj.id);
+                
+                tab.innerHTML = obj.name;
+                tab.addEventListener('tabselected', (e) => {
+                    window.location.hash = '#' + e.data;
+                });
+                if (obj.id == window.location.hash.substr(1)) tab.classList.add('sp-tab-active');
+                this.appendChild(tab);
+                this.style.display = 'flex';
+            } 
         } else {
             this.style.display = 'none';
         }
+    
+        
         this.rightTitleBar = document.createElement('div');
         this.rightTitleBar.innerHTML = '&nbsp;';
         this.appendChild(this.rightTitleBar);
@@ -2469,7 +2555,8 @@ class SPSearchViewElement extends SPViewElement {
             return;
         uri = this.getAttribute('uri');
         let query = this.getAttribute('uri').substr('bungalow:search:'.length);
-        GlobalTabBar.setState({
+    
+        this.header.tabBar.setState({
             id: query,
             uri: this.getAttribute('uri'),
             name: query,
@@ -2509,18 +2596,23 @@ const onHashChanged =  (e) => {
        tabId = window.location.hash.substr(1);
        if (!tabId || tabId.length < 1) {
            tabId = 'overview'
-       };
+       };;
    } catch (e) {
        
    }
    let view = GlobalViewStack.currentView;
+   let foundTab = false;
    for (let tab of document.querySelectorAll('sp-tab')) {
        if (tab.getAttribute('data-tab-id') == tabId) {
            tab.classList.add('sp-tab-active');
+           foundTab = true;
        } else {
            tab.classList.remove('sp-tab-active');
            
        }
+   }
+   if (!foundTab) {
+       document.querySelectorAll('sp-tab')[0].classList.add('sp-tab-active');
    }
    for (let tabView of view.querySelectorAll('sp-tabcontent')) {
        if (tabView.getAttribute('data-tab-id') == tabId) {

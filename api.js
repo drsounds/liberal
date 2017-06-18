@@ -159,6 +159,39 @@ app.get('/user/:username', function (req, res) {
 });
 
 
+app.get('/curator/:username/playlist', function (req, res) {
+    
+    music.req = req;
+    music.session = req.session;
+    var body = {};
+    if (req.body) {
+        body = (req.body);
+    }
+    music.getPlaylistsByUser(req.params.username, req.query.offset, req.query.limit).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
+
+app.get('/curator/:username', function (req, res) {
+    music.req = req;
+    
+    music.session = req.session;
+    var body = {};
+    if (req.body) {
+        body = (req.body);
+    }
+    music.getUser(req.params.username).then(function (result) {
+    
+        res.json(result);
+    }, function (reject) {
+        res.json(reject);
+    });
+});
+
 app.get('/me/playlist', function (req, res) {
     music.req = req;
     
