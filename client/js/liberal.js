@@ -179,8 +179,8 @@ class Store extends EventEmitter {
         };
         this.state = {};
         this.heart = setInterval(async () => {
-            this.state.player = await this.getCurrentTrack();
-            this.emit('change');
+    //        this.state.player = await this.getCurrentTrack();
+      //      this.emit('change');
             
         }, 1000);
         this.hue = this.hue;
@@ -659,7 +659,7 @@ class SPChromeElement extends HTMLElement {
         this.appendChild(this.appFooter);
           
         this.rightSideBar = document.createElement('sp-rightsidebar');
-        this.main.appendChild(this.rightSideBar);
+//        this.main.appendChild(this.rightSideBar);
         this.playlist = document.createElement('sp-trackcontext');
         this.rightSideBar.appendChild(this.playlist);
         this.playlist.uri = 'spotify:internal:library';
@@ -984,7 +984,7 @@ class SPHeaderElement extends SPResourceElement {
         }
         this.innerHTML = '' + 
             '<div style="flex: 0 0 ' + width + ';">' +
-            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><small>' + _(object.type) + '</small><h3>' + titleElement.innerHTML + ' <span style="float: right">' + strFollowers + '</span></h3><sp-toolbar></sp-toolbar><p style="opacity: 0.5">' + (object.description ? object.description : '') + '</p></div>';
+            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><small style="display: none">' + _(object.type) + '</small><h3>' + titleElement.innerHTML + ' <span style="float: right">' + strFollowers + '</span></h3><p style="opacity: 0.5">' + (object.description ? object.description : '') + '</p></div>';
        /* if ('followers' in object) {
             let pop = '';
              if (object.popularity) {
@@ -1514,15 +1514,6 @@ String.prototype.toQuerystring = function () {
 
     return argsParsed;
 }
-
-
-
-class SPCarouselElement extends SPResourceElement {
-    attributeChangedCallback(attrName, oldVal, newVal) {
-        
-    }
-}
-
 
 
 class SPCuratorViewElement extends SPViewElement {
@@ -2457,7 +2448,7 @@ class SPPlaylistViewElement extends SPViewElement {
         this.classList.add('sp-view');
         if (!this.header) {
             this.header = document.createElement('sp-header');
-            this.header.setAttribute('size', 128);
+            this.header.setAttribute('size', 64);
             this.appendChild(this.header);
         }
         if (!this.trackcontext) {

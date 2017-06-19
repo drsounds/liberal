@@ -4,6 +4,7 @@ var async = require('async');
 var MusicService = require('./services/spotify/spotify.js');
 var SocialService = require('./services/mock/mock.js');
 var WikiService = require('./services/wikipedia/wikipedia.js');
+var MusicInfoService = require('./services/lastfm/lastfm.js');
 var social = new SocialService();
 var less = require('less');
 var request = require('request');
@@ -15,6 +16,7 @@ var express =require('express');
 var app = express();
 var music = new MusicService();
 var wiki = new WikiService();
+var musicInfo = new MusicInfoService();
 
 app.get('/music/login', function (req, res) {
     res.redirect(music.getLoginUrl());
@@ -469,12 +471,19 @@ app.get('/artist/:identifier', function (req, res) {
         body = (req.body);
     }
     music.getArtist(req.params.identifier).then(function (result) {
-       res.json(result);
+        res.json(result);
     }, function (reject) {
         res.json(reject);
     });
 });
 
+app.get('/artist/:identifier/info', function (req, res) {
+    music.getArtist(req.params.identifier).then(function (result) {
+        musicInfo.getArtistInfo(result.name).then(function (artistInfo) {
+           res.json(artistInfo);
+        });
+    });
+})
 
 app.get('/artist/:identifier/about', function (req, res) {
     music.req = req;

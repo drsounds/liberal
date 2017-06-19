@@ -16,8 +16,7 @@ body {
 *:focus {
     outline: none;
 }
-sp-divider {
-}
+
 sp-sidebar {
     background-color: var(--sidebar-background-color);
     border-right: 1px solid black;
@@ -61,19 +60,6 @@ sp-menuitem:active {
 }
 th, td {
    padding: 3pt; 
-}
-th {
-/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#bcbcbc+1,919191+100 */
-background: rgb(188,188,188); /* Old browsers */
-background: -moz-linear-gradient(top,  rgba(188,188,188,1) 1%, rgba(145,145,145,1) 100%); /* FF3.6-15 */
-background: -webkit-linear-gradient(top,  rgba(188,188,188,1) 1%,rgba(145,145,145,1) 100%); /* Chrome10-25,Safari5.1-6 */
-background: linear-gradient(to bottom,  rgba(188,188,188,1) 1%,rgba(145,145,145,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bcbcbc', endColorstr='#919191',GradientType=0 ); /* IE6-9 */
-
-box-shadow:inset 0pt 1pt 0pt #fff, inset 0pt -1pt 0pt #333;
-/*border-bottom: 1pt solid #333;*/
-color: #333;
-text-shadow: 0pt 1pt 0pt rgba(255, 255, 255, 1);
 }
 
 
