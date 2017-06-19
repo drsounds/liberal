@@ -982,10 +982,16 @@ class SPHeaderElement extends SPResourceElement {
         if ('followers' in object) {
             strFollowers = numeral(object.followers.total).format('0,0') + ' followers';
         }
-        this.innerHTML = '' + 
-            '<div style="flex: 0 0 ' + width + ';">' +
-            '<sp-image width="' + width + '" height="' + height + '" src="' + object.image_url + '"></sp-image></div><div style="flex: 1"><small style="display: none">' + _(object.type) + '</small><h3>' + titleElement.innerHTML + ' <span style="float: right">' + strFollowers + '</span></h3><p style="opacity: 0.5">' + (object.description ? object.description : '') + '</p></div>';
-       /* if ('followers' in object) {
+        let innerHTML = _.unescape(document.querySelector('#headerTemplate').innerHTML);
+        let template = _.template(innerHTML);
+        this.innerHTML = template({
+            object: object,
+            size: size,
+            width: width,
+            height: height,
+            title: titleElement.innerHTML,
+            strFollowers: strFollowers  
+        }); /* if ('followers' in object) {
             let pop = '';
              if (object.popularity) {
                  pop = '<hr><h3>#' + numeral( TOTAL_ARTISTS_ON_SPOTIFY - (TOTAL_ARTISTS_ON_SPOTIFY * ((object.popularity) / 100))).format('0,0') + '</h3><br>' + _('In he world');
@@ -1367,29 +1373,21 @@ class SPPlaylistElement extends SPResourceElement {
             } 
         }
         if ('tracks' in obj)
-        store.state[obj.uri + ':track'] = obj.tracks;   
+            store.state[obj.uri + ':track'] = obj.tracks;   
         let titleElement = document.createElement('sp-title');
         titleElement.setState(obj);
-        let copyrights = null;
         let dataContextUri = this.getAttribute('data-context-artist-uri') || null;
-        if (this.showCopyrights) {
-            copyrights = obj.copyrights.map((c) => {
-                return '<span style="opacity: 0.5">' + '(' + c.type + ') ' +  c.text + '</span>';
-            }).join('<br>');
-        }
-        this.innerHTML = '' +
-        '<div style="flex: 0 0 128">' +
-            '<sp-image src="' + obj.images[0].url + '" width="128" height="128"></sp-image>' + 
-        '</div>' +
-        '<div style="flex: 2">' +
-            '<h3>' +  titleElement.innerHTML + (strReleaseDate != '' ? ' <span>('+  strReleaseDate + ')' : '') + '</h3>' +
-            
-            (obj.description ? '<p>' + obj.description + '</p>' : '') +
-            '<sp-trackcontext fields="' + (this.getAttribute('fields') || 'name,artists,album,user,added_at') + '" ' + (dataContextUri ? 'data-context-artist-uri="' + dataContextUri + '" ' : '') + ' uri="' + obj.uri + ':track"></sp-trackcontext>' +
-            (copyrights ? copyrights : '') +
-        
-        '</div>';
+        this.innerHTML = '';
         this.object = obj;
+        let template = _.unescape(document.querySelector('#playlistTemplate').innerHTML);
+        this.innerHTML = _.template(template)({
+            title: titleElement.innerHTML,
+            strReleaseDate: strReleaseDate,
+            fields: this.getAttribute('fields'),
+            obj: obj,
+            dataContextUri: dataContextUri
+        });
+        
         if (this.view != null && localStorage.getItem('stylesheet') == 'maestro') {
             this.vibrance();
         }
@@ -1758,7 +1756,6 @@ class SPTrackContextElement extends SPResourceElement {
         }*/
         tr.classList.add('sp-track');
         tr.setAttribute('data-uri', track.uri);
-        console.log(track.position);
         tr.setAttribute('data-position', track.position);
         if (isNaN(track.position)) throw "Error";
         
@@ -1885,6 +1882,11 @@ class SPTrackContextElement extends SPResourceElement {
     async setState(obj) {
         if (!obj) return;
         this.obj = obj;
+        if (!this.table) {
+            this.table = document.createElement('table');
+            this.table.setAttribute('width', '100%');
+            this.appendChild(this.table);
+        }
         this.table.innerHTML = '<thead><tr></tr></thead><tbody></tbody>';
         this.thead = this.table.querySelector('thead');
         this.tbody = this.table.querySelector('tbody');

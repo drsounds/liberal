@@ -95,3 +95,6 @@ sp-sidebarmenu label {
     opacity: 0.5;
 
 }
+sp-header {
+    background-color: rgba(0, 0, 0, .2);
+}

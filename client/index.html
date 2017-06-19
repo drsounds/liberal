@@ -16,6 +16,7 @@
     <script src="js/vendor/idb.js"></script>
     <script src="js/vendor/i18n.js"></script>
     <script src="js/vendor/sprintf.js"></script>
+    <script src="js/vendor/underscore.js"></script>
     <script src="js/liberal.js"></script>
     <style>
       body {
@@ -24,6 +25,34 @@
     </style>
   </head>
   <body>
+    <template type="text/template" id="playlistTemplate">
+     
+        <div style="flex: 0 0 128">
+            <sp-image src="<%=obj.images[0].url%>" width="128" height="128"></sp-image> 
+        </div>
+        <div style="flex: 2">
+           <h3><%=title%>  <%= strReleaseDate != '' ? ' <span><%=('+  strReleaseDate + ')' : '' %></h3>
+            
+            <%=(obj.description ? '<p>' + obj.description + '</p>' : '') %>
+            <sp-trackcontext fields="<%=fields || 'name,artists,album,user,added_at' %>"data-context-artist-uri="<%=dataContextUri%>" uri="<%= obj.uri + ':track'%>"></sp-trackcontext>
+            <% /*obj.copyrights.map((c) => { %>
+                <span style="opacity: 0.5">'<%= c.type %>  <%=c.text%></span>
+           <% });*/ %>
+        
+        </div>
+    </template>
+    <template type="text/template" id="headerTemplate">
+      <div style="flex: 0 0 <%=width%> ;">
+        <sp-image width="<%=width%>" height="<%=height%>" src="<%=object.image_url %>"></sp-image>
+      </div>
+      <div style="flex: 1">
+        <small style="display: none"><%=_(object.type) %></small>
+        <h3> <%= title %>
+        <span style="float: right"><%= strFollowers %></span>
+        </h3>
+        <p style="opacity: 0.5"><%= (object.description ? object.description : '') %></p>
+      </div>
+    </template>
     <div class="body-root splatter"></div>
     <div class="body"></div>
   </body>
