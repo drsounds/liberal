@@ -5,6 +5,7 @@ var MusicService = require('./services/spotify/spotify.js');
 var SocialService = require('./services/mock/mock.js');
 var WikiService = require('./services/wikipedia/wikipedia.js');
 var MusicInfoService = require('./services/lastfm/lastfm.js');
+var SportService = require('./services/leros/leros.js');
 var social = new SocialService();
 var less = require('less');
 var request = require('request');
@@ -17,6 +18,7 @@ var app = express();
 var music = new MusicService();
 var wiki = new WikiService();
 var musicInfo = new MusicInfoService();
+var sport = new SportService();
 
 app.get('/music/login', function (req, res) {
     res.redirect(music.getLoginUrl());
@@ -743,6 +745,16 @@ app.get('/track/:identifier', function (req, res) {
     });
 })
 
+
+app.get('/me/aqtivity', function (req, res) {
+    sport.req = req;
+    sport.getAqtivities().then(function (result) {
+        res.json(result);
+    }, function (err) {
+        res.statusCode = 500;
+        res.json(err);
+    })
+});
 
 module.exports = {
     server: app
