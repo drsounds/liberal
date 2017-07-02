@@ -477,10 +477,13 @@ document.registerElement('sp-themeeditor', SPThemeEditorElement);
 class SPAppHeaderElement extends HTMLElement {
     attachedCallback() {
         if (!this.created) {
-            this.innerHTML = '<button id="btnBack" class="fa fa-arrow-left" onclick="history.back()"><button class="fa fa-arrow-right" onclick="history.forward()"></button><div style="flex: 5"></div>';
             if (!this.searchForm) {
                 this.searchForm = document.createElement('sp-searchform');
-                this.appendChild(this.searchForm);
+                if (localStorage.getItem("stylesheet") === 'maestro') {
+                    document.body.appendChild(this.searchForm);
+                } else {
+                    this.appendChild(this.searchForm);
+                }         
                 this.searchForm.style.marginRight = '5pt';
             }
             this.loginButton = document.createElement('button');
@@ -1388,7 +1391,7 @@ class SPPlaylistElement extends SPResourceElement {
             dataContextUri: dataContextUri
         });
         
-        if (this.view != null && localStorage.getItem('stylesheet') == 'maestro') {
+        if (this.view != null && localStorage.getItem('vibrance') == 'true') {
             this.vibrance();
         }
     }
@@ -1406,7 +1409,7 @@ class SPPlaylistElement extends SPResourceElement {
             let bgColor = swatchToColor(color);
             
         //    this.view.style.backgroundColor = bgColor;
-            let background = 'linear-gradient(-90deg, ' + swatchToColor(color) + ', ' + swatchToColor(muted) + ')';
+            let background = 'linear-gradient(-90deg, ' + swatchToColor(color) + ' 0%, ' + swatchToColor(muted) + ' 10%)';
             this.view.style.background = background;
         }
     }
@@ -2355,6 +2358,8 @@ class SPSearchFormElement extends HTMLFormElement {
    
     attachedCallback() {
         if (!this.created) {
+             this.innerHTML = '<button id="btnBack" class="fa fa-arrow-left" onclick="history.back()"><button class="fa fa-arrow-right" onclick="history.forward()"></button><div style="flex: 5"></div>';
+           
             this.form = document.createElement('form');
             this.form.setAttribute('action', '/');
             this.form.setAttribute('method', 'GET');
