@@ -660,7 +660,7 @@ app.get('/artist/:identifier/appears_on', function (req, res) {
     if (req.body) {
         body = (req.body);
     }
-    
+    console.log(req.query);
     music.getReleasesByArtist(req.params.identifier, 'appears_on', req.query.offset, req.query.limit).then(function (result) {
         res.json(result);
     }, function (reject) {

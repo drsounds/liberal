@@ -231,14 +231,17 @@ SpotifyService.prototype._request = function (method, path, payload, postData) {
                 }
                 try {
                     if (response.statusCode < 200 ||response.statusCode > 299) {
+                        console.log(body);
                         fail(response.statusCode);
                         return;
                     }
                     var data = JSON.parse(body);
                     if (!data) {
+                        console.log(body);
                         fail(response.statusCode);
                     }
                     if ('error' in data || !data) {
+                        console.log(body);
                         fail(response.statusCode);
                         return;
                     }
@@ -349,6 +352,7 @@ SpotifyService.prototype.getReleasesByArtist = function (id, release_type, offse
                 resolve(result); 
             });
         }, function (err) {
+            console.log(err);
             fail(err);
         });
     });

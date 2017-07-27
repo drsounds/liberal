@@ -213,7 +213,6 @@ sp-themeeditor {
     position: relative;
 }
 sp-viewstack {
-    box-shadow: inset 0pt 0pt 35pt rgba(0, 0, 0, .1);
 }
 sp-themeeditor * {
     display: inline-block;

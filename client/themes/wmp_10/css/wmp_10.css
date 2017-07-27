@@ -21,15 +21,12 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 
-
-span, h1, h2, h3, h4, p, sp-link, sp-menuitem {
-  -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
-}    
-
-h3 > sp-link, td sp-image {
-  -webkit-filter: hue-rotate(calc(1-var(--primary-hue))) saturate(calc(1-var(--primary-saturation)));
+img, th {
+  -webkit-filter: hue-rotate( calc(((1-var(--primary-hue) + deg)) )) saturate(var(--primary-saturation));
   
 }
+
+
 
 
 
@@ -42,6 +39,5 @@ sp-tabbar {
 }
 sp-rightsidebar     {
   background: linear-gradient(to bottom, #366ab3, #55aaff);
-    -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
     color: white;
 }
