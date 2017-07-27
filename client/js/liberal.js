@@ -178,11 +178,12 @@ class Store extends EventEmitter {
             'spotify': new SpotifyMusicService()
         };
         this.state = {};
+        /*
         this.heart = setInterval(async () => {
            this.state.player = await this.getCurrentTrack();
            this.emit('change');
             
-        }, 1000);
+        }, 1000);*/
         this.hue = this.hue;
         this.saturation = this.saturation;
         this.flavor = this.flavor;
@@ -813,7 +814,7 @@ class SPViewStackElement extends HTMLElement {
                 view = document.createElement('sp-settingsview');  
             } else if (/^bungalow:internal:start$/g.test(newUri)) {
                 view = document.createElement('sp-startview');
-            } else if (/^bungalow:book:([a-zA-Z\ \_]+):audio/g.test(newUri)) {
+            } else if (/^bungalow:book:([a-zA-Z0-9\ \_]+):audio/g.test(newUri)) {
                 view = document.createElement('sp-audiobookview');
             } else if (/^bungalow:audiobook:([a-zA-Z\ \_]+)/g.test(newUri)) {
                 view = document.createElement('sp-audiobookview');
@@ -956,6 +957,9 @@ class SPTitleElement extends HTMLElement {
         if (object.in) {
             titleHTML += ' <span style="opacity: 0.7"> ' + _('in') + ' <sp-link uri="' + object.in.uri + '">' + _(object.in.name) + '</sp-link></span>'; 
         }
+        if (object.speaker) {
+            titleHTML += ' <span style="opacity: 0.7"> ' + _('spoken by') + ' <sp-link uri="' + object.in.uri + '">' + _(object.speaker.name) + '</sp-link></span>'; 
+        }
         this.innerHTML = titleHTML;
     }
 }
@@ -1093,7 +1097,7 @@ class SPTrackTableDataSource extends SPTableDataSource {
         this.limit = 28;
         this.objects = [];
         this.offset = 1;
-        this.fields = fields || ['name', 'artists', 'album'];
+        this.fields = fields
     }
     async fetchNext() {
         let result = await store.request('GET', this.uri, {q: this.q, limit: this.limit, offset: this.offset});
@@ -1121,7 +1125,8 @@ class SPTrackTableDataSource extends SPTableDataSource {
 
 class SPTrackTableDesigner extends SPTableDesigner {
     getHeaderRow() {
-        return document.createElement('tr');
+        let tr = document.createElement('tr');
+        return tr;
     }
     getColumnElementAt(index) {
         let th = document.createElement('th');
@@ -1137,7 +1142,7 @@ class SPTrackTableDesigner extends SPTableDesigner {
         
         tr.setAttribute('data-index', row.position);
         if (this.table.hasAttribute('data-context-artist-uri')) {
-            let contextArtistUri = this.getAttribute('data-context-artist-uri').replace(
+            let contextArtistUri = this.table.getAttribute('data-context-artist-uri').replace(
                 'bungalow', 'spotify'    
             );
             if (row.artists.filter( a => a.uri == contextArtistUri).length < 1 && !!contextArtistUri) {
@@ -1154,6 +1159,7 @@ class SPTrackTableDesigner extends SPTableDesigner {
         var td = document.createElement('td');
           let val = '';
           let field = this.table.fields[columnIndex];
+          val = track[field];
           if (field === 'p' || field === 'position') {
               td.width = '1pt';
               if (parseInt(val) < 10) {
@@ -1189,18 +1195,15 @@ class SPTrackTableDesigner extends SPTableDesigner {
               if (tooOld) {
                   td.querySelector('span').style.opacity = 0.5;
               }
-              let discoveredField = tr.querySelector('td.discovered');
-              if (discoveredField != null && fresh < 1) {
-                  discoveredField.innerHTML = '<i class="fa fa-circle new"></i>';
-              }
+        
               
           } else if (typeof(val) === 'string') {
             td.innerHTML = '<span>' + val + '</span>';
           } else if (val instanceof Array) {
              td.innerHTML = val.filter(o => {
-                if (!this.hasAttribute('data-context-artist-uri'))
+                if (!this.table.hasAttribute('data-context-artist-uri'))
                     return true;
-                return o.uri != this.getAttribute('data-context-artist-uri').replace(
+                return o.uri != this.table.getAttribute('data-context-artist-uri').replace(
                     'bungalow', 'spotify'    
                 );
                  
@@ -1258,7 +1261,7 @@ class SPTableElement extends HTMLElement {
     set selectedIndicies(value) {
         this._selectedIndicies = value;
 
-        let trs = this.querySelectorAll('tr');
+        let trs = document.querySelectorAll('tr');
         for (let i = 0; i < trs.length; i++) {
             trs[i].classList.remove('sp-track-selected');
         }
@@ -1798,12 +1801,13 @@ class SPPlaylistElement extends SPResourceElement {
         titleElement.setState(obj);
         let dataContextUri = this.getAttribute('data-context-artist-uri') || null;
         this.innerHTML = '';
+        let fields =  this.getAttribute('fields');
         this.object = obj;
         let template = _.unescape(document.querySelector('#playlistTemplate').innerHTML);
         this.innerHTML = _.template(template)({
             title: titleElement.innerHTML,
             strReleaseDate: strReleaseDate,
-            fields: this.getAttribute('fields'),
+            fields: fields,
             obj: obj,
             dataContextUri: dataContextUri
         });
@@ -2343,23 +2347,66 @@ class SPTrackContextElement extends SPResourceElement {
     }
 }*/
 
+
+class SPAudioBookViewElement extends SPViewElement {
+    attachedCallback() {
+        super.attachedCallback();
+        this.classList.add('sp-view');
+    }
+    acceptsUri(uri) {
+        return /^bungalow:book:(.*):audio$/.test(uri);
+    }
+    navigate() {
+        
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
+        if (attrName === 'uri') {
+            this.obj = await store.request('GET', newVal);
+            this.innerHTML = '';
+            this.albumView = document.createElement('sp-playlist');
+            this.albumView.fields = 'name,duration,artists'
+            this.appendChild(this.albumView);
+            this.albumView.showCopyrights = true;
+            this.albumView.view = this;
+            let id = newVal.split(':')[2];
+            this.albumView.setAttribute('uri', 'bungalow:album:' + id);
+        }
+    }   
+}
+
+document.registerElement('sp-audiobookview', SPAudioBookViewElement);
+
+
 class SPTrackContextElement extends SPTableElement {
     attachedCallback() {
         super.attachedCallback();
-        if (!this.created) {
+        if (!this.created2) {
             this.attributeChangedCallback('uri', null, this.getAttribute('uri'));
             this.attributeChangedCallback('fields', null, this.getAttribute('fields'));
-            this.created = true;
+            this.created2 = true;
         }
+
+
     }
     attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName == 'fields') {
+            if (!!newVal)
             this.fields = newVal.split(',');
         }
         if (attrName == 'uri') {
             this.designer = new SPTrackTableDesigner();
-            this.dataSource = new SPTrackTableDataSource(newVal, this.fields);
+            
+            this.dataSource = new SPTrackTableDataSource(newVal, '', this.fields);
             this.fetchNext();
+        }
+    }
+    render() {
+        super.render();
+        if (!this.getAttribute('headers')) {
+            let thead = this.querySelector('thead');
+            this.table.thead.style.display = 'none';
+            
         }
     }
 }
@@ -2438,6 +2485,8 @@ class SPPlaylistContextElement extends SPResourceElement {
                 }
                 if (this.hasAttribute('fields'))
                     a.setAttribute('fields', this.getAttribute('fields'));
+                let fields = a.fields;
+                
                a.setState(item);
                store.state[item.uri + ':track'] = item.tracks;
                store.state[item.uri] = item;
