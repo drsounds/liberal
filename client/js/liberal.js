@@ -949,7 +949,7 @@ class SPTitleElement extends HTMLElement {
             }).join(', ') + '</span>';
         }
         if (object.owner) {
-            titleHTML += ' <span style="opacity: 0.7"> ' + _('by') + ' <sp-link uri="' + object.owner.uri + '">' + _(object.owner.name) + '</sp-link></span>'; 
+            titleHTML += ' <span style="opacity: 0.7"> ' + _('by') + ' <sp-link uri="' + object.owner.uri + '">' + _(object.owner.id) + '</sp-link></span>'; 
         }
         if (object.for) {
             titleHTML += ' <span style="opacity: 0.7"> ' + _('for') + ' <sp-link uri="' + object.for.uri + '">' + _(object.for.name) + '</sp-link></span>'; 
@@ -982,6 +982,16 @@ class SPHeaderElement extends SPResourceElement {
             this.tabBar = document.createElement('sp-tabbar');
             this.parentNode.appendChild(this.tabBar);
             this.created = true;
+            let innerHTML = _.unescape(document.querySelector('#headerTemplate').innerHTML);
+            let template = _.template(innerHTML);
+            this.innerHTML = template({
+                object: object,
+                size: size,
+                width: width,
+                height: height,
+                title: titleElement.innerHTML,
+                strFollowers: strFollowers  
+            });
         }
     }
     setState(object) {
@@ -1090,16 +1100,20 @@ class SPTableDesigner {
 
 
 class SPTrackTableDataSource extends SPTableDataSource {
-    constructor(uri, q, fields) {
+    constructor(uri, q, fields, limit = 28) {
         super();
         this.uri = uri;
         this.q = q;
-        this.limit = 28;
+        this.limit = limit;
+        if (limit) {
+            this.limitRows = true;
+        }
         this.objects = [];
         this.offset = 1;
         this.fields = fields
     }
     async fetchNext() {
+
         let result = await store.request('GET', this.uri, {q: this.q, limit: this.limit, offset: this.offset});
         if ('objects' in result && result.objects instanceof Array)
         this.objects = result.objects;
@@ -1109,6 +1123,8 @@ class SPTrackTableDataSource extends SPTableDataSource {
     }
     getNumberOfRows(row) {
         if (!row) {
+            if (this.table.maxRows > 0 && this.table.maxRows < this.objects.length)
+                return this.table.maxRows;
             return this.objects.length;
         }
     }
@@ -1126,6 +1142,7 @@ class SPTrackTableDataSource extends SPTableDataSource {
 class SPTrackTableDesigner extends SPTableDesigner {
     getHeaderRow() {
         let tr = document.createElement('tr');
+
         return tr;
     }
     getColumnElementAt(index) {
@@ -1366,6 +1383,8 @@ class SPTableElement extends HTMLElement {
     set view(val) {
         
         this._view = val;
+        this._view.classList.add('zebra');
+
         this._view.addEventListener('scroll', this._onScroll.bind(this));
     }
     _onScroll(e) {
@@ -1440,6 +1459,10 @@ class SPTableElement extends HTMLElement {
             if (numberOfChildren > 0 && numberOfChildren % 2 == 1) {
                 let trf = document.createElement('tr');
                 this.table.tbody.appendChild(trf);
+            }
+            if (i == this.dataSource.getNumberOfRows() - 1) {
+                let rect = tr.getBoundingClientRect();
+                this.view.style.backgroundPosition = "0pt " + (rect.top + rect.height + (i % 2 == 0 ? rect.height : 0) + (this.header.getBoundingClientRect().top)) + 'pt';  
             }
         }
         for (let j = 0; j < this.dataSource.numberOfColumnHeaders; j++) {
@@ -1644,6 +1667,7 @@ class SPUserViewElement extends SPViewElement {
         }
         if (!this.albumList) {
             this.albumList = document.createElement('sp-playlistcontext');
+            this.albumList.setAttribute('data-max-rows', 10);
             this.albumList.setAttribute('fields', 'name,duration,artists,added_at,added_by');
             this.appendChild(this.albumList);
         }
@@ -1800,6 +1824,8 @@ class SPPlaylistElement extends SPResourceElement {
         let titleElement = document.createElement('sp-title');
         titleElement.setState(obj);
         let dataContextUri = this.getAttribute('data-context-artist-uri') || null;
+        let maxRows = this.getAttribute("data-max-rows");
+
         this.innerHTML = '';
         let fields =  this.getAttribute('fields');
         this.object = obj;
@@ -1808,6 +1834,7 @@ class SPPlaylistElement extends SPResourceElement {
             title: titleElement.innerHTML,
             strReleaseDate: strReleaseDate,
             fields: fields,
+            maxRows: maxRows,
             obj: obj,
             dataContextUri: dataContextUri
         });
@@ -2389,6 +2416,9 @@ class SPTrackContextElement extends SPTableElement {
 
 
     }
+    get maxRows() {
+        return this.getAttribute('data-max-rows') || 0;
+    }
     attributeChangedCallback(attrName, oldVal, newVal) {
         if (attrName == 'fields') {
             if (!!newVal)
@@ -2397,7 +2427,7 @@ class SPTrackContextElement extends SPTableElement {
         if (attrName == 'uri') {
             this.designer = new SPTrackTableDesigner();
             
-            this.dataSource = new SPTrackTableDataSource(newVal, '', this.fields);
+            this.dataSource = new SPTrackTableDataSource(newVal, '', this.fields, this.maxRows);
             this.fetchNext();
         }
     }
@@ -2480,6 +2510,9 @@ class SPPlaylistContextElement extends SPResourceElement {
         if (obj && obj.objects instanceof Array) {
             let albums = obj.objects.map((item) => {
                var a = document.createElement('sp-playlist');
+               if (this.hasAttribute('data-max-rows')) {
+                    a.setAttribute('data-max-rows', this.getAttribute('data-max-rows'));
+               }
                 if (this.hasAttribute('data-context-artist-uri')) {
                    a.setAttribute('data-context-artist-uri', this.getAttribute('data-context-artist-uri'));
                 }
@@ -2679,6 +2712,14 @@ class SPSettingsViewElement extends SPViewElement {
 
 document.registerElement('sp-settingsview', SPSettingsViewElement);
 
+
+class SPPodcastViewElement extends SPViewElement {
+    attachedCallback() {
+        if (!this.created) {
+            this.created = true;
+        }
+    }
+}
 
 class SPTabBarElement extends HTMLElement {
     attachedCallback() {
@@ -2945,7 +2986,7 @@ class SPPlaylistViewElement extends SPViewElement {
         this.classList.add('sp-view');
         if (!this.header) {
             this.header = document.createElement('sp-header');
-            this.header.setAttribute('size', 64);
+            this.header.setAttribute('size', 128);
             this.appendChild(this.header);
         }
         if (!this.trackcontext) {

@@ -1,7 +1,7 @@
 :root {
     --background-color: #373737;
     --foreground-color: rgba(255, 255, 255, .8);
-    --sidebar-background-color: #393939;
+    --sidebar-background-color: #484848;
     --brand-primary: #BBDEFB;
 }
 
@@ -29,8 +29,14 @@ sp-trackcontext table {
     border-collapse: collapse;
     width: 100%;
 }
-sp-trackcontext table tbody tr:nth-child(2n-1) td {
-    background-color: rgba(0, 0, 0, .1);
+.zebra {
+    background-image: url('/themes/obama/images/table-bg.png');
+}
+tr:nth-child(2n+1) td {
+    background-color: #323232;
+}
+tr:nth-child(2n) td {
+    background-color: #383838;
 }
 sp-link, a {
     color: rgba(255, 255, 255, .9);
@@ -46,7 +52,7 @@ h1, h2, h3, h4 {
     margin-bottom: 6pt;
 }
 sp-menuitem.active, .sp-track-selected {
-    background-color: var(--brand-primary);
+    background-color: var(--brand-primary) !important;
     color: rgba(0, 0, 0, .7);
     text-shadow: none;
 }
@@ -96,5 +102,5 @@ sp-sidebarmenu label {
 
 }
 sp-header {
-    background-color: rgba(0, 0, 0, .2);
+    background-color: #383838;
 }

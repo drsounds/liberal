@@ -282,7 +282,9 @@ text-shadow: 0pt 1pt 0pt rgba(255, 255, 255, 1);
 
 sp-divider {
     background: url('../images/divider.png') !important;
+    background-size: stretch;
     border-bottom: 1px solid #010101;
     background-size: 100% 100%;
     box-shadow: inset 0pt 1px 0px #696969;
+    
 }

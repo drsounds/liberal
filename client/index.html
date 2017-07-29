@@ -36,7 +36,7 @@
             <p>Spoken by <sp-link uri="bungalow:speaker:<%=obj.speaker.id%>"><%=obj.speaker.name%></sp-link></p>
             <% } %>
             <%=(obj.description ? '<p>' + obj.description + '</p>' : '') %>
-            <sp-trackcontext fields="<%=fields || 'name,artists,album,user,added_at' %>"data-context-artist-uri="<%=dataContextUri%>" uri="<%= obj.uri + ':track'%>"></sp-trackcontext>
+            <sp-trackcontext fields="<%=fields || 'name,artists,album,user,added_at' %>" data-max-rows="<%=maxRows%>" data-context-artist-uri="<%=dataContextUri%>" uri="<%= obj.uri + ':track'%>"></sp-trackcontext>
             <% /*obj.copyrights.map((c) => { %>
                 <span style="opacity: 0.5">'<%= c.type %>  <%=c.text%></span>
            <% });*/ %>
