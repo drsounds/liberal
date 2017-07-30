@@ -1,15 +1,20 @@
 :root {
 --primary-color: #223388;
 --secondary-color: #94b9cf;
---app-bg-color: rgba(255, 255, 255, .3);
+--app-bg-color: #ecf2f9;
 --foreground-color: #0e4279;
 --app-fg-color: rgba(0, 0, 0, .5);
 --primary-saturation: 100%;
 --primary-hue: -0deg;
---splatter-bg: url('/themes/wmp_10/images/bg.png');
+
 --font-family: "Tahoma";
 --font-size: 11px;
 } 
+body {
+  background: #ecf2f9;
+   -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation)) !important;
+
+}
 
 sp-throbber {
   background-color: var(--app-bg-color);
@@ -28,7 +33,6 @@ sp-throbber  * {
   -webkit-transform: translate(-50%, -50%);
 }
 sp-viewstack {
-  background-color: rgba(255, 255, 255, .3);
 }
 
 
@@ -90,10 +94,7 @@ sp-appheader {
 .sp-table {
   border-collapse: collapse;
 }
-.sp-track {
-  background-color: rgba(0, 0, 0, .01);
-  
-}
+
 sp-button {
   opacity: 0.8;
   background-image:url('/themes/wmp_10/images/header.png');
@@ -102,7 +103,6 @@ sp-button {
   background-color: rgba(255, 255, 255, 1);
   color: black;
   border: 1px solid #ddd;
-  -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
   background-size: 100% 100%;
   padding:5pt;
   padding-left: 25pt;
@@ -122,8 +122,11 @@ sp-button:hover {
 sp-button:active {
   -webkit-filter: brightness(95%);
 }
-.sp-track:nth-child(2n) td {
-  background-color: rgba(0, 0, 0, .03);
+sp-trackcontext tbody tr:nth-child(odd) td {
+  background-color: #e0e9f3;
+}
+sp-trackcontext tbody tr:nth-child(even) td {
+  background-color: #ecf2f9;
 }
 a {
     color: var(--foreground-color);
@@ -149,11 +152,10 @@ table {
 .splatter {
     background-size: 100% ;
   
-    -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
     background-image: var(--splatter-bg);
+  background: #ecf2f9;
 }
 sp-sidebar {
-  background-color: rgba(255, 255, 255, .4);
 }
 th {
   /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ecebdb+74,dcd2bc+100 */
@@ -177,7 +179,6 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9faf8', end
 sp-appheader, sp-appfooter {
     padding: 5pt;
     background-size: 100% 100%;
-    -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
   background-image:  url('/themes/wmp_10/images/header.png');
     
 }
@@ -186,7 +187,6 @@ sp-tabbar {
   box-sizing: border-box;
   background-size: cover;
   background-color: #366ab3;
-    -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation));
     color: white;
 }
 .sp-app {
@@ -254,8 +254,9 @@ ul.sp-menu {
   background-image: url('/themes/chromify/img/header.png');
 }
 .sp-track-selected, .active {
-  background-color: var(--foreground-color);
+  background-color: #222 !important;
   color: white;
+  border: 1px dotted #000;
 }
 sp-sidebar label {
   opacity: 0.5;

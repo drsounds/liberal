@@ -2,7 +2,7 @@
 <html lang="en" ng-app>
   <head>
     <title>Liberal | Open Source Music Streaming Client</title>
-    <base href="https://liberal-drsounds.c9users.io/">
+    <base href="http://localhost:9261/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/montserrat.css"> 
     <link rel="stylesheet" href="/css/font-awesome.css"> 
@@ -32,9 +32,11 @@
         </div>
         <div style="flex: 2">
            <h3><%=title%>  <%= strReleaseDate != '' ? ' <span><%=('+  strReleaseDate + ')' : '' %></h3>
-            
+            <% if ('speaker' in obj) { %>
+            <p>Spoken by <sp-link uri="bungalow:speaker:<%=obj.speaker.id%>"><%=obj.speaker.name%></sp-link></p>
+            <% } %>
             <%=(obj.description ? '<p>' + obj.description + '</p>' : '') %>
-            <sp-trackcontext fields="<%=fields || 'name,artists,album,user,added_at' %>"data-context-artist-uri="<%=dataContextUri%>" uri="<%= obj.uri + ':track'%>"></sp-trackcontext>
+            <sp-trackcontext fields="<%=fields || 'name,artists,album,user,added_at' %>" data-max-rows="<%=maxRows%>" data-context-artist-uri="<%=dataContextUri%>" uri="<%= obj.uri + ':track'%>"></sp-trackcontext>
             <% /*obj.copyrights.map((c) => { %>
                 <span style="opacity: 0.5">'<%= c.type %>  <%=c.text%></span>
            <% });*/ %>

@@ -19,9 +19,14 @@ body,html {
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome and Opera */
 }
+
 h1, h2, h3, h4 {
     margin: 0pt;
     margin-bottom: 3pt;
+}
+sp-searchform * {
+    margin-right: 2pt;
+    display: inline-block;
 }
 sp-image {
     background-size: cover;
@@ -208,7 +213,6 @@ sp-themeeditor {
     position: relative;
 }
 sp-viewstack {
-    box-shadow: inset 0pt 0pt 35pt rgba(0, 0, 0, .1);
 }
 sp-themeeditor * {
     display: inline-block;

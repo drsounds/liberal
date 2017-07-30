@@ -1,7 +1,7 @@
 :root {
     --background-color: #373737;
     --foreground-color: rgba(255, 255, 255, .8);
-    --sidebar-background-color: #484848;
+    --sidebar-background-color: #393939;
     --brand-primary: #BBDEFB;
 }
 
@@ -25,18 +25,12 @@ sp-sidebar {
 table thead tr td {
     background-color: #888;
 }
-sp-trackcontext table {
+table {
     border-collapse: collapse;
     width: 100%;
 }
-.zebra {
-    background-image: url('/themes/obama/images/table-bg.png');
-}
-tr:nth-child(2n+1) td {
-    background-color: #323232;
-}
-tr:nth-child(2n) td {
-    background-color: #383838;
+table tbody tr:nth-child(2n-1) td {
+    background-color: rgba(0, 0, 0, .1);
 }
 sp-link, a {
     color: rgba(255, 255, 255, .9);
@@ -52,7 +46,7 @@ h1, h2, h3, h4 {
     margin-bottom: 6pt;
 }
 sp-menuitem.active, .sp-track-selected {
-    background-color: var(--brand-primary) !important;
+    background-color: var(--brand-primary);
     color: rgba(0, 0, 0, .7);
     text-shadow: none;
 }
@@ -74,6 +68,10 @@ th, td {
 }
 img {
     
+}
+
+sp-toolbar {
+    background-color: rgba(50, 50, 50, 1);
 }
 
 sp-appheader {/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#d8d8d8+1,c4c4c4+100 */
@@ -102,5 +100,4 @@ sp-sidebarmenu label {
 
 }
 sp-header {
-    background-color: #383838;
 }

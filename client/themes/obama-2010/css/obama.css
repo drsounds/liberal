@@ -70,12 +70,15 @@ input {
     margin-top: 5pt !important;
 }
 
+
 sp-toolbar {
-  
-    height: 25pt;
+    font-family: "Helvetica";
     width: auto;
     border: none;
     border-radius: 5pt;
+
+    font-size: 15pt;
+    border-bottom: 1px solid #383838;
    /* box-shadow:inset 0pt -1pt 0pt rgba(255, 255, 255, .1), inset 0pt 1pt 0pt rgba(0, 0, 0, 1);*/
     
     
@@ -263,9 +266,25 @@ sp-tab {
     color: #88ff88;
     
 }
+sp-toolbutton:hover {
+    opacity: 1;
+}
+sp-toolbutton:active {
+    opacity: 0.5;
+}
+sp-toolbutton {
+    opacity: 0.6;
+    padding-left: 3pt;
+    padding-right: 3pt;
+    border-right: 1px solid rgba(0, 0, 0, .5);
+
+    color: rgba(255, 255, 255, 1);
+    box-shadow: 1px 0pt 0pt rgba(255, 255, 255, 0.1);
+}
 
 
 th {
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, .9);
 /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#bcbcbc+1,919191+100 */
 background: rgb(188,188,188); /* Old browsers */
 background: -moz-linear-gradient(top,  rgba(188,188,188,1) 1%, rgba(145,145,145,1) 100%); /* FF3.6-15 */
@@ -273,18 +292,16 @@ background: -webkit-linear-gradient(top,  rgba(188,188,188,1) 1%,rgba(145,145,14
 background: linear-gradient(to bottom,  rgba(188,188,188,1) 1%,rgba(145,145,145,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bcbcbc', endColorstr='#919191',GradientType=0 ); /* IE6-9 */
 
-box-shadow:inset 0pt 1pt 0pt rgba(255, 255, 255, .4), inset 0pt -1pt 0pt #333;
 /*border-bottom: 1pt solid #333;*/
 color: #333;
-text-shadow: 0pt 1pt 0pt rgba(255, 255, 255, 1);
+border-bottom: 1px solid #222;
+border-top: 1px solid #222;
 }
 
 
 sp-divider {
     background: url('../images/divider.png') !important;
-    background-size: stretch;
     border-bottom: 1px solid #010101;
     background-size: 100% 100%;
     box-shadow: inset 0pt 1px 0px #696969;
-    
 }

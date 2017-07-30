@@ -19,6 +19,7 @@
     "node-wikipedia": "0.0.2",
     "object-assign": "^4.1.1",
     "parse": "^1.9.2",
+    "query-string": "^4.3.4",
     "request": "^2.81.0",
     "socket.io": "~0.9.14",
     "wikipedia-js": "0.0.6"

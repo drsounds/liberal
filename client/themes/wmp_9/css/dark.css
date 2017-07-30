@@ -28,7 +28,8 @@ sp-throbber  * {
   -webkit-transform: translate(-50%, -50%);
 }
 sp-viewstack {
-  background-color: rgba(0, 0, 0, .2);
+  background-color: rgba(255, 255, 255, .1);
+
 }
 
 

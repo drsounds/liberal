@@ -1,15 +1,16 @@
 :root {
     --background-color: var(--now-playing-brand-accent);
 }
-
+body, input {
+    font-size: 12pt;
+}
 body {
-    
     
     /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,ffffff+100&0.69+0,0+75 */
 /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,ffffff+100&0.15+0,0+75 */
-background: -moz-linear-gradient(top,  rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 75%, rgba(255,255,255,0) 100%); /* FF3.6-15 */
-background: -webkit-linear-gradient(top,  rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 75%,rgba(255,255,255,0) 100%); /* Chrome10-25,Safari5.1-6 */
-background: linear-gradient(to bottom,  rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 75%,rgba(255,255,255,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+background: -moz-linear-gradient(top,  rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top,  rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 25%,rgba(255,255,255,0) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom,  rgba(255,255,255,0.15) 0%,rgba(255,255,255,0) 25%,rgba(255,255,255,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#26ffffff', endColorstr='#00ffffff',GradientType=0 ); /* IE6-9 */
 background-position: fixed;
 background-color: var(--background-color);
@@ -24,7 +25,6 @@ sp-appheader, sp-appfooter {
     
 }
 sp-trackcontext {
-    background-color: rgba(255, 255, 255, .02);
     box-shadow: 0pt 0pt 15pt rgba(0, 0, 0, .02);
 }
 table {
@@ -36,6 +36,17 @@ small {
 sp-infobar {
     background-color: var(--brand-primary);
     padding: 3pt;
+}
+sp-viewstack > .sp-view {
+    padding-top: 40pt;
+}
+sp-searchform button {
+    border: none;
+}
+sp-searchform {
+    width: 300pt;
+    z-index: 1000;
+    -webkit-transform: translate(280pt, 10pt);
 }
 td, th {
     padding: 3pt;
@@ -80,7 +91,7 @@ input {
     border-radius: 10pt;
 }
 sp-tabbar {
-    background-color: rgba(0, 0, 0, .1);
+    border-bottom: 1px solid rgba(255, 255, 255, .11);
 }
 button.primary {
     background-color: var(--brand-primary);

@@ -178,11 +178,12 @@ class Store extends EventEmitter {
             'spotify': new SpotifyMusicService()
         };
         this.state = {};
+        /*
         this.heart = setInterval(async () => {
-    //        this.state.player = await this.getCurrentTrack();
-      //      this.emit('change');
+           this.state.player = await this.getCurrentTrack();
+           this.emit('change');
             
-        }, 1000);
+        }, 1000);*/
         this.hue = this.hue;
         this.saturation = this.saturation;
         this.flavor = this.flavor;
@@ -445,11 +446,13 @@ class SPThemeEditorElement extends HTMLElement {
             this.saturationChooser.setAttribute('max', 360);
             this.saturationChooser.value = store.saturation;
             this.styleselect = document.createElement('select');
-            this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="maestro">Maestro</option><option value="obama">Obama</option><option value="obama-flat">Obama (flat)</option><option value="chromify">Chromify</option><option value="wmp_11">Windows Media Player 11</option><option value="wmp_11_beta">Windows Media Player 11</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_9">Windows Media Player 9</option>';
+            this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="maestro">Maestro</option><option value="obama">Obama</option><option value="obama-2010">Obama 2010</option><option value="obama-flat">Obama (flat)</option><option value="chromify">Chromify</option><option value="wmp_11">Windows Media Player 11</option><option value="wmp_11_beta">Windows Media Player 11</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_9">Windows Media Player 9</option>';
             this.appendChild(this.styleselect);
             this.flavorselect = document.createElement('select');
             this.flavorselect.innerHTML += '<option value="dark">' + _('Dark') + '</option><option value="light">' + _('Light') + '</option>';
             this.appendChild(this.flavorselect);
+            this.saturationChooser.addEventListener('change', this.saturationSlider);
+            this.saturationChooser.addEventListener('mousemove', this.saturationSlider);
             this.flavorselect.addEventListener('change', (e) => {
                 store.flavor = e.target.options[e.target.selectedIndex].value;
             });
@@ -477,10 +480,13 @@ document.registerElement('sp-themeeditor', SPThemeEditorElement);
 class SPAppHeaderElement extends HTMLElement {
     attachedCallback() {
         if (!this.created) {
-            this.innerHTML = '<button id="btnBack" class="fa fa-arrow-left" onclick="history.back()"><button class="fa fa-arrow-right" onclick="history.forward()"></button><div style="flex: 5"></div>';
             if (!this.searchForm) {
                 this.searchForm = document.createElement('sp-searchform');
-                this.appendChild(this.searchForm);
+                if (localStorage.getItem("stylesheet") === 'maestro') {
+                    document.body.appendChild(this.searchForm);
+                } else {
+                    this.appendChild(this.searchForm);
+                }         
                 this.searchForm.style.marginRight = '5pt';
             }
             this.loginButton = document.createElement('button');
@@ -662,7 +668,7 @@ class SPChromeElement extends HTMLElement {
 //        this.main.appendChild(this.rightSideBar);
         this.playlist = document.createElement('sp-trackcontext');
         this.rightSideBar.appendChild(this.playlist);
-        this.playlist.uri = 'spotify:internal:library';
+        this.playlist.uri = 'spotify:internal:library:track';
         
     }
     alert(obj) {
@@ -808,6 +814,10 @@ class SPViewStackElement extends HTMLElement {
                 view = document.createElement('sp-settingsview');  
             } else if (/^bungalow:internal:start$/g.test(newUri)) {
                 view = document.createElement('sp-startview');
+            } else if (/^bungalow:book:([a-zA-Z0-9\ \_]+):audio/g.test(newUri)) {
+                view = document.createElement('sp-audiobookview');
+            } else if (/^bungalow:audiobook:([a-zA-Z\ \_]+)/g.test(newUri)) {
+                view = document.createElement('sp-audiobookview');
             } else if (/^bungalow:genre:(.*)$/g.test(newUri)) {
                 view = document.createElement('sp-genreview');
                 
@@ -939,13 +949,16 @@ class SPTitleElement extends HTMLElement {
             }).join(', ') + '</span>';
         }
         if (object.owner) {
-            titleHTML += ' <span style="opacity: 0.7"> ' + _('by') + ' <sp-link uri="' + object.owner.uri + '">' + _(object.owner.name) + '</sp-link></span>'; 
+            titleHTML += ' <span style="opacity: 0.7"> ' + _('by') + ' <sp-link uri="' + object.owner.uri + '">' + _(object.owner.id) + '</sp-link></span>'; 
         }
         if (object.for) {
             titleHTML += ' <span style="opacity: 0.7"> ' + _('for') + ' <sp-link uri="' + object.for.uri + '">' + _(object.for.name) + '</sp-link></span>'; 
         }
         if (object.in) {
             titleHTML += ' <span style="opacity: 0.7"> ' + _('in') + ' <sp-link uri="' + object.in.uri + '">' + _(object.in.name) + '</sp-link></span>'; 
+        }
+        if (object.speaker) {
+            titleHTML += ' <span style="opacity: 0.7"> ' + _('spoken by') + ' <sp-link uri="' + object.in.uri + '">' + _(object.speaker.name) + '</sp-link></span>'; 
         }
         this.innerHTML = titleHTML;
     }
@@ -969,6 +982,16 @@ class SPHeaderElement extends SPResourceElement {
             this.tabBar = document.createElement('sp-tabbar');
             this.parentNode.appendChild(this.tabBar);
             this.created = true;
+            let innerHTML = _.unescape(document.querySelector('#headerTemplate').innerHTML);
+            let template = _.template(innerHTML);
+            this.innerHTML = template({
+                object: object,
+                size: size,
+                width: width,
+                height: height,
+                title: titleElement.innerHTML,
+                strFollowers: strFollowers  
+            });
         }
     }
     setState(object) {
@@ -1028,12 +1051,436 @@ class SPHeaderElement extends SPResourceElement {
 }
 
 
+class SPTableDataSource {
+    get numberOfRows () {
+        return 0;
+    }
+    get numberOfColumnHeaders () {
+        return 0;
+    }
+    getRowAt(rowId, row) {
+        throw "NotImplementedException"
+    }
+    getColumnAt(pos) {
+        throw "NotImplementedException"
+    }
+    getNumberOfChildren(row) {
+        return 0;
+    }
+    getChildRowAt(parentRowId, rowId) {
+        return null;
+    }
+    /**
+     * Fetch next rows
+     **/
+    fetchNext() {
+        // TODO Implement fetch next
+    }
+}
+
+
+/**
+ * Cretes a design for the table
+ **/
+class SPTableDesigner {
+    getCellElementAt(columnIndex, row) {
+        let td = document.createElement('td');
+        return td;
+    }
+    getRowElement(row) {
+        // Returns row at index
+        let tr = document.createElement('tr');
+        return tr;
+    }
+    getColumnElement(row, column) {
+        let th = document.createElement('th');
+        return th;
+    }
+}
+
+
+class SPTrackTableDataSource extends SPTableDataSource {
+    constructor(uri, q, fields, limit = 28) {
+        super();
+        this.uri = uri;
+        this.q = q;
+        this.limit = limit;
+        if (limit) {
+            this.limitRows = true;
+        }
+        this.objects = [];
+        this.offset = 1;
+        this.fields = fields
+    }
+    async fetchNext() {
+
+        let result = await store.request('GET', this.uri, {q: this.q, limit: this.limit, offset: this.offset});
+        if ('objects' in result && result.objects instanceof Array)
+        this.objects = result.objects;
+        if (this.onchange instanceof Function) {
+            this.onchange.call(this);
+        }
+    }
+    getNumberOfRows(row) {
+        if (!row) {
+            if (this.table.maxRows > 0 && this.table.maxRows < this.objects.length)
+                return this.table.maxRows;
+            return this.objects.length;
+        }
+    }
+    getRowAt(index, row) {
+        return this.objects[index];
+    }
+    get numberOfColumnHeaders () {
+        return this.fields.length;
+    }
+    getColumnAt(pos) {
+        return this.fields[pos];
+    }
+}
+
+class SPTrackTableDesigner extends SPTableDesigner {
+    getHeaderRow() {
+        let tr = document.createElement('tr');
+
+        return tr;
+    }
+    getColumnElementAt(index) {
+        let th = document.createElement('th');
+        th.innerHTML = this.table.dataSource.fields[index];
+        return th;
+    }
+
+    getRowElement(row) {
+        let tr = document.createElement('tr');
+        tr.setAttribute('data-uri', row.uri);
+        tr.setAttribute('data-position', row.position);
+        if (isNaN(row.position)) throw "Error";
+        
+        tr.setAttribute('data-index', row.position);
+        if (this.table.hasAttribute('data-context-artist-uri')) {
+            let contextArtistUri = this.table.getAttribute('data-context-artist-uri').replace(
+                'bungalow', 'spotify'    
+            );
+            if (row.artists.filter( a => a.uri == contextArtistUri).length < 1 && !!contextArtistUri) {
+                tr.style.opacity = 0.6;
+            }
+        }
+        if (store.state.player && store.state.player.item && store.state.player.item.uri == row.uri) {
+            tr.classList.add('sp-current-track');
+        }
+        return tr;
+
+    }
+    getCellElement(columnIndex, track) {
+        var td = document.createElement('td');
+          let val = '';
+          let field = this.table.fields[columnIndex];
+          val = track[field];
+          if (field === 'p' || field === 'position') {
+              td.width = '1pt';
+              if (parseInt(val) < 10) {
+                  val = '0' + val;
+              }
+              td.innerHTML = '<span style="text-align: right; opacity: 0.5">' + val + '</span>';
+          } else if (field === 'duration') {
+              td.innerHTML = '<span style="opacity: 0.5">' + (val + '') .toHHMMSS() + '</span>';
+              td.width = '10pt';
+          } else if (field === 'popularity') {
+              td.innerHTML = '<sp-popularitybar value="' + (track.popularity || 0) + '"></sp-popularitybar>';
+          } else if (field === 'discovered') {
+              let discoverLevel = 0;
+              td.width = "10pt";
+              td.classList.add('discovered');
+              let discovered = store.hasDiscoveredTrack(track, this.playlist);
+                
+              if (!discovered) {
+                  store.discoverTrack(track, this.playlist);
+                  val = ''; // '<i class="fa fa-circle new"></i>';
+              } else {
+                  val = "";
+              }
+              td.innerHTML = val;
+          } else if ((field === 'time' || field == 'added_at') && !!val) {
+              let date = moment(val);
+              let now = moment();
+            let dr = Math.abs(date.diff(now, 'days'));
+            let fresh = Math.abs(date.diff(now, 'days'));
+            let tooOld = dr > 1;
+              let strTime = dr ? date.format('YYYY-MM-DD') : date.fromNow();
+              td.innerHTML = '<span>' + strTime + '</span>';
+              if (tooOld) {
+                  td.querySelector('span').style.opacity = 0.5;
+              }
+        
+              
+          } else if (typeof(val) === 'string') {
+            td.innerHTML = '<span>' + val + '</span>';
+          } else if (val instanceof Array) {
+             td.innerHTML = val.filter(o => {
+                if (!this.table.hasAttribute('data-context-artist-uri'))
+                    return true;
+                return o.uri != this.table.getAttribute('data-context-artist-uri').replace(
+                    'bungalow', 'spotify'    
+                );
+                 
+             }).map((v, i) => {
+                
+                 return '<sp-link uri="' + v.uri + '">' + v.name + '</sp-link>'
+            }).join(', '); 
+          } else if (val instanceof Object) {
+              if (val) {
+              td.innerHTML = '<sp-link uri="' + val.uri + '">' + val.name + '</sp-link>'; 
+              } else {
+                  td.innerHTML = '&nbsp;';
+              }
+          } else {
+            td.innerHTML = '';
+          }
+          if (field === 'name') {
+            td.width = '500pt';
+        }
+    
+        return td;
+    }
+}
+
+
+/**
+ * Table element
+ **/
+class SPTableElement extends HTMLElement {
+    get fields () {
+
+        let _fields = this.getAttribute('fields');
+        if (!_fields) {
+            _fields = 'name,artists,album';
+        }
+        return _fields.split(',');
+    }
+    set fields(value) {
+        this.setAttribute('fields', value.join(','));
+    }
+    constructor() {
+        super();
+        this._dataSource = null;
+        this._designer = null;
+        this._selectedIndicies = [];
+    }
+    get selectedIndicies() {
+        return this._selectedIndicies;
+    }
+    get selectedObjects() {
+        return this.selectedIndicies.map((i) => {
+            return this.dataSource.getRowAt(i);
+        });
+    }
+    set selectedIndicies(value) {
+        this._selectedIndicies = value;
+
+        let trs = document.querySelectorAll('tr');
+        for (let i = 0; i < trs.length; i++) {
+            trs[i].classList.remove('sp-track-selected');
+        }
+        this._selectedIndicies.map((i) => {
+            this.querySelector('tr[data-index="' + i + '"]').classList.add('sp-track-selected');
+        });
+    }
+    fetchNext() {
+        this.dataSource.fetchNext();
+    }
+    get dataSource() {
+        return this._dataSource;
+    }
+    set dataSource(value) {
+        this._dataSource = value;
+        this._dataSource.table = this;
+        this._dataSource.onchange = (e) => {
+            this.render();
+            let firstRow = this.querySelector('tr');
+           /* if (firstRow) {
+                let th = this.querySelector('th');
+                let size = (firstRow.getBoundingClientRect().height * 2) + 'pt ' + (firstRow.cells[0].getBoundingClientRect().height * 1.5) + 'pt';
+                this.parentNode.style.backgroundSize =  size;
+                let tablestart = th.getBoundingClientRect().top + th.getBoundingClientRect().height;
+                this.parentNode.style.backgroundPosition = '0pt ' +  (tablestart) +  'pt';
+                debugger;
+            }*/
+
+        }
+    }
+    get designer() {
+        return this._designer;
+    }
+    set designer(value) {
+        this._designer = value;
+        this._designer.table = this;
+    }
+    createdCallback() {
+        console.log("T");
+        if (!this.created) {  
+            this.table = document.createElement('table');
+            this.table.thead = document.createElement('thead');
+            this.table.thead.tr = document.createElement('tr');
+            this.table.thead.appendChild(this.table.thead.tr);
+            this.table.appendChild(this.table.thead);
+            this.table.tbody = document.createElement('tbody');
+            this.table.appendChild(this.table.tbody);
+            this.appendChild(this.table);
+            this.created = true;
+
+        }
+    }   
+    attachedCallback() {
+
+            this.parentNode.classList.add('table-background');
+
+    }
+
+    activate() {
+        // this.checkState();
+    }
+
+    get limit() {
+        if (!this.hasAttribute('limit')) return 30;
+        return parseInt(this.getAttribute('limit'));
+    }
+
+    set limit(value) {
+            this.setAttribute('limit', value);
+    }
+
+    get offset() {
+        if (!this.hasAttribute('offset')) return 0;
+            return parseInt(this.getAttribute('offset'));
+    }
+
+    get uri() {
+        return this.getAttribute('uri');
+    }
+
+    set uri(value) {
+        this.setAttribute('uri', value);
+    }
+    set offset(value) {
+        this.setAttribute('offset', value);
+    }
+    get query() {
+        return this.getAttribute('query');
+    }
+    set query(value) {
+        this.setAttribute('query', value);
+    }
+    set header(val) {
+        this._header = val;
+    }
+    get header() {
+        return this._header;
+    }
+    get view() {
+        return this._view;
+    }
+    set view(val) {
+        
+        this._view = val;
+        this._view.classList.add('zebra');
+
+        this._view.addEventListener('scroll', this._onScroll.bind(this));
+    }
+    _onScroll(e) {
+        let view = e.target;
+        let viewBounds = view.getBoundingClientRect();
+        let bounds = this.getBoundingClientRect();
+        let tabBar = GlobalTabBar.getBoundingClientRect();
+        let headerHeight = 0;
+        if (this.header) {  
+            headerHeight = this.header.getBoundingClientRect().height;;
+        } 
+        console.log(bounds.top, viewBounds.top);
+        if (view.scrollTop > headerHeight ) {
+            view.style.display = 'block';
+            let transform = 'translateY(' + ( view.scrollTop - headerHeight) + 'px)';
+            this.table.thead.style.transform = transform; 
+        } else {
+            this.table.thead.style.transform = 'translateY(0px)';
+        }
+        let gondole = this.querySelector('sp-gondole');
+        if (gondole && gondole.getBoundingClientRect().top < viewBounds.top + viewBounds.height) {
+            if (!gondole.hasAttribute('activated'))
+            this.fetchNext();
+        }
+    
+    }
+    render() {
+        if (this._designer == null) throw "No designer set";
+        if (this._dataSource == null) throw "Missing data source";
+        this.table.tbody.innerHTML = '';
+        this.table.thead.innerHTML = '';
+        this.table.thead.tr = this.designer.getHeaderRow(); 
+        this.table.thead.appendChild(this.table.thead.tr);
+         for (let i = 0; i < this.dataSource.getNumberOfRows(); i++) {
+            
+            let row = this.dataSource.getRowAt(i);
+            let tr = this.designer.getRowElement(row);
+            tr.setAttribute('data-id', row.id);
+            for (let j = 0; j < this.dataSource.numberOfColumnHeaders; j++) {
+                let td = this.designer.getCellElement(j, row);
+                if (!td) continue;
+                tr.appendChild(td);
+                tr.dataset.index = i;
+                td.addEventListener('mousedown', (e) => {
+                    this.selectedIndicies = [e.target.parentNode.dataset.index];
+                })
+            }
+
+            this.table.tbody.appendChild(tr);
+            let numberOfChildren = this.dataSource.getNumberOfChildren(row);
+            for (let c = 0; c < numberOfChildren; c++) {
+                
+                let child = this.dataSource.getRowAt(c, row);
+                let tr2 = this.designer.getRowElement(child);
+                tr2.setAttribute('data-parent-id', row.id);
+
+                tr2.setAttribute('data-parent-index', i);
+
+                for (let j = 0; j < this.dataSource.numberOfColumnHeaders; j++) {
+                    let td = this.designer.getCellElement(j, child);
+                    tr2.appendChild(td);
+                    tr2.dataset.index = i;
+                    td.addEventListener('mousedown', (e) => {
+                        this.selectedIndicies = [e.target.parentNode.dataset.index];
+                    })
+
+                }
+                tr2.style.display = 'none';
+                this.table.tbody.appendChild(tr2);
+
+            }
+            if (numberOfChildren > 0 && numberOfChildren % 2 == 1) {
+                let trf = document.createElement('tr');
+                this.table.tbody.appendChild(trf);
+            }
+            if (i == this.dataSource.getNumberOfRows() - 1) {
+                let rect = tr.getBoundingClientRect();
+                this.view.style.backgroundPosition = "0pt " + (rect.top + rect.height + (i % 2 == 0 ? rect.height : 0) + (this.header.getBoundingClientRect().top)) + 'pt';  
+            }
+        }
+        for (let j = 0; j < this.dataSource.numberOfColumnHeaders; j++) {
+            let th = this.designer.getColumnElementAt(j);
+            this.table.thead.tr.appendChild(th);
+        }
+    }
+}
+
+
 class SPToolbarElement extends HTMLElement {
     attachedCallback () {
         this.innerHTML = '<button class="primary"><i class="fa fa-play"></i> ' + _('Play') + '</button>&nbsp;';
         this.innerHTML += '<button>...</button>';
     }
 }
+
+
 document.registerElement('sp-toolbar', SPToolbarElement);
 
 document.registerElement('sp-header', SPHeaderElement);
@@ -1173,7 +1620,6 @@ class SPArtistViewElement extends SPViewElement {
     async attributeChangedCallback(attrName, oldVal, newVal) {
         if (!newVal) return;
         if (attrName == 'uri') {
-            
             this.overviewTab.toplist.setAttribute('data-context-artist-uri', newVal);
             this.overviewTab.toplist.setAttribute('fields', 'p,name,duration,artists');
             if (newVal in store.state) {
@@ -1221,6 +1667,7 @@ class SPUserViewElement extends SPViewElement {
         }
         if (!this.albumList) {
             this.albumList = document.createElement('sp-playlistcontext');
+            this.albumList.setAttribute('data-max-rows', 10);
             this.albumList.setAttribute('fields', 'name,duration,artists,added_at,added_by');
             this.appendChild(this.albumList);
         }
@@ -1377,18 +1824,22 @@ class SPPlaylistElement extends SPResourceElement {
         let titleElement = document.createElement('sp-title');
         titleElement.setState(obj);
         let dataContextUri = this.getAttribute('data-context-artist-uri') || null;
+        let maxRows = this.getAttribute("data-max-rows");
+
         this.innerHTML = '';
+        let fields =  this.getAttribute('fields');
         this.object = obj;
         let template = _.unescape(document.querySelector('#playlistTemplate').innerHTML);
         this.innerHTML = _.template(template)({
             title: titleElement.innerHTML,
             strReleaseDate: strReleaseDate,
-            fields: this.getAttribute('fields'),
+            fields: fields,
+            maxRows: maxRows,
             obj: obj,
             dataContextUri: dataContextUri
         });
         
-        if (this.view != null && localStorage.getItem('stylesheet') == 'maestro') {
+        if (this.view != null && localStorage.getItem('vibrance') == 'true') {
             this.vibrance();
         }
     }
@@ -1406,7 +1857,7 @@ class SPPlaylistElement extends SPResourceElement {
             let bgColor = swatchToColor(color);
             
         //    this.view.style.backgroundColor = bgColor;
-            let background = 'linear-gradient(-90deg, ' + swatchToColor(color) + ', ' + swatchToColor(muted) + ')';
+            let background = 'linear-gradient(-90deg, ' + swatchToColor(color) + ' 0%, ' + swatchToColor(muted) + ' 10%)';
             this.view.style.background = background;
         }
     }
@@ -1603,7 +2054,7 @@ String.prototype.toHHMMSS = function () {
     return (hours > 0 ? strHours+':' : '') + strMinutes + ':' + strSeconds;
 }
 
-
+/*
 class SPTrackContextElement extends SPResourceElement {
     constructor() {
         super();
@@ -1738,8 +2189,7 @@ class SPTrackContextElement extends SPResourceElement {
         if (!newVal) return;
         let uri = newVal;
         if (attrName == 'uri') {
-            let result = await store.request('GET', uri, {q: this.query, limit: this.limit, offset: this.offset});
-                this.setState(result);
+            
         }
     }
     createTrack (track, i) {
@@ -1753,7 +2203,7 @@ class SPTrackContextElement extends SPResourceElement {
         });
         /*if (!(track.is_playable || (track.track && track.track.is_playable) || 'is_playable')) {
             tr.classList.add('sp-track-unavailable');
-        }*/
+        }
         tr.classList.add('sp-track');
         tr.setAttribute('data-uri', track.uri);
         tr.setAttribute('data-position', track.position);
@@ -1764,7 +2214,7 @@ class SPTrackContextElement extends SPResourceElement {
             let contextArtistUri = this.getAttribute('data-context-artist-uri').replace(
                 'bungalow', 'spotify'    
             );
-            if (track.artists.filter( a => a.uri == contextArtistUri).length < 1) {
+            if (track.artists.filter( a => a.uri == contextArtistUri).length < 1 && !!contextArtistUri) {
                 tr.style.opacity = 0.6;
             }
         }
@@ -1798,7 +2248,7 @@ class SPTrackContextElement extends SPResourceElement {
             }
          /*   
             debugger;
-             */
+             
         });
         if (store.state.player && store.state.player.item && store.state.player.item.uri == track.uri) {
             tr.classList.add('sp-current-track');
@@ -1922,6 +2372,73 @@ class SPTrackContextElement extends SPResourceElement {
             
         }
     }
+}*/
+
+
+class SPAudioBookViewElement extends SPViewElement {
+    attachedCallback() {
+        super.attachedCallback();
+        this.classList.add('sp-view');
+    }
+    acceptsUri(uri) {
+        return /^bungalow:book:(.*):audio$/.test(uri);
+    }
+    navigate() {
+        
+    }
+    async attributeChangedCallback(attrName, oldVal, newVal) {
+        if (!newVal) return;
+        if (attrName === 'uri') {
+            this.obj = await store.request('GET', newVal);
+            this.innerHTML = '';
+            this.albumView = document.createElement('sp-playlist');
+            this.albumView.fields = 'name,duration,artists'
+            this.appendChild(this.albumView);
+            this.albumView.showCopyrights = true;
+            this.albumView.view = this;
+            let id = newVal.split(':')[2];
+            this.albumView.setAttribute('uri', 'bungalow:album:' + id);
+        }
+    }   
+}
+
+document.registerElement('sp-audiobookview', SPAudioBookViewElement);
+
+
+class SPTrackContextElement extends SPTableElement {
+    attachedCallback() {
+        super.attachedCallback();
+        if (!this.created2) {
+            this.attributeChangedCallback('uri', null, this.getAttribute('uri'));
+            this.attributeChangedCallback('fields', null, this.getAttribute('fields'));
+            this.created2 = true;
+        }
+
+
+    }
+    get maxRows() {
+        return this.getAttribute('data-max-rows') || 0;
+    }
+    attributeChangedCallback(attrName, oldVal, newVal) {
+        if (attrName == 'fields') {
+            if (!!newVal)
+            this.fields = newVal.split(',');
+        }
+        if (attrName == 'uri') {
+            this.designer = new SPTrackTableDesigner();
+            
+            this.dataSource = new SPTrackTableDataSource(newVal, '', this.fields, this.maxRows);
+            this.fetchNext();
+        }
+    }
+    render() {
+        super.render();
+        if (!this.getAttribute('headers')) {
+            let thead = this.querySelector('thead');
+            this.table.thead.style.display = 'none';
+            
+        }
+    }
 }
 document.registerElement('sp-trackcontext', SPTrackContextElement);
 /*
@@ -1964,8 +2481,9 @@ class SPPlaylistContextElement extends SPResourceElement {
         if (!newVal) return;
         if (attrName == 'uri') {
             this.limit = 30;
-            this.offset = 0;
-            let result = await store.request('GET', newVal + '?limit=' + this.limit + '&offset=' + this.offset);
+            this.offset = 1;
+            let uri = newVal;
+            let result = await store.request('GET', newVal, {limit: this.limit, offset: this.offset});
             this.setState(result);
             if (result != null && result.objects.length > 0) {
                 
@@ -1992,11 +2510,16 @@ class SPPlaylistContextElement extends SPResourceElement {
         if (obj && obj.objects instanceof Array) {
             let albums = obj.objects.map((item) => {
                var a = document.createElement('sp-playlist');
+               if (this.hasAttribute('data-max-rows')) {
+                    a.setAttribute('data-max-rows', this.getAttribute('data-max-rows'));
+               }
                 if (this.hasAttribute('data-context-artist-uri')) {
                    a.setAttribute('data-context-artist-uri', this.getAttribute('data-context-artist-uri'));
                 }
                 if (this.hasAttribute('fields'))
                     a.setAttribute('fields', this.getAttribute('fields'));
+                let fields = a.fields;
+                
                a.setState(item);
                store.state[item.uri + ':track'] = item.tracks;
                store.state[item.uri] = item;
@@ -2020,7 +2543,10 @@ class SPPlaylistContextElement extends SPResourceElement {
         gondole.setAttribute('active', 'true');
         this.offset += this.limit;
         this.removeChild(gondole);
-        let result = await store.request('GET', this.getAttribute('uri') + '?offset=' + this.offset + '&limit=' + this.limit);
+        console.log(this.offset);
+        let uri = this.getAttribute('uri') + '?offset=' + this.offset + '&limit=' + this.limit;
+        console.log(uri);
+        let result = await store.request('GET', uri);
         if (result && result.objects instanceof Array && result.objects.length > 0) {
             result.objects.map(this.createPlaylist.bind(this)).map((tr) => {
                 this.appendChild(tr);
@@ -2186,6 +2712,14 @@ class SPSettingsViewElement extends SPViewElement {
 
 document.registerElement('sp-settingsview', SPSettingsViewElement);
 
+
+class SPPodcastViewElement extends SPViewElement {
+    attachedCallback() {
+        if (!this.created) {
+            this.created = true;
+        }
+    }
+}
 
 class SPTabBarElement extends HTMLElement {
     attachedCallback() {
@@ -2355,6 +2889,8 @@ class SPSearchFormElement extends HTMLFormElement {
    
     attachedCallback() {
         if (!this.created) {
+             this.innerHTML = '<button id="btnBack" class="fa fa-arrow-left" onclick="history.back()"><button class="fa fa-arrow-right" onclick="history.forward()"></button><div style="flex: 5"></div>';
+           
             this.form = document.createElement('form');
             this.form.setAttribute('action', '/');
             this.form.setAttribute('method', 'GET');
@@ -2450,7 +2986,7 @@ class SPPlaylistViewElement extends SPViewElement {
         this.classList.add('sp-view');
         if (!this.header) {
             this.header = document.createElement('sp-header');
-            this.header.setAttribute('size', 64);
+            this.header.setAttribute('size', 128);
             this.appendChild(this.header);
         }
         if (!this.trackcontext) {
@@ -2672,3 +3208,5 @@ class SPLabelViewElement extends SPViewElement {
 }
 
 document.registerElement('sp-labelview', SPLabelViewElement);
+
+

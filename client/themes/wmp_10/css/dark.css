@@ -30,7 +30,9 @@ sp-throbber  * {
 sp-viewstack {
   background-color: rgba(0, 0, 0, .2);
 }
-
+sp-table {
+  -webkit-font-smoothing : none;
+}
 
 sp-aspect {
   display: none;
@@ -190,7 +192,7 @@ sp-appheader, sp-appfooter {
   background-color: black;
 }
 sp-sidebar {
-  border-right: 1pt solid #aaa;
+  border-right: 1pt solid var(--foreground-color) !important;
 }
 table {
   border-collapse: collapse;
