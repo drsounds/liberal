@@ -6,7 +6,7 @@ function LerosService() {
     this.apikeys = JSON.parse(fs.readFileSync(os.homedir() + '/.bungalow/leros.key.json'));
     Parse.serverURL = 'https://parseapi.back4app.com/'
     Parse.initialize(this.apikeys.app_id);
-    Parse.ParseUser.logIn('drsounds', '123');
+    Parse.User.logIn('drsounds', '123');
 }
 var Aqtivity = Parse.Object.extend('Aqtivity');
 var Facility = Parse.Object.extend('Facility');
