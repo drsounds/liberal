@@ -1,13 +1,13 @@
 define(['controls/resource'], function (SPResourceElement) {
-	class SPHeaderElement extends SPResourceElement {
+	return class SPHeaderElement extends SPResourceElement {
         attachedCallback() {
             if (!this.created) {
             this.classList.add('header');
-                GlobalTabBar.titleVisible  = false;
+                window.GlobalTabBar.titleVisible  = false;
                 this.parentNode.addEventListener('scroll', (e) => {
                     let headerBounds = this.getBoundingClientRect();
                     let viewBounds = this.parentNode.getBoundingClientRect();
-                    GlobalTabBar.titleVisible = (headerBounds.top < viewBounds.top - (headerBounds.height * 0.5));
+                    window.GlobalTabBar.titleVisible = (headerBounds.top < viewBounds.top - (headerBounds.height * 0.5));
                     console.log(headerBounds.top, viewBounds.top)
                 });
                 this.tabBar = document.createElement('sp-tabbar');
@@ -73,13 +73,11 @@ define(['controls/resource'], function (SPResourceElement) {
                     let color = vibrant.swatches()['Vibrant'];
                     let bg = 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.05)';
                     this.parentNode.style.backgroundColor = bg;
-                    GlobalTabBar.style.backgroundColor = bg;
+                    window.GlobalTabBar.style.backgroundColor = bg;
                     
                 
                 }
             }
         }
     }
-    document.registerElement('sp-header', SPHeaderElement);
-    return SPHeaderElement;
 })

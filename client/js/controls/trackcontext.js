@@ -1,5 +1,5 @@
-define(['controls/table'], function (SPTableElement) {
-    class SPTrackContextElement extends SPTableElement {
+define(['controls/table', 'controls/tracktabledesigner', 'controls/tracktabledatasource'], function (SPTableElement, SPTrackTableDesigner, SPTrackTableDataSource) {
+    return class SPTrackContextElement extends SPTableElement {
         attachedCallback() {
             super.attachedCallback();
             if (!this.created2) {
@@ -34,6 +34,4 @@ define(['controls/table'], function (SPTableElement) {
             }
         }
     }
-    document.registerElement('sp-trackcontext', SPTrackContextElement);
-    return SPTrackContextElement;
 })

@@ -1,5 +1,5 @@
 define(function () {
-	class SPViewElement extends HTMLElement {
+	return class SPViewElement extends HTMLElement {
         constructor() {
             super();
             this.scrollX = 0;
@@ -25,7 +25,7 @@ define(function () {
         }
         attachedCallback() {
             
-            GlobalTabBar.setState({objects: []});
+            window.GlobalTabBar.setState({objects: []});
             this.addEventListener('scroll', this._onScroll);
         }
         disconnectedCallback() {
@@ -35,8 +35,4 @@ define(function () {
             
         }
     }
-
-    document.registerElement('sp-view', SPViewElement);
-
-    return SPViewElement;
 })

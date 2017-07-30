@@ -1,5 +1,5 @@
 define(function () {
-    class SPTabElement extends HTMLElement {
+    return class SPTabElement extends HTMLElement {
         attachedCallback() {
             this.addEventListener('mousedown', this.onClick);
         }
@@ -15,8 +15,4 @@ define(function () {
             this.removeEventListener('click', this.onClick);
         }
     }
-
-
-    document.registerElement('sp-tab', SPTabElement);
-    return SPTabElement;
 })

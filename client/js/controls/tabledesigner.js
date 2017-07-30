@@ -2,7 +2,7 @@ define(function () {
 	/**
      * Cretes a design for the table
      **/
-    class SPTableDesigner {
+    return class SPTableDesigner {
         getCellElementAt(columnIndex, row) {
             let td = document.createElement('td');
             return td;
@@ -17,6 +17,4 @@ define(function () {
             return th;
         }
     }
-
-	return SPTableDesigner;
 })

@@ -1,5 +1,5 @@
 define(function () {
-    class SPInfoBarElement extends HTMLElement {
+    return class SPInfoBarElement extends HTMLElement {
         hide() {
             this.style.display = 'none';
         }
@@ -19,8 +19,4 @@ define(function () {
             });
         }
     }
-
-
-    document.registerElement('sp-infobar', SPInfoBarElement);
-    return SPInfoBarElement;
-})
+});

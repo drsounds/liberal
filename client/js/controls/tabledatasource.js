@@ -1,5 +1,5 @@
 define(function () {
-    class SPTableDataSource {
+    return class SPTableDataSource {
         get numberOfRows () {
             return 0;
         }
@@ -25,5 +25,4 @@ define(function () {
             // TODO Implement fetch next
         }
     }
-    return SPTableDataSource;
 })

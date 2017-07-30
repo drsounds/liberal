@@ -2,7 +2,7 @@ define(function () {
 	/**
      * Table element
      **/
-    class SPTableElement extends HTMLElement {
+    return class SPTableElement extends HTMLElement {
         get fields () {
 
             let _fields = this.getAttribute('fields');
@@ -144,7 +144,7 @@ define(function () {
             let view = e.target;
             let viewBounds = view.getBoundingClientRect();
             let bounds = this.getBoundingClientRect();
-            let tabBar = GlobalTabBar.getBoundingClientRect();
+            let tabBar = window.GlobalTabBar.getBoundingClientRect();
             let headerHeight = 0;
             if (this.header) {  
                 headerHeight = this.header.getBoundingClientRect().height;;
@@ -224,5 +224,4 @@ define(function () {
             }
         }
     }
-    return SPTableElement;
 })

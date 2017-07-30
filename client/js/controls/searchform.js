@@ -1,5 +1,5 @@
 define(function () {
-    class SPSearchFormElement extends HTMLFormElement {
+    return class SPSearchFormElement extends HTMLFormElement {
 
         attachedCallback() {
             if (!this.created) {
@@ -28,7 +28,4 @@ define(function () {
 
         }
     }
-
-    document.registerElement('sp-searchform', SPSearchFormElement);
-    return SPSearchFormElement;
 })

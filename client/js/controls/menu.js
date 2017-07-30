@@ -1,5 +1,5 @@
 define(function () {
-    class SPMenuElement extends HTMLElement {
+    return class SPMenuElement extends HTMLElement {
         async attachedCallback() {
 
 
@@ -31,8 +31,4 @@ define(function () {
         }
 
     }
-
-    document.registerElement('sp-menu', SPMenuElement);
-
-    return SPMenuElement;
 })

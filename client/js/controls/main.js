@@ -1,10 +1,10 @@
 define(['controls/viewstack'], function (SPViewStackElement) {
-    class SPMainElement extends HTMLElement {
+    return class SPMainElement extends HTMLElement {
         attachedCallback() {
             if (!this.viewStack) {
                 this.tabBar = document.createElement('sp-tabbar');
                 this.appendChild(this.tabBar);
-                GlobalTabBar = this.tabBar;
+                window.GlobalTabBar = this.tabBar;
                 this.viewStack = document.createElement('sp-viewstack');
                 GlobalViewStack = this.viewStack;
                 this.appendChild(this.viewStack);
@@ -13,5 +13,4 @@ define(['controls/viewstack'], function (SPViewStackElement) {
             }
         }
     }
-    document.registerElement('sp-main', SPMainElement);
 })

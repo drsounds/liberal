@@ -1,5 +1,5 @@
 define(function () {
-    class SPNowPlayingElement extends HTMLElement {
+    return class SPNowPlayingElement extends HTMLElement {
         attachedCallback() {
             this.addEventListener('click', this.onClick);
         }
@@ -18,7 +18,4 @@ define(function () {
 
         }
     }
-
-    document.registerElement('sp-nowplaying', SPNowPlayingElement);
-    return SPNowPlayingElement;
 })

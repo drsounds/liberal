@@ -1,5 +1,5 @@
 define(function () {
-	class SPImageElement extends HTMLElement {
+	return class SPImageElement extends HTMLElement {
 
         attachedCallback() {
             this.attributeChangedCallback('src', null, this.getAttribute('src'));
@@ -23,6 +23,4 @@ define(function () {
             this.style.height = this.getAttribute('height') + 'px';
         }
     }
-    document.registerElement('sp-image', SPImageElement);
-    return SPImageElement;
 })

@@ -1,5 +1,5 @@
 define(function () {
-    class SPLinkElement extends HTMLAnchorElement {
+    return class SPLinkElement extends HTMLAnchorElement {
         onClick(e) {
             e.preventDefault();
             GlobalViewStack.navigate(this.getAttribute('uri'));
@@ -11,7 +11,4 @@ define(function () {
             this.removeEventListener('click', this.onClick);
         }
     }
-
-    document.registerElement('sp-link', SPLinkElement);
-    return SPLinkElement;
 });

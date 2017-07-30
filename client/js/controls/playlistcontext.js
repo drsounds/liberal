@@ -1,5 +1,5 @@
 define(['controls/resource'], function (SPResourceElement) {
-    class SPPlaylistContextElement extends SPResourceElement {
+    return class SPPlaylistContextElement extends SPResourceElement {
         async attributeChangedCallback(attrName, oldVal, newVal) {
             if (!newVal) return;
             if (attrName == 'uri') {
@@ -101,7 +101,4 @@ define(['controls/resource'], function (SPResourceElement) {
 
         }
     }
-
-    document.registerElement('sp-playlistcontext', SPPlaylistContextElement);
-    return SPResourceElement;
 });

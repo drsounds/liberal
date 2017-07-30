@@ -3,7 +3,7 @@ define(function () {
     /**
      * Popularity bar
      */
-    class SPPopularityBarElement extends HTMLElement {
+    return class SPPopularityBarElement extends HTMLElement {
         createdCallback() {
             
         }
@@ -52,7 +52,4 @@ define(function () {
         }
 
     }
-
-    document.registerElement('sp-popularitybar', SPPopularityBarElement);
-    return SPPopularityBarElement;
 })

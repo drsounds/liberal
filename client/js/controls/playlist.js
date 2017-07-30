@@ -1,5 +1,19 @@
 define(['controls/resource'], function (SPResourceElement) {
-    class SPPlaylistElement extends SPResourceElement {
+
+    function swatchToColor(color) {
+        return 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.3)';
+    }
+
+
+    function rgbToRgba(rgb, alpha) {
+        let str = 'rgba';
+        let tf = rgb.split('(')[1].split(')')[0].split(',');
+        str += '(' + tf + ',' + alpha + ')';
+        return str;
+
+    }
+
+    return class SPPlaylistElement extends SPResourceElement {
         attachedCallback() {
         }
         async attributeChangedCallback(attrName, oldVal, newVal) {
@@ -63,21 +77,4 @@ define(['controls/resource'], function (SPResourceElement) {
         }
     }
 
-    function swatchToColor(color) {
-        return 'rgba(' + color.rgb[0] + ',' + color.rgb[1] + ',' + color.rgb[2] + ', 0.3)';
-    }
-
-
-    function rgbToRgba(rgb, alpha) {
-        let str = 'rgba';
-        let tf = rgb.split('(')[1].split(')')[0].split(',');
-        str += '(' + tf + ',' + alpha + ')';
-        return str;
-
-    }
-
-
-
-    document.registerElement('sp-playlist', SPPlaylistElement);
-    return SPPlaylistElement;
 })

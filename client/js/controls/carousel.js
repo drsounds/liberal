@@ -1,5 +1,5 @@
 define(['controls/resource'], function (SPResourceElement) {
-    class SPCarouselElement extends SPResourceElement {
+    return class SPCarouselElement extends SPResourceElement {
         attachedCallback() {
             this.style.position = 'relative';
         }
@@ -14,8 +14,4 @@ define(['controls/resource'], function (SPResourceElement) {
             $(this).slick();
         }
     }
-
-
-    document.registerElement('sp-carousel', SPCarouselElement);
-    return SPCarouselElement;
 });

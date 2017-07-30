@@ -30,7 +30,7 @@ define(['controls/view'], function (SPViewElement) {
             if (this.state == null)
                 return;
             this.header.setState(this.state);
-            GlobalTabBar.setState({
+            window.GlobalTabBar.setState({
                 object: this.state,
                 objects: []
             });

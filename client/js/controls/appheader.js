@@ -1,5 +1,5 @@
 define(function () {
-    class SPAppHeaderElement extends HTMLElement {
+    return class SPAppHeaderElement extends HTMLElement {
         attachedCallback() {
             if (!this.created) {
                 if (!this.searchForm) {
@@ -22,6 +22,4 @@ define(function () {
         }
 
     }
-    document.registerElement('sp-appheader', SPAppHeaderElement);
-    return SPAppHeaderElement;
 });

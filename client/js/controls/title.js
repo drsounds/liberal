@@ -1,5 +1,5 @@
 define(function () {
-	class SPTitleElement extends HTMLElement {
+	return class SPTitleElement extends HTMLElement {
         attachedCallback() {
             
         }
@@ -31,8 +31,4 @@ define(function () {
             this.innerHTML = titleHTML;
         }
     }
-
-    document.registerElement('sp-title', SPTitleElement);
-
-    return SPTitleElement;
 })

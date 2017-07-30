@@ -1,5 +1,5 @@
 define(['controls/tabledatasource'], function (SPTableDataSource) {
-	class SPTrackTableDataSource extends SPTableDataSource {
+	return class SPTrackTableDataSource extends SPTableDataSource {
         constructor(uri, q, fields, limit = 28) {
             super();
             this.uri = uri;
@@ -38,5 +38,4 @@ define(['controls/tabledatasource'], function (SPTableDataSource) {
             return this.fields[pos];
         }
     }
-    return SPTrackTableDataSource;
 })

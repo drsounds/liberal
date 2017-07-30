@@ -1,5 +1,5 @@
 define(function () {
-    class SPSidebarElement extends HTMLElement {
+    return class SPSidebarElement extends HTMLElement {
         async attachedCallback() {
 
             this.menu = document.createElement('sp-sidebarmenu');
@@ -8,7 +8,4 @@ define(function () {
             this.appendChild(this.nowplaying);
         }
     }
-
-    document.registerElement('sp-sidebar', SPSidebarElement);
-    return SPSidebarElement;
 });

@@ -3,9 +3,7 @@ define(function () {
      * Spotify music service
      **/
     return class SpotifyMusicService {
-        constructor() {
-            super();
-        }
+
         async playPause() {
             this.state.player = await this.getCurrentTrack();
             let result = null;

@@ -81,6 +81,7 @@ define(
     ) {
 	return class SPChromeElement extends HTMLElement {
         attachedCallback() {
+
             this.appHeader = document.createElement('sp-appheader');
             this.appendChild(this.appHeader);
             this.infoBar = document.createElement('sp-infobar');

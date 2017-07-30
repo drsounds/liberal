@@ -1,5 +1,5 @@
 define(function () {
-    class SPThemeEditorElement extends HTMLElement {
+    return class SPThemeEditorElement extends HTMLElement {
         attachedCallback() {
             if (!this.created) {
                 this.colorChooser = document.createElement('input');
@@ -46,7 +46,4 @@ define(function () {
 
         }
     }
-
-    document.registerElement('sp-themeeditor', SPThemeEditorElement);
-    return SPThemeEditorElement;
 });

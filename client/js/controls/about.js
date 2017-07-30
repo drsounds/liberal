@@ -1,5 +1,5 @@
 define(['controls/resource'], function (SPResourceElement) {
-	class SPAboutElement extends SPResourceElement {
+	return class SPAboutElement extends SPResourceElement {
         attachedCallback() {
             
         }
@@ -17,6 +17,4 @@ define(['controls/resource'], function (SPResourceElement) {
         }
     }
 
-    document.registerElement('sp-about', SPAboutElement);
-    return SPAboutElement;
 })

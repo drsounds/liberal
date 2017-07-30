@@ -1,5 +1,5 @@
 define(['controls/tabledesigner'], function (SPTableDesigner) {
-class SPTrackTableDesigner extends SPTableDesigner {
+return class SPTrackTableDesigner extends SPTableDesigner {
   getHeaderRow() {
       let tr = document.createElement('tr');
 
@@ -104,5 +104,4 @@ class SPTrackTableDesigner extends SPTableDesigner {
       return td;
   }
 }
-return SPTrackTableDesigner;
 });

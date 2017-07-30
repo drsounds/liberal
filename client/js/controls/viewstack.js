@@ -4,7 +4,7 @@ define(function () {
     /**
      * Viewstack element
      **/
-    class SPViewStackElement extends HTMLElement {
+    return class SPViewStackElement extends HTMLElement {
         async registerPlugin(appId) {
             
             require(['plugins/' + appId + '/' + appId], function (plugin) {
@@ -176,7 +176,4 @@ define(function () {
             }
         }
     }
-
-    document.registerElement('sp-viewstack', SPViewStackElement);
-    return SPViewStackElement;
 })

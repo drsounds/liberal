@@ -1,5 +1,5 @@
-define(function () {
-    class SPSidebarMenuElement extends HTMLElement {
+define(['store'], function () {
+    return class SPSidebarMenuElement extends HTMLElement {
         async attachedCallback() {
             if (!this.menu) {
                 this.searchForm = document.createElement('sp-searchform');
@@ -41,7 +41,4 @@ define(function () {
         }
 
     }
-
-    document.registerElement('sp-sidebarmenu', SPSidebarMenuElement);
-    return SPSidebarMenuElement;
 });

@@ -1,5 +1,5 @@
 define(function () {
-	class SPResourceElement extends HTMLElement {
+	return class SPResourceElement extends HTMLElement {
         async attributeChangedCallback(attrName, oldVal, newVal) {
             if (!newVal) return;
             if (attrName === 'uri') {
@@ -36,6 +36,4 @@ define(function () {
             this.innerHTML = '<sp-link uri="' + obj.uri + '">' + obj.name + '</sp-link>';
         }
     }
-    document.registerElement('sp-resource', SPResourceElement);
-    return SPResourceElement;
 })
