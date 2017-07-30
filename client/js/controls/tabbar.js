@@ -1,4 +1,4 @@
-define(function () {
+define(['controls/tab'], function (SPTabElement) {
 	class SPTabBarElement extends HTMLElement {
 	    attachedCallback() {
 	        if (!this.created) {
@@ -8,7 +8,43 @@ define(function () {
 	            this.created = true;
 	            this.addEventListener('scroll', this._onScroll.bind(this));
 	            this.style.display = 'none';
+                const onHashChanged =  (e) => {
+                    let tabId = 'overview';
+                    try {
+                        tabId = window.location.hash.substr(1);
+                        if (!tabId || tabId.length < 1) {
+                            tabId = 'overview'
+                        };;
+                    } catch (e) {
+
+                    }
+                    let view = GlobalViewStack.currentView;
+                    let foundTab = false;
+                    for (let tab of document.querySelectorAll('sp-tab')) {
+                        if (tab.getAttribute('data-tab-id') == tabId) {
+                            tab.classList.add('sp-tab-active');
+                            foundTab = true;
+                        } else {
+                            tab.classList.remove('sp-tab-active');
+
+                        }
+                    }
+                    if (!foundTab) {
+                        let tabs = document.querySelectorAll('sp-tab');
+                        if (tabs.length > 0)
+                            tabs[0].classList.add('sp-tab-active');
+                    }
+                    for (let tabView of view.querySelectorAll('sp-tabcontent')) {
+                        if (tabView.getAttribute('data-tab-id') == tabId) {
+                            tabView.style.display = 'block';
+                        } else {
+                            tabView.style.display = 'none';
+                        }
+                    }
+                };
+                window.addEventListener('hashchange', onHashChanged);
 	        }
+
 	    }
 	    
 	    _onScroll(e) {

@@ -1,13 +1,10 @@
 define(function () {
-	/**
+    window.GlobalViewStack = null;
+
+    /**
      * Viewstack element
      **/
     class SPViewStackElement extends HTMLElement {
-        constructor() {
-            super();
-            this.plugins = {};
-        }
-
         async registerPlugin(appId) {
             
             require(['plugins/' + appId + '/' + appId], function (plugin) {
@@ -75,7 +72,7 @@ define(function () {
                 newUri = 'bungalow:search:' + uri;
                 uri = newUri;
             }
-            if (GlobalViewStack.currentView != null && newUri === GlobalViewStack.currentView.getAttribute('uri'))
+            if (window.GlobalViewStack.currentView != null && newUri === window.GlobalViewStack.currentView.getAttribute('uri'))
                 return;
             if (newUri in this.views) {
                 let view = this.views[newUri];
@@ -171,7 +168,7 @@ define(function () {
             if (this.firstChild != null)
             this.removeChild(this.firstChild);
             this.appendChild(view);
-            GlobalViewStack.currentView = view;
+            window.GlobalViewStack.currentView = view;
 
             if (view.activate instanceof Function) {
                 view.activate();

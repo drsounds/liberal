@@ -1,5 +1,85 @@
-define(function () {
-	class SPChromeElement extends HTMLElement { 
+define(
+    [
+        'controls/about',
+        'controls/appheader',
+        'controls/appfooter',
+        'controls/carousel',
+        'controls/chrome',
+        'controls/divider',
+        'controls/gondole',
+        'controls/header',
+        'controls/image',
+        'controls/infobar',
+        'controls/link',
+        'controls/main',
+        'controls/menu',
+        'controls/menuitem',
+        'controls/nowplaying',
+        'controls/playlist',
+        'controls/playlistcontext',
+        'controls/popularity',
+        'controls/resource',
+        'controls/searchform',
+        'controls/sidebar',
+        'controls/sidebarmenu',
+        'controls/tab',
+        'controls/tabbar',
+        'controls/tabcontent',
+        'controls/table',
+        'controls/tabledatasource',
+        'controls/tabledesigner',
+        'controls/themeeditor',
+        'controls/title',
+        'controls/toolbar',
+        'controls/trackcontext',
+        'controls/tracktabledatasource',
+        'controls/tracktabledesigner',
+        'controls/view',
+        'controls/viewstack',
+        'store',
+        'events'
+    ],
+    function (
+        SPAboutElement,
+        SPAppHeaderElement,
+        SPAppFooterElement,
+        SPCarouselElement,
+        SPChromeElement,
+        SPDividerElement,
+        SPGondoleElement,
+        SPHeaderElement,
+        SPImageElement,
+        SPInfoBarElement,
+        SPLinkElement,
+        SPMainElement,
+        SPMenuElement,
+        SPMenuItemElement,
+        SPNowPlayingElement,
+        SPPlaylistElement,
+        SPPlaylistContextElement,
+        SPPopularityElement,
+        SPResourceElement,
+        SPSearchFormElement,
+        SPSidebarElement,
+        SPSidebarMenuElement,
+        SPTabElement,
+        SPTabBarElement,
+        SPTabContentElement,
+        SPTableElement,
+        SPTableDataSource,
+        SPTableDesigner,
+        SPThemeEditorElement,
+        SPTitleElement,
+        SPToolbarElement,
+        SPTrackContextElement,
+        SPTrackTableDataSourceElement,
+        SPTrackTableDesignerElement,
+        SPViewElement,
+        SPViewStackElement,
+        Store,
+        EventEmitter
+    ) {
+	return class SPChromeElement extends HTMLElement {
         attachedCallback() {
             this.appHeader = document.createElement('sp-appheader');
             this.appendChild(this.appHeader);
@@ -26,10 +106,4 @@ define(function () {
             this.infoBar.setState(obj);
         }
     }
-
-
-    GlobalViewStack = null;
-
-    document.registerElement('sp-chrome', SPChromeElement);
-    return SPChromeViewElement;
 })
