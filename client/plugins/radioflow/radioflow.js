@@ -1,12 +1,18 @@
 define(
 	[
 		'liberal',
-		'controls/view'
+		'controls/view',
+        'controls/header',
+        'controls/table'
 	],
 	function (
 		liberal,
-		SPViewElement
+		SPViewElement,
+        SPHeaderElement
 	) {
+
+
+
     class SPPodcastViewElement extends SPViewElement {
         attachedCallback() {
             if (!this.created) {
@@ -17,16 +23,21 @@ define(
     }
 	document.registerElement('sp-podcastview', SPPodcastViewElement);
 
+    window.GlobalViewStack.registerView(/^bungalow:podcast:(.*)$/g, 'sp-podcastview');
 
-    class RadioflowTableDataSource extends SPTableDataSource {
-        constructor() {
 
+    class RFPodcastEpisodeTableDataSource extends SPTableDataSource {
+        constructor(url) {
+            this.url = url;
         }
-        getNumberOfRows(row) {
-            if (!row) {
-                return
-            }
+        async fetchNext() {
+            fetch('/api/getPodcast?url=' + )
         }
     }
+
+    return {
+        SPPodcastViewElement: SPPodcastViewElement,
+        RFPodcastEpisodeDataSource: RFPodcastEpisodeDataSource
+    };
 
 });
