@@ -72,12 +72,17 @@ define(function () {
                 newUri = 'bungalow:search:' + uri;
                 uri = newUri;
             }
+            let view = null;
+            let externalViews = this.registeredViews.filter((v) => v.regex.test(uri));
             if (window.GlobalViewStack.currentView != null && newUri === window.GlobalViewStack.currentView.getAttribute('uri'))
                 return;
             if (newUri in this.views) {
                 let view = this.views[newUri];
                 
                 this.setView(view);
+            } else if (externalViews.length > 0) {
+                view = document.createElement(externalViews[0].tag);
+                this.addView(newUri, view);
             } else {
                 let view = null;
                 

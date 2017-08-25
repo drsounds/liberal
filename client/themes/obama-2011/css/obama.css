@@ -288,3 +288,35 @@ sp-divider {
     box-shadow: inset 0pt 1px 0px #696969;
     
 }
+
+
+
+sp-viewstacktabbar {
+    border-top: 1px solid rgba(255, 255, 255, .5);
+    border-bottom: 1px solid rgba(0, 0, 0, .4);
+    min-height: 18pt;
+    background-size: 100% 100%;
+    background-image: url('/themes/obama/images/viewstacktabbar_bg_normal.png');
+    flex: 0 0 18pt;
+    display: flex !important;
+}
+sp-viewstacktabbar sp-tab {
+    border-radius: 1pt;
+    -webkit-transform: translate(0pt, -1pt);
+    height: 100%;
+    padding: 3pt 30pt;
+    background-color: transparent;
+    height: 19pt;
+    
+}
+sp-viewstacktabbar sp-tab.sp-tab-active {
+    background-color: var(--background-color);    
+    box-shadow: inset 0px 1px 1pt rgba(0, 0, 0, 0.8);
+}
+.sp-view sp-tabbar {
+    display: none !important;
+}
+
+.sp-2010 {
+    display: none;
+}

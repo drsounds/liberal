@@ -94,12 +94,12 @@ class Store extends EventEmitter {
         this.services = {
         };
         this.state = {};
-        /*
+        
          this.heart = setInterval(async () => {
          this.state.player = await this.getCurrentTrack();
          this.emit('change');
 
-         }, 1000);*/
+         }, 1000);
         this.hue = this.hue;
         this.saturation = this.saturation;
         this.flavor = this.flavor;
@@ -399,6 +399,7 @@ const VERIFIED_PROFILES = ['drsounds', 'alexanderforselius', 'daniel', 'spotify'
 requirejs(
     [
         'controls/about',
+        'controls/viewstacktabbar',
         'controls/appheader',
         'controls/appfooter',
         'controls/carousel',
@@ -450,6 +451,7 @@ requirejs(
     ],
 function (
     SPAboutElement,
+    SPViewStackTabBarElement,
     SPAppHeaderElement,
     SPAppFooterElement,
     SPCarouselElement,
@@ -499,6 +501,7 @@ function (
     SPUserViewElement
 ) {
     document.registerElement('sp-about', SPAboutElement);
+    document.registerElement('sp-viewstacktabbar', SPViewStackTabBarElement);
     document.registerElement('sp-appheader', SPAppHeaderElement);
     document.registerElement('sp-appfooter', SPAppFooterElement);
     document.registerElement('sp-carousel', SPCarouselElement);

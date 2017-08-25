@@ -155,15 +155,12 @@ body {
     box-shadow: inset 0px 1px 1pt rgba(0, 0, 0, 0.8), inset 0pt -1pt 1pt rgba(255, 255, 255, .2);
 }
 sp-tab {
-    height: 18pt;
+    height: 25pt;
 }
 sp-tabbar {
-    padding-top: 5pt;
-    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#7a7a7a+0,1c1c1c+100 */
-    background: rgb(122,122,122); /* Old browsers */
-    background: -moz-linear-gradient(top,  rgba(122,122,122,1) 0%, rgba(28,28,28,1) 100%); /* FF3.6-15 */
-    background: -webkit-linear-gradient(top,  rgba(122,122,122,1) 0%,rgba(28,28,28,1) 100%); /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(to bottom,  rgba(60, 60, 60,1) 0%,rgba(38,38,38,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    overflow: visible;
+    padding-top: 2pt;
+    background: rgba(255, 255, 255, .2);
     border-top: 1px solid #222;
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7a7a7a', endColorstr='#1c1c1c',GradientType=0 ); /* IE6-9 */
 
@@ -290,16 +287,14 @@ sp-divider {
 
 
 
-sp-viewstacktabbar {
-    border-top: 1px solid rgba(255, 255, 255, .5);
+sp-main > sp-tabbar {
     border-bottom: 1px solid rgba(0, 0, 0, .4);
     min-height: 18pt;
     background-size: 100% 100%;
-    background-image: url('/themes/obama/images/viewstacktabbar_bg_normal.png');
     flex: 0 0 18pt;
-    display: flex !important;
+    box-shadow: none;
 }
-sp-viewstacktabbar sp-tab {
+sp-main > sp-tababbar sp-tab {
     -webkit-transform: translate(0pt, -1pt);
     height: 100%;
     padding: 3pt 30pt;
@@ -307,10 +302,15 @@ sp-viewstacktabbar sp-tab {
     height: 19pt;
     
 }
-sp-viewstacktabbar sp-tab.sp-tab-active {
+sp-main > sp-tabbar sp-tab.sp-tab-active {
     background-color: var(--background-color);    
     box-shadow: inset 0px 1px 1pt rgba(0, 0, 0, 0.8);
+    height: 18pt;
 }
 .sp-view sp-tabbar {
     display: none !important;
+}
+
+.sp-2010 {
+    display: none;
 }

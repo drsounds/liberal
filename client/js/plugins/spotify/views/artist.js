@@ -18,7 +18,7 @@ define(['controls/view'], function (SPViewElement) {
                 this.overviewTab.topTracksDivider = document.createElement('sp-divider');
                 this.overviewTab.topTracksDivider.innerHTML = _('Top Tracks');
             
-               // this.overviewTab.appendChild(this.overviewTab.topTracksDivider);
+                this.overviewTab.appendChild(this.overviewTab.topTracksDivider);
                 this.overviewTab.toplist = document.createElement('sp-playlist');
                 this.overviewTab.appendChild(this.overviewTab.toplist);
                 
@@ -54,7 +54,32 @@ define(['controls/view'], function (SPViewElement) {
                 
         }
         activate() {
-            super.activate();
+            super.activate({
+                object: this.state,
+                objects: [
+                    {
+                        id: 'overview',
+                        name: _('Overview')
+                    },
+                    {
+                        id: 'about',
+                        name: _('About')
+                    }
+                ]
+            });
+            GlobalTabBar.setState({
+                  object: this.state,
+                objects: [
+                    {
+                        id: 'overview',
+                        name: _('Overview')
+                    },
+                    {
+                        id: 'about',
+                        name: _('About')
+                    }
+                ]
+            })
             this.header.tabBar.setState({
                 object: this.state,
                 objects: [
@@ -80,6 +105,7 @@ define(['controls/view'], function (SPViewElement) {
                 }
                 
                 let result = await store.request('GET', newVal);
+                
                 this.overviewTab.toplist.setAttribute('uri', newVal + ':top:5');
                 this.state = result;
                 

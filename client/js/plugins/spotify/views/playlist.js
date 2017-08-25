@@ -32,7 +32,9 @@ define(['controls/view'], function (SPViewElement) {
             this.header.setState(this.state);
             window.GlobalTabBar.setState({
                 object: this.state,
-                objects: []
+                objects: [{
+                    name: 'Playlist'
+                }]
             });
         }
         navigate(uri) {
@@ -50,7 +52,12 @@ define(['controls/view'], function (SPViewElement) {
                 this.trackcontext.playlist = result;
 
                 this.state = result;
-
+                window.GlobalTabBar.setState({
+                    object: this.state,
+                    objects: [{
+                        name: 'Playlist'
+                    }]
+                });
                 this.activate();
             }
         }

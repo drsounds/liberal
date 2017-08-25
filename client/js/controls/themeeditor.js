@@ -18,7 +18,7 @@ define(function () {
                 this.saturationChooser.setAttribute('max', 360);
                 this.saturationChooser.value = store.saturation;
                 this.styleselect = document.createElement('select');
-                this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="maestro">Maestro</option><option value="obama">Obama</option><option value="obama-2010">Obama 2010</option><option value="obama-flat">Obama (flat)</option><option value="chromify">Chromify</option><option value="wmp_11">Windows Media Player 11</option><option value="wmp_11_beta">Windows Media Player 11</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_9">Windows Media Player 9</option>';
+                this.styleselect.innerHTML += '<option value="bungalow">Bungalow</option><option value="maestro">Maestro</option><option value="obama-2009">Obama 2009</option><option value="obama-2010">Obama 2010</option><option value="obama-flat">Obama (flat)</option><option value="chromify">Chromify</option><option value="wmp_11">Windows Media Player 11</option><option value="wmp_11_beta">Windows Media Player 11</option><option value="wmp_10">Windows Media Player 10</option><option value="wmp_9">Windows Media Player 9</option>';
                 this.appendChild(this.styleselect);
                 this.flavorselect = document.createElement('select');
                 this.flavorselect.innerHTML += '<option value="dark">' + _('Dark') + '</option><option value="light">' + _('Light') + '</option>';

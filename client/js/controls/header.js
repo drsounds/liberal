@@ -15,11 +15,12 @@ define(['controls/resource'], function (SPResourceElement) {
                 this.created = true;
                 let innerHTML = _.unescape(document.querySelector('#headerTemplate').innerHTML);
                 let template = _.template(innerHTML);
+                let width = getComputedStyle(document.body).getPropertyValue('--image-size');
                 this.innerHTML = template({
                     object: object,
                     size: size,
                     width: width,
-                    height: height,
+                    height: width,
                     title: titleElement.innerHTML,
                     strFollowers: strFollowers  
                 });
@@ -38,11 +39,12 @@ define(['controls/resource'], function (SPResourceElement) {
             }
             let innerHTML = _.unescape(document.querySelector('#headerTemplate').innerHTML);
             let template = _.template(innerHTML);
+            width = getComputedStyle(document.body).getPropertyValue('--image-size');
             this.innerHTML = template({
                 object: object,
                 size: size,
                 width: width,
-                height: height,
+                height: width,
                 title: titleElement.innerHTML,
                 strFollowers: strFollowers  
             }); /* if ('followers' in object) {

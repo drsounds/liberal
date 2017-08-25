@@ -597,8 +597,10 @@ app.get('/artist/:identifier/top/:count/track', function (req, res) {
     music.getArtistTopTracks(req.params.identifier, req.params.offset, req.params.limit).then(function (result) {
        result.objects = result.objects.slice(0, req.params.count);
        res.json(result);
+        res.end();
     }, function (reject) {
         res.json(reject);
+        res.end();
     });
 });
 
@@ -613,8 +615,10 @@ app.get('/artist/:identifier/release', function (req, res) {
     
     music.getReleasesByArtist(req.params.identifier, 'album', req.query.offset, req.query.limit).then(function (result) {
         res.json(result);
+        res.end();
     }, function (reject) {
         res.json(reject);
+        res.end();
     });
 });
 
@@ -630,8 +634,10 @@ app.get('/artist/:identifier/album', function (req, res) {
     
     music.getReleasesByArtist(req.params.identifier, 'album', req.query.offset, req.query.limit).then(function (result) {
         res.json(result);
+        res.end();
     }, function (reject) {
         res.json(reject);
+        res.end();
     });
 });
 
@@ -648,8 +654,10 @@ app.get('/artist/:identifier/single', function (req, res) {
     
     music.getReleasesByArtist(req.params.identifier, 'single', req.query.offset, req.query.limit).then(function (result) {
         res.json(result);
+        res.end();
     }, function (reject) {
         res.json(reject);
+        res.end();
     });
 });
 
@@ -665,8 +673,10 @@ app.get('/artist/:identifier/appears_on', function (req, res) {
     console.log(req.query);
     music.getReleasesByArtist(req.params.identifier, 'appears_on', req.query.offset, req.query.limit).then(function (result) {
         res.json(result);
+        res.end();
     }, function (reject) {
         res.json(reject);
+        res.end();
     });
 });
 
@@ -682,8 +692,10 @@ app.get('/artist/:identifier/compilation', function (req, res) {
     
     music.getReleasesByArtist(req.params.identifier, 'compilation', req.query.offset, req.query.limit).then(function (result) {
         res.json(result);
+        res.end();
     }, function (reject) {
         res.json(reject);
+        res.end();
     });
 });
 
@@ -698,8 +710,10 @@ app.get('/album/:identifier', function (req, res) {
     
     music.getAlbum(req.params.identifier).then(function (result) {
         res.json(result);
+        res.end();
     }, function (reject) {
         res.json(reject);
+        res.end();
     });
 });
 
@@ -714,8 +728,10 @@ app.get('/album/:identifier/track', function (req, res) {
     
     music.getTracksInAlbum(req.params.identifier, req.query.offset, req.query.limit).then(function (result) {
         res.json(result);
+        res.end();
     }, function (reject) {
         res.json(reject);
+        res.end();
     });
 });
 
@@ -731,8 +747,10 @@ app.get('/featured/playlist', function (req, res) {
     music.getFeaturedPlaylists(req.query.offset, req.query.limit).then(function (result) {
     
         res.json(result);
+        res.end();
     }, function (reject) {
         res.json(reject);
+        res.end();
     });
 });
 
@@ -740,8 +758,10 @@ app.get('/track/:identifier', function (req, res) {
     music.req = req;
     music.getTrack(req.params.identifier).then(function (result) {
         res.json(result);
+        res.end();
     }, function (reject) {
         res.json(reject);
+        res.end();
     });
 })
 
@@ -750,9 +770,11 @@ app.get('/me/aqtivity', function (req, res) {
     sport.req = req;
     sport.getAqtivities().then(function (result) {
         res.json(result);
+        res.end();
     }, function (err) {
         res.statusCode = 500;
         res.json(err);
+        res.end();
     })
 });
 

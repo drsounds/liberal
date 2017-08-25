@@ -12,6 +12,14 @@ define(function () {
             if (attrName === 'src') {
                 this.setState(newVal);
             }
+            if (attrName === 'width') {
+            this.style.width = newVal;
+                
+            }
+            if (attrName === 'height') {
+            this.style.height = newVal;
+                
+            }
         }
         setState(state) {
             if (state instanceof Object) {
@@ -19,8 +27,8 @@ define(function () {
                 return;
             }
             this.style.backgroundImage = 'url(' + state + ')';
-            this.style.width = this.getAttribute('width')  + 'px';
-            this.style.height = this.getAttribute('height') + 'px';
+            this.style.width = this.getAttribute('width') ;
+            this.style.height = this.getAttribute('height');
         }
     }
 })

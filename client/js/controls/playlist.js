@@ -49,6 +49,8 @@ define(['controls/resource'], function (SPResourceElement) {
                 strReleaseDate: strReleaseDate,
                 fields: fields,
                 maxRows: maxRows,
+                width: getComputedStyle(document.body).getPropertyValue('--image-size'),
+                height: getComputedStyle(document.body).getPropertyValue('--image-size'),
                 obj: obj,
                 dataContextUri: dataContextUri
             });

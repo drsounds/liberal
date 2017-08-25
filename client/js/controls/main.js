@@ -6,7 +6,7 @@ define(['controls/viewstack'], function (SPViewStackElement) {
                 this.appendChild(this.tabBar);
                 window.GlobalTabBar = this.tabBar;
                 this.viewStack = document.createElement('sp-viewstack');
-                GlobalViewStack = this.viewStack;
+                window.GlobalViewStack = this.viewStack;
                 this.appendChild(this.viewStack);
 
 

@@ -2,10 +2,6 @@ define(['store'], function () {
     return class SPSidebarMenuElement extends HTMLElement {
         async attachedCallback() {
             if (!this.menu) {
-                this.searchForm = document.createElement('sp-searchform');
-                this.appendChild(this.searchForm);
-
-
                 this.label = document.createElement('label');
                 this.label.innerHTML = _('Main Menu');
                 this.appendChild(this.label);

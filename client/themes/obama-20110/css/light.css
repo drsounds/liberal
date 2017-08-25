@@ -28,11 +28,11 @@ sp-sidebar {
 table thead tr td {
     background-color: #888;
 }
-sp-trackcontext table {
+sp-table table {
     border-collapse: collapse;
     width: 100%;
 }
-sp-trackcontext table tbody tr:nth-child(2n-1) td {
+sp-table table tbody tr:nth-child(2n-1) td {
     background-color: rgba(0, 0, 0, .04);
 }
 sp-link, a {
@@ -81,7 +81,6 @@ background: -webkit-linear-gradient(top,  rgba(188,188,188,1) 1%,rgba(145,145,14
 background: linear-gradient(to bottom,  rgba(188,188,188,1) 1%,rgba(145,145,145,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bcbcbc', endColorstr='#919191',GradientType=0 ); /* IE6-9 */
 
-box-shadow:inset 0pt 1pt 0pt #fff, inset 0pt -1pt 0pt #333;
 /*border-bottom: 1pt solid #333;*/
 color: #333;
 text-shadow: 0pt 1pt 0pt rgba(255, 255, 255, 1);

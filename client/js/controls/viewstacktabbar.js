@@ -1,8 +1,9 @@
 define(['controls/tab'], function (SPTabElement) {
-	return class SPTabBarElement extends HTMLElement {
+	return class SPViewStackTabBarElement extends HTMLElement {
 	    attachedCallback() {
 	        if (!this.created) {
 	            this.titleBar = document.createElement('div');
+	            this.titleBar.style.visibility = 'hidden';
 	            this.appendChild(this.titleBar);
 	            this.created = true;
 	            this.addEventListener('scroll', this._onScroll.bind(this));
@@ -52,6 +53,7 @@ define(['controls/tab'], function (SPTabElement) {
 	    setState(state) {
 	        this.innerHTML = '';
 	        this.titleBar = document.createElement('div');
+	        this.titleBar.style.visibility = 'hidden';
 	        this.titleBar.style.paddingRight = '113pt';
 	        this.titleBar.style.paddingTop = '-12px';
 	        //this.appendChild(this.titleBar);
@@ -68,21 +70,7 @@ define(['controls/tab'], function (SPTabElement) {
 	                
 	            }
 	        }
-	        if (!state || !state.objects) {
-	        	state.objects = [];
-	        }
-	        if (state.objects.length < 1)
-	        state.objects.push({
-	        	object: {
-	        		name: 'Overview'
-	        	},
-	        	objects: [{
-	        		name: 'Overview',
-	        		id: 'overview'
-	        	}]
-	        })
 	        if (state && state.objects instanceof Array && state.objects.length > 0) {
-	        
 	            for (let i = 0; i < state.objects.length; i++) {
 	                let obj = state.objects[i];
 	                let tab = document.createElement('sp-tab');
@@ -92,19 +80,12 @@ define(['controls/tab'], function (SPTabElement) {
 	                tab.addEventListener('tabselected', (e) => {
 	                    window.location.hash = '#' + e.data;
 	                });
-	                let foundTab = false;
-	                if (obj.id == window.location.hash.substr(1)) {
-	                	tab.classList.add('sp-tab-active');
-	                	foundTab = true;
-	                }
+	                if (obj.id == window.location.hash.substr(1)) tab.classList.add('sp-tab-active');
 	                this.appendChild(tab);
-	                
-					if (!foundTab) {
-						this.querySelector('sp-tab').classList.add('sp-tab-active');
-					}
-	                this.style.display = 'block';
+	                this.style.display = 'flex';
 	            } 
 	        } else {
+	            this.style.display = 'none';
 	        }
 	    
 	        

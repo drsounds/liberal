@@ -1,4 +1,4 @@
-define(['controls/table', 'controls/tracktabledesigner', 'controls/tracktabledatasource'], function (SPTableElement, SPTrackTableDesigner, SPTrackTableDataSource) {
+    define(['controls/table', 'controls/tracktabledesigner', 'controls/tracktabledatasource'], function (SPTableElement, SPTrackTableDesigner, SPTrackTableDataSource) {
     return class SPTrackContextElement extends SPTableElement {
         attachedCallback() {
             super.attachedCallback();

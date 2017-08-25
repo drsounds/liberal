@@ -7,7 +7,8 @@ var api = require('./api.js');
 var app = express();
 var bodyParser = require('body-parser');
   app.use(bodyParser());
-
+var busy = require('busy');
+app.timeout = 1000;
 app.use(cookieParser());
 app.use(cookieSession({
     secret:'32425235235235',
@@ -15,10 +16,19 @@ app.use(cookieSession({
     keys: ['key1', 'key2'],
     cookie: {secure: false}
 }));
-
+// middleware which blocks requests when we're too busy
+app.use(function(req, res, next) {
+    if (busyCheck.blocked) {
+        res.send(503, "I'm busy right now, sorry.");
+    } else {
+        next();
+    }
+});
 app.use('/api', api.server);
 
-
+var busyCheck = busy(function(amount) {
+    console.log('Loop was busy for', amount, 'ms');
+});
 
 app.use(express.static(__dirname + '/client/'));
 app.get('/*', function (req, res) {

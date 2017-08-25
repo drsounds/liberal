@@ -11,7 +11,7 @@
 --font-size: 11px;
 } 
 body {
-  background: #ecf2f9;
+  background:  #ecf2f9 !important;
    -webkit-filter: hue-rotate(var(--primary-hue)) saturate(var(--primary-saturation)) !important;
 
 }

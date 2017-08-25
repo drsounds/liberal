@@ -2,7 +2,7 @@
 <html lang="en" ng-app>
   <head>
     <title>Liberal | Open Source Music Streaming Client</title>
-    <base href="http://localhost:9261/">
+    <base href="https://liberal-drsounds.c9users.io/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/montserrat.css"> 
     <link rel="stylesheet" href="/css/font-awesome.css"> 
@@ -27,9 +27,9 @@
   <body>
     <template type="text/template" id="playlistTemplate">
      
-        <div style="flex: 0 0 128">
-            <sp-image src="<%=obj.images[0].url%>" width="128" height="128"></sp-image> 
-        </div>
+        <div style="flex: 0 0 <%=width%>" >
+            <sp-image src="<%=obj.images[0].url%>" width="<%=width%>" height="<%=height%>"></sp-image> 
+        </div> 
         <div style="flex: 2">
            <h3><%=title%>  <%= strReleaseDate != '' ? ' <span><%=('+  strReleaseDate + ')' : '' %></h3>
             <% if ('speaker' in obj) { %>
@@ -44,8 +44,8 @@
         </div>
     </template>
     <template type="text/template" id="headerTemplate">
-      <div style="flex: 0 0 <%=width%> ;">
-        <sp-image width="<%=width%>" height="<%=height%>" src="<%=object.image_url %>"></sp-image>
+      <div style="flex: 0 0 <%=width%> ;" class="sp-2010">
+        <sp-image class="sp-2010" width="<%=width%>" height="<%=height%>" src="<%=object.image_url %>"></sp-image>
       </div>
       <div style="flex: 1">
         <small style="display: none"><%=_(object.type) %></small>
